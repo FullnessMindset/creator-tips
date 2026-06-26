@@ -3,25 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Connecting Financial Account...</title>
+  <title>CREO — Connecting Account...</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { colors: { creo: { purple: '#1a0a3e', mint: '#33f0b0' } } } }
+    }
+  </script>
+  <style>
+    .pulse-ring { animation: pulseRing 1.5s ease-out infinite; }
+    @keyframes pulseRing { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
+  </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen text-center">
-  <div class="bg-white p-8 rounded-lg shadow border max-w-sm">
-    <h1 class="text-xl font-bold text-gray-800 mb-2">Syncing with Stripe</h1>
-    <p class="text-gray-500 text-sm">Please hold on while we finalize your verification...</p>
+<body class="bg-white dark:bg-gray-950 flex items-center justify-center min-h-screen text-center transition-colors duration-300">
+  <div class="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg dark:shadow-2xl border border-gray-200 dark:border-gray-800 max-w-sm transition-colors">
+    <!-- Logo -->
+    <div class="mb-4">
+      <svg viewBox="0 0 200 220" class="w-14 h-16 mx-auto" xmlns="http://www.w3.org/2000/svg">
+        <path d="M100 20 C55 20 20 55 20 100 C20 145 55 180 100 180 C125 180 147 168 160 150 L140 140 C131 153 117 162 100 162 C65 162 38 135 38 100 C38 65 65 38 100 38 C117 38 131 47 140 60 L130 80 C130 80 115 65 100 70 C80 77 72 97 80 115 C85 125 95 130 105 128" fill="#1a0a3e" class="dark:fill-white"/>
+        <ellipse cx="148" cy="42" rx="16" ry="22" transform="rotate(-30 148 42)" fill="#33f0b0"/>
+        <ellipse cx="164" cy="52" rx="14" ry="20" transform="rotate(-10 164 52)" fill="#33f0b0"/>
+      </svg>
+    </div>
+    <h1 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Syncing with Stripe</h1>
+    <p class="text-gray-500 dark:text-gray-400 text-sm">Please hold on while we finalize your verification...</p>
     <p id="status-msg" class="mt-4 text-sm font-medium"></p>
+    <div class="mt-4 flex justify-center">
+      <div class="relative w-6 h-6">
+        <div class="absolute inset-0 rounded-full bg-creo-mint opacity-30 pulse-ring"></div>
+        <div class="absolute inset-1 rounded-full bg-creo-mint"></div>
+      </div>
+    </div>
   </div>
   <script>
+    (function() {
+      const saved = localStorage.getItem('creo-theme');
+      if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark');
+    })();
+
     const urlParams = new URLSearchParams(window.location.search);
     const status = urlParams.get('status');
 
     if (status === 'success') {
       document.getElementById('status-msg').innerText = "Stripe Account Verified! Redirecting...";
-      document.getElementById('status-msg').classList.add('text-green-600');
+      document.getElementById('status-msg').classList.add('text-green-600', 'dark:text-green-400');
     } else if (status === 'refresh') {
       document.getElementById('status-msg').innerText = "Onboarding incomplete. Redirecting to retry...";
-      document.getElementById('status-msg').classList.add('text-yellow-600');
+      document.getElementById('status-msg').classList.add('text-yellow-600', 'dark:text-yellow-400');
     }
 
     setTimeout(() => { window.location.href = "https://fullnessmindset.github.io/creator-tips/index.html"; }, 2500);

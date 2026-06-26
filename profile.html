@@ -3,38 +3,78 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Support Creator</title>
+  <title>CREO — Support Creator</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { colors: { creo: { purple: '#1a0a3e', light: '#2d1b69', mint: '#33f0b0', mintDark: '#28c48e' } } } }
+    }
+  </script>
 </head>
-<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col justify-between">
+<body class="bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col justify-between transition-colors duration-300">
 
-  <div class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-md space-y-6 mt-12 w-full">
-    <div class="text-center space-y-2">
-      <h1 id="profile-name" class="text-3xl font-bold">Loading...</h1>
-      <p id="profile-bio" class="text-gray-600">Please wait while we fetch the creator's space.</p>
+  <!-- Theme Toggle -->
+  <div class="fixed top-4 right-4 z-50">
+    <button onclick="toggleTheme()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm transition" title="Toggle theme">
+      <svg id="icon-sun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      <svg id="icon-moon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+    </button>
+  </div>
+
+  <div class="max-w-md mx-auto bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg dark:shadow-2xl border border-gray-200 dark:border-gray-800 space-y-6 mt-12 w-full transition-colors">
+    <!-- Logo -->
+    <div class="text-center mb-2">
+      <svg viewBox="0 0 200 220" class="w-12 h-14 mx-auto" xmlns="http://www.w3.org/2000/svg">
+        <path d="M100 20 C55 20 20 55 20 100 C20 145 55 180 100 180 C125 180 147 168 160 150 L140 140 C131 153 117 162 100 162 C65 162 38 135 38 100 C38 65 65 38 100 38 C117 38 131 47 140 60 L130 80 C130 80 115 65 100 70 C80 77 72 97 80 115 C85 125 95 130 105 128" fill="#1a0a3e" class="dark:fill-white"/>
+        <ellipse cx="148" cy="42" rx="16" ry="22" transform="rotate(-30 148 42)" fill="#33f0b0"/>
+        <ellipse cx="164" cy="52" rx="14" ry="20" transform="rotate(-10 164 52)" fill="#33f0b0"/>
+      </svg>
     </div>
 
-    <div class="border-t pt-6 space-y-4">
-      <label class="block font-medium text-sm text-gray-700">Choose custom support amount (USD)</label>
+    <div class="text-center space-y-2">
+      <h1 id="profile-name" class="text-3xl font-bold text-gray-900 dark:text-white">Loading...</h1>
+      <p id="profile-bio" class="text-gray-500 dark:text-gray-400">Please wait while we fetch the creator's space.</p>
+    </div>
+
+    <div class="border-t border-gray-200 dark:border-gray-800 pt-6 space-y-4">
+      <label class="block font-medium text-sm text-gray-700 dark:text-gray-300">Choose custom support amount (USD)</label>
       <div class="relative rounded-md shadow-sm">
         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <span class="text-gray-500 sm:text-sm">$</span>
+          <span class="text-gray-500 dark:text-gray-400 sm:text-sm">$</span>
         </div>
-        <input type="number" id="tip-amount" min="1" value="5.00" step="0.50" class="w-full pl-7 pr-12 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+        <input type="number" id="tip-amount" min="1" value="5.00" step="0.50" class="w-full pl-7 pr-12 py-2 border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-md text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint">
       </div>
 
-      <button onclick="processTip()" id="pay-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl transition duration-150">
+      <button onclick="processTip()" id="pay-btn" class="w-full bg-creo-purple hover:bg-creo-light dark:bg-creo-mint dark:hover:bg-creo-mintDark text-white dark:text-creo-purple font-bold py-3 px-4 rounded-xl transition duration-150">
         Support This Creator
       </button>
     </div>
   </div>
 
-  <footer class="max-w-md mx-auto p-6 text-center text-xs text-gray-400 leading-relaxed mb-6">
-    Terms of Support: Payments made here are voluntary commercial tips to independent creators. They are non-refundable, do not include physical goods, equity, or commercial rights, and are not tax-deductible as charitable donations. Creators are independently responsible for their own local income taxes.
+  <footer class="max-w-md mx-auto p-6 text-center text-xs text-gray-400 dark:text-gray-500 leading-relaxed mb-6">
+    <span class="font-semibold text-creo-purple dark:text-creo-mint tracking-wider">CREO</span> — Terms of Support: Payments made here are voluntary commercial tips to independent creators. They are non-refundable, do not include physical goods, equity, or commercial rights, and are not tax-deductible as charitable donations. Creators are independently responsible for their own local income taxes.
   </footer>
 
   <script>
+    function initTheme() {
+      const saved = localStorage.getItem('creo-theme');
+      if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark');
+      updateIcons();
+    }
+    function toggleTheme() {
+      document.documentElement.classList.toggle('dark');
+      localStorage.setItem('creo-theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+      updateIcons();
+    }
+    function updateIcons() {
+      const d = document.documentElement.classList.contains('dark');
+      document.getElementById('icon-sun').classList.toggle('hidden', !d);
+      document.getElementById('icon-moon').classList.toggle('hidden', d);
+    }
+    initTheme();
+
     const SUPABASE_URL = "https://qddxoyjtoxtdcezwuvcq.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZHhveWp0b3h0ZGNlend1dmNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MTUxNDIsImV4cCI6MjA5Nzk5MTE0Mn0.MEaMfib77T0B7HW-jI6nctc1a7WbIf1n7rKBhdc-Gm8";
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -60,8 +100,7 @@
         if (!creatorConnectId) {
           document.getElementById('pay-btn').disabled = true;
           document.getElementById('pay-btn').innerText = "Payouts Not Configured Yet";
-          document.getElementById('pay-btn').classList.replace('bg-indigo-600', 'bg-gray-400');
-          document.getElementById('pay-btn').classList.remove('hover:bg-indigo-700');
+          document.getElementById('pay-btn').className = "w-full bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-bold py-3 px-4 rounded-xl cursor-default";
         }
       }
     }
@@ -69,11 +108,9 @@
     async function processTip() {
       const amount = parseFloat(document.getElementById('tip-amount').value);
       if (amount < 1 || isNaN(amount)) return alert("Minimum tip amount is $1.00");
-
       const btn = document.getElementById('pay-btn');
       btn.innerText = "Processing Transaction...";
       btn.disabled = true;
-
       const response = await fetch(`${SUPABASE_URL}/functions/v1/create-checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -84,7 +121,6 @@
           cancel_url: window.location.href
         })
       });
-
       const data = await response.json();
       if (data.url) {
         window.location.href = data.url;
@@ -97,9 +133,7 @@
 
     window.onload = () => {
       fetchProfile();
-      if (urlParams.get('status') === 'completed') {
-        alert('Thank you for your support!');
-      }
+      if (urlParams.get('status') === 'completed') alert('Thank you for your support!');
     };
   </script>
 </body>

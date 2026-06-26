@@ -3,44 +3,85 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Creator Dashboard</title>
+  <title>CREO — Creator Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { colors: { creo: { purple: '#1a0a3e', light: '#2d1b69', mint: '#33f0b0', mintDark: '#28c48e' } } } }
+    }
+  </script>
 </head>
-<body class="bg-gray-50 text-gray-900 p-8">
-  <div class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md space-y-6">
-    <h2 class="text-2xl font-bold tracking-tight">Creator Dashboard Setup</h2>
+<body class="bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen p-8 transition-colors duration-300">
+
+  <!-- Theme Toggle -->
+  <div class="fixed top-4 right-4 z-50">
+    <button onclick="toggleTheme()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm transition" title="Toggle theme">
+      <svg id="icon-sun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      <svg id="icon-moon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+    </button>
+  </div>
+
+  <div class="max-w-md mx-auto bg-white dark:bg-gray-900 p-6 rounded-xl shadow-lg dark:shadow-2xl border border-gray-200 dark:border-gray-800 space-y-6 transition-colors">
+    <!-- Logo -->
+    <div class="text-center space-y-2">
+      <svg viewBox="0 0 200 220" class="w-16 h-18 mx-auto" xmlns="http://www.w3.org/2000/svg">
+        <path d="M100 20 C55 20 20 55 20 100 C20 145 55 180 100 180 C125 180 147 168 160 150 L140 140 C131 153 117 162 100 162 C65 162 38 135 38 100 C38 65 65 38 100 38 C117 38 131 47 140 60 L130 80 C130 80 115 65 100 70 C80 77 72 97 80 115 C85 125 95 130 105 128" fill="#1a0a3e" class="dark:fill-white"/>
+        <ellipse cx="148" cy="42" rx="16" ry="22" transform="rotate(-30 148 42)" fill="#33f0b0"/>
+        <ellipse cx="164" cy="52" rx="14" ry="20" transform="rotate(-10 164 52)" fill="#33f0b0"/>
+      </svg>
+      <h2 class="text-2xl font-bold tracking-[0.2em] text-creo-purple dark:text-white">CREO</h2>
+      <p class="text-xs text-gray-400">Creator Dashboard Setup</p>
+    </div>
 
     <div id="auth-section" class="space-y-4">
-      <input id="email" type="email" placeholder="Email" class="w-full border p-2 rounded">
-      <input id="password" type="password" placeholder="Password" class="w-full border p-2 rounded">
+      <input id="email" type="email" placeholder="Email" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint">
+      <input id="password" type="password" placeholder="Password" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint">
       <div class="flex space-x-2">
-        <button onclick="signUp()" class="bg-blue-600 text-white px-4 py-2 rounded w-1/2">Sign Up</button>
-        <button onclick="signIn()" class="bg-gray-200 px-4 py-2 rounded w-1/2">Sign In</button>
+        <button onclick="signUp()" class="bg-creo-purple hover:bg-creo-light dark:bg-creo-mint dark:hover:bg-creo-mintDark text-white dark:text-creo-purple px-4 py-2 rounded-lg w-1/2 font-semibold transition">Sign Up</button>
+        <button onclick="signIn()" class="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg w-1/2 font-semibold transition">Sign In</button>
       </div>
     </div>
 
     <div id="dashboard-section" class="hidden space-y-4">
-      <p id="user-welcome" class="font-medium"></p>
-      <input id="username" type="text" placeholder="Unique Username" class="w-full border p-2 rounded">
-      <textarea id="bio" placeholder="Your Creator Bio" class="w-full border p-2 rounded"></textarea>
-      <button onclick="saveProfile()" class="w-full bg-green-600 text-white py-2 rounded">Save Profile Details</button>
+      <p id="user-welcome" class="font-medium text-gray-900 dark:text-white"></p>
+      <input id="username" type="text" placeholder="Unique Username" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint">
+      <textarea id="bio" placeholder="Your Creator Bio" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint"></textarea>
+      <button onclick="saveProfile()" class="w-full bg-creo-purple hover:bg-creo-light dark:bg-creo-mint dark:hover:bg-creo-mintDark text-white dark:text-creo-purple py-2 rounded-lg font-semibold transition">Save Profile Details</button>
 
-      <hr>
+      <hr class="border-gray-200 dark:border-gray-800">
 
-      <div class="p-4 bg-yellow-50 rounded border border-yellow-200">
-        <p class="text-sm text-yellow-800 mb-2 font-semibold">Step 2: Connect Financials</p>
-        <button id="stripe-btn" onclick="startStripeOnboarding()" class="w-full bg-black text-white py-2 rounded font-bold">Link Stripe Account</button>
+      <div class="p-4 bg-amber-50 dark:bg-yellow-900/20 rounded-lg border border-amber-200 dark:border-yellow-800">
+        <p class="text-sm text-amber-800 dark:text-yellow-300 mb-2 font-semibold">Step 2: Connect Financials</p>
+        <button id="stripe-btn" onclick="startStripeOnboarding()" class="w-full bg-creo-purple dark:bg-white text-white dark:text-creo-purple py-2 rounded-lg font-bold transition hover:opacity-90">Link Stripe Account</button>
       </div>
 
-      <div class="p-4 bg-blue-50 rounded border border-blue-200">
-        <p class="text-sm text-blue-800 mb-1 font-semibold">Your Public Profile Link:</p>
-        <p id="profile-link" class="text-xs text-blue-600 break-all"></p>
+      <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+        <p class="text-sm text-blue-800 dark:text-blue-300 mb-1 font-semibold">Your Public Profile Link:</p>
+        <p id="profile-link" class="text-xs text-creo-purple dark:text-creo-mint break-all"></p>
       </div>
     </div>
   </div>
 
   <script>
+    function initTheme() {
+      const saved = localStorage.getItem('creo-theme');
+      if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark');
+      updateIcons();
+    }
+    function toggleTheme() {
+      document.documentElement.classList.toggle('dark');
+      localStorage.setItem('creo-theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+      updateIcons();
+    }
+    function updateIcons() {
+      const d = document.documentElement.classList.contains('dark');
+      document.getElementById('icon-sun').classList.toggle('hidden', !d);
+      document.getElementById('icon-moon').classList.toggle('hidden', d);
+    }
+    initTheme();
+
     const SUPABASE_URL = "https://qddxoyjtoxtdcezwuvcq.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZHhveWp0b3h0ZGNlend1dmNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MTUxNDIsImV4cCI6MjA5Nzk5MTE0Mn0.MEaMfib77T0B7HW-jI6nctc1a7WbIf1n7rKBhdc-Gm8";
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -51,17 +92,15 @@
         document.getElementById('auth-section').classList.add('hidden');
         document.getElementById('dashboard-section').classList.remove('hidden');
         document.getElementById('user-welcome').innerText = `Welcome, ${user.email}`;
-
         const { data } = await sb.from('profiles').select('*').eq('id', user.id).single();
         if (data) {
           document.getElementById('username').value = data.username || '';
           document.getElementById('bio').value = data.bio || '';
-          document.getElementById('profile-link').innerText =
-            'https://fullnessmindset.github.io/creator-tips/profile.html?u=' + (data.username || '');
+          document.getElementById('profile-link').innerText = 'https://fullnessmindset.github.io/creator-tips/profile.html?u=' + (data.username || '');
           if (data.stripe_connect_id) {
-            document.getElementById('stripe-btn').innerText = "Stripe Connected ✓";
+            document.getElementById('stripe-btn').innerText = "Stripe Connected";
             document.getElementById('stripe-btn').disabled = true;
-            document.getElementById('stripe-btn').classList.replace('bg-black', 'bg-green-700');
+            document.getElementById('stripe-btn').className = "w-full bg-green-600 text-white py-2 rounded-lg font-bold cursor-default";
           }
         }
       }
@@ -72,10 +111,7 @@
       const password = document.getElementById('password').value;
       const { data, error } = await sb.auth.signUp({ email, password });
       if (error) return alert(error.message);
-      await sb.from('profiles').insert([{
-        id: data.user.id,
-        username: 'user_' + Math.floor(Math.random() * 100000)
-      }]);
+      await sb.from('profiles').insert([{ id: data.user.id, username: 'user_' + Math.floor(Math.random() * 100000) }]);
       checkUser();
     }
 
@@ -92,12 +128,9 @@
       const username = document.getElementById('username').value.trim();
       const bio = document.getElementById('bio').value.trim();
       if (username.length < 3) return alert("Username must be at least 3 characters.");
-      const { error } = await sb.from('profiles')
-        .update({ username, bio, display_name: username })
-        .eq('id', user.id);
+      const { error } = await sb.from('profiles').update({ username, bio, display_name: username }).eq('id', user.id);
       if (error) return alert(error.message);
-      document.getElementById('profile-link').innerText =
-        'https://fullnessmindset.github.io/creator-tips/profile.html?u=' + username;
+      document.getElementById('profile-link').innerText = 'https://fullnessmindset.github.io/creator-tips/profile.html?u=' + username;
       alert("Profile updated!");
     }
 
@@ -105,14 +138,10 @@
       const session = await sb.auth.getSession();
       const token = session.data.session?.access_token;
       if (!token) return alert("Please sign in first.");
-
       document.getElementById('stripe-btn').innerText = "Redirecting to Stripe...";
       const response = await fetch(`${SUPABASE_URL}/functions/v1/stripe-onboard`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ redirect_url: 'https://fullnessmindset.github.io/creator-tips/redirect.html' })
       });
       const data = await response.json();

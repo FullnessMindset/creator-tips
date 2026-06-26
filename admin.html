@@ -3,56 +3,102 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard — Creator Tips Platform</title>
+  <title>CREO — Admin Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            creo: { purple: '#1a0a3e', light: '#2d1b69', mint: '#33f0b0', mintDark: '#28c48e' }
+          }
+        }
+      }
+    }
+  </script>
   <style>
     .stat-card { transition: transform 0.15s; }
     .stat-card:hover { transform: translateY(-2px); }
     .fade-in { animation: fadeIn 0.3s ease-in; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .loader { border: 3px solid #1e1e2e; border-top: 3px solid #6366f1; border-radius: 50%; width: 20px; height: 20px; animation: spin 0.8s linear infinite; display: inline-block; }
+    .loader { border: 3px solid #e5e7eb; border-top: 3px solid #1a0a3e; border-radius: 50%; width: 20px; height: 20px; animation: spin 0.8s linear infinite; display: inline-block; }
+    .dark .loader { border-color: #374151; border-top-color: #33f0b0; }
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen">
+<body class="bg-white text-gray-900 min-h-screen transition-colors duration-300">
 
-  <!-- Stripe Auth Gate -->
-  <div id="auth-gate" class="flex items-center justify-center min-h-screen">
-    <div class="bg-gray-900 border border-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-sm space-y-5">
-      <div class="text-center space-y-2">
-        <div class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center mx-auto">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+  <!-- Stripe Auth Gate (Login Page) -->
+  <div id="auth-gate" class="flex flex-col items-center justify-center min-h-screen px-4">
+    <div class="w-full max-w-sm space-y-8">
+      <!-- CREO Logo -->
+      <div class="text-center space-y-4">
+        <svg viewBox="0 0 200 220" class="w-32 h-36 mx-auto" xmlns="http://www.w3.org/2000/svg">
+          <path d="M100 20 C55 20 20 55 20 100 C20 145 55 180 100 180 C125 180 147 168 160 150 L140 140 C131 153 117 162 100 162 C65 162 38 135 38 100 C38 65 65 38 100 38 C117 38 131 47 140 60 L130 80 C130 80 115 65 100 70 C80 77 72 97 80 115 C85 125 95 130 105 128" fill="#1a0a3e"/>
+          <ellipse cx="148" cy="42" rx="16" ry="22" transform="rotate(-30 148 42)" fill="#33f0b0" stroke="white" stroke-width="2"/>
+          <ellipse cx="164" cy="52" rx="14" ry="20" transform="rotate(-10 164 52)" fill="#33f0b0" stroke="white" stroke-width="2"/>
+        </svg>
+        <div>
+          <h1 class="text-3xl font-bold tracking-[0.3em] text-creo-purple dark:text-white">CREO</h1>
+          <p class="text-xs tracking-[0.15em] text-gray-500 dark:text-gray-400 mt-1 uppercase">Crea. Yo Creo En Ti</p>
+          <p class="text-xs font-semibold tracking-wider text-creo-purple dark:text-creo-mint mt-0.5 uppercase">Plataforma de Apoyo Economico para Creadores</p>
         </div>
-        <h1 class="text-2xl font-bold text-white">Platform Admin</h1>
-        <p class="text-gray-400 text-sm">Authenticate with your Stripe Secret Key</p>
       </div>
-      <div>
-        <label class="text-xs text-gray-500 uppercase tracking-wider">Stripe Secret Key</label>
-        <input id="stripe-key" type="password" class="w-full bg-gray-800 border border-gray-700 p-3 rounded-lg text-sm mt-1 font-mono" placeholder="sk_test_...">
+
+      <!-- Login Card -->
+      <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-8 rounded-2xl shadow-lg dark:shadow-2xl space-y-5">
+        <div class="text-center space-y-1">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white">Admin Access</h2>
+          <p class="text-gray-500 dark:text-gray-400 text-sm">Authenticate with your Stripe Secret Key</p>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500 dark:text-gray-500 uppercase tracking-wider">Stripe Secret Key</label>
+          <input id="stripe-key" type="password" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 p-3 rounded-lg text-sm mt-1 font-mono text-gray-900 dark:text-white focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint focus:border-transparent outline-none" placeholder="sk_test_...">
+        </div>
+        <button onclick="stripeLogin()" id="login-btn" class="w-full bg-creo-purple hover:bg-creo-light dark:bg-creo-mint dark:hover:bg-creo-mintDark text-white dark:text-creo-purple py-3 rounded-lg font-semibold transition flex items-center justify-center space-x-2">
+          <span>Connect to Stripe</span>
+        </button>
+        <p id="auth-error" class="text-red-500 text-xs text-center hidden"></p>
+        <p class="text-gray-400 dark:text-gray-600 text-xs text-center">Your key is never stored — it stays in your browser session only.</p>
       </div>
-      <button onclick="stripeLogin()" id="login-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center space-x-2">
-        <span>Connect to Stripe</span>
-      </button>
-      <p id="auth-error" class="text-red-400 text-xs text-center hidden"></p>
-      <p class="text-gray-600 text-xs text-center">Your key is never stored — it stays in your browser session only.</p>
+
+      <!-- Theme toggle on login page -->
+      <div class="flex justify-center">
+        <button onclick="toggleTheme()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-sm flex items-center space-x-2 transition">
+          <span id="theme-icon-login">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+          </span>
+          <span id="theme-label-login">Dark mode</span>
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- Dashboard -->
   <div id="dashboard" class="hidden">
     <!-- Top Bar -->
-    <div class="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+    <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-6 py-4 flex items-center justify-between sticky top-0 z-10 transition-colors">
       <div class="flex items-center space-x-3">
-        <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center font-bold text-sm">CT</div>
-        <h1 class="text-lg font-bold">Creator Tips Admin</h1>
+        <svg viewBox="0 0 200 220" class="w-8 h-9" xmlns="http://www.w3.org/2000/svg">
+          <path d="M100 20 C55 20 20 55 20 100 C20 145 55 180 100 180 C125 180 147 168 160 150 L140 140 C131 153 117 162 100 162 C65 162 38 135 38 100 C38 65 65 38 100 38 C117 38 131 47 140 60 L130 80 C130 80 115 65 100 70 C80 77 72 97 80 115 C85 125 95 130 105 128" fill="#1a0a3e" class="dark:fill-white"/>
+          <ellipse cx="148" cy="42" rx="16" ry="22" transform="rotate(-30 148 42)" fill="#33f0b0"/>
+          <ellipse cx="164" cy="52" rx="14" ry="20" transform="rotate(-10 164 52)" fill="#33f0b0"/>
+        </svg>
+        <h1 class="text-lg font-bold tracking-wider text-creo-purple dark:text-white">CREO</h1>
+        <span class="text-xs text-gray-400 dark:text-gray-500 hidden sm:inline">Admin</span>
       </div>
       <div class="flex items-center space-x-4">
-        <span id="account-name" class="text-gray-400 text-sm"></span>
-        <button onclick="refresh()" class="text-gray-400 hover:text-white text-sm bg-gray-800 px-3 py-1.5 rounded-lg transition flex items-center space-x-1">
+        <span id="account-name" class="text-gray-500 dark:text-gray-400 text-sm hidden sm:inline"></span>
+        <button onclick="toggleTheme()" id="theme-toggle-dash" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition" title="Toggle theme">
+          <svg id="theme-icon-sun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <svg id="theme-icon-moon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        </button>
+        <button onclick="refresh()" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white text-sm bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-lg transition flex items-center space-x-1">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
           <span>Refresh</span>
         </button>
-        <button onclick="logout()" class="text-gray-400 hover:text-red-400 text-sm transition">Disconnect</button>
+        <button onclick="logout()" class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 text-sm transition">Disconnect</button>
       </div>
     </div>
 
@@ -60,47 +106,47 @@
 
       <!-- Stats Row -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div class="stat-card bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <p class="text-gray-400 text-xs uppercase tracking-wider">Total Creators</p>
-          <p id="stat-total" class="text-3xl font-bold text-white mt-1">-</p>
+        <div class="stat-card bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 transition-colors">
+          <p class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Total Creators</p>
+          <p id="stat-total" class="text-3xl font-bold text-gray-900 dark:text-white mt-1">-</p>
         </div>
-        <div class="stat-card bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <p class="text-gray-400 text-xs uppercase tracking-wider">Stripe Connected</p>
-          <p id="stat-connected" class="text-3xl font-bold text-green-400 mt-1">-</p>
+        <div class="stat-card bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 transition-colors">
+          <p class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Stripe Connected</p>
+          <p id="stat-connected" class="text-3xl font-bold text-green-600 dark:text-green-400 mt-1">-</p>
         </div>
-        <div class="stat-card bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <p class="text-gray-400 text-xs uppercase tracking-wider">Not Connected</p>
-          <p id="stat-pending" class="text-3xl font-bold text-yellow-400 mt-1">-</p>
+        <div class="stat-card bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 transition-colors">
+          <p class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Not Connected</p>
+          <p id="stat-pending" class="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mt-1">-</p>
         </div>
-        <div class="stat-card bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <p class="text-gray-400 text-xs uppercase tracking-wider">Platform Revenue</p>
-          <p id="stat-revenue" class="text-3xl font-bold text-emerald-400 mt-1">-</p>
+        <div class="stat-card bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 transition-colors">
+          <p class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Platform Revenue</p>
+          <p id="stat-revenue" class="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">-</p>
         </div>
-        <div class="stat-card bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <p class="text-gray-400 text-xs uppercase tracking-wider">Available Balance</p>
-          <p id="stat-balance" class="text-3xl font-bold text-indigo-400 mt-1">-</p>
+        <div class="stat-card bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 transition-colors">
+          <p class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Available Balance</p>
+          <p id="stat-balance" class="text-3xl font-bold text-creo-purple dark:text-creo-mint mt-1">-</p>
         </div>
       </div>
 
       <!-- Tabs -->
-      <div class="flex space-x-1 bg-gray-900 p-1 rounded-xl w-fit border border-gray-800">
-        <button onclick="showTab('creators')" id="tab-creators" class="tab-btn px-5 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white transition">Creators</button>
-        <button onclick="showTab('transactions')" id="tab-transactions" class="tab-btn px-5 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white transition">Transactions</button>
-        <button onclick="showTab('accounts')" id="tab-accounts" class="tab-btn px-5 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white transition">Stripe Accounts</button>
-        <button onclick="showTab('links')" id="tab-links" class="tab-btn px-5 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white transition">Quick Links</button>
+      <div class="flex space-x-1 bg-gray-100 dark:bg-gray-900 p-1 rounded-xl w-fit border border-gray-200 dark:border-gray-800 transition-colors">
+        <button onclick="showTab('creators')" id="tab-creators" class="tab-btn px-5 py-2 rounded-lg text-sm font-medium bg-creo-purple dark:bg-creo-mint text-white dark:text-creo-purple transition">Creators</button>
+        <button onclick="showTab('transactions')" id="tab-transactions" class="tab-btn px-5 py-2 rounded-lg text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white transition">Transactions</button>
+        <button onclick="showTab('accounts')" id="tab-accounts" class="tab-btn px-5 py-2 rounded-lg text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white transition">Stripe Accounts</button>
+        <button onclick="showTab('links')" id="tab-links" class="tab-btn px-5 py-2 rounded-lg text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white transition">Quick Links</button>
       </div>
 
       <!-- Creators Panel -->
       <div id="panel-creators" class="fade-in">
-        <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-          <div class="px-5 py-4 border-b border-gray-800 flex items-center justify-between">
-            <h2 class="font-semibold">All Creators</h2>
-            <input id="search-creators" oninput="filterCreators()" type="text" placeholder="Search..." class="bg-gray-800 border border-gray-700 px-3 py-1.5 rounded-lg text-sm w-56">
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden transition-colors">
+          <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+            <h2 class="font-semibold text-gray-900 dark:text-white">All Creators</h2>
+            <input id="search-creators" oninput="filterCreators()" type="text" placeholder="Search..." class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 px-3 py-1.5 rounded-lg text-sm w-56 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint">
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
-                <tr class="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
+                <tr class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider border-b border-gray-200 dark:border-gray-800">
                   <th class="text-left px-5 py-3">Username</th>
                   <th class="text-left px-5 py-3">Bio</th>
                   <th class="text-left px-5 py-3">Stripe</th>
@@ -112,20 +158,20 @@
               <tbody id="creators-tbody"></tbody>
             </table>
           </div>
-          <div id="no-creators" class="hidden px-5 py-12 text-center text-gray-500">No creators registered yet.</div>
+          <div id="no-creators" class="hidden px-5 py-12 text-center text-gray-400">No creators registered yet.</div>
         </div>
       </div>
 
       <!-- Transactions Panel -->
       <div id="panel-transactions" class="hidden fade-in">
-        <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-          <div class="px-5 py-4 border-b border-gray-800">
-            <h2 class="font-semibold">Recent Transactions</h2>
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden transition-colors">
+          <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800">
+            <h2 class="font-semibold text-gray-900 dark:text-white">Recent Transactions</h2>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
-                <tr class="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
+                <tr class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider border-b border-gray-200 dark:border-gray-800">
                   <th class="text-left px-5 py-3">Charge ID</th>
                   <th class="text-left px-5 py-3">Amount</th>
                   <th class="text-left px-5 py-3">Platform Fee</th>
@@ -136,20 +182,20 @@
               <tbody id="transactions-tbody"></tbody>
             </table>
           </div>
-          <div id="no-transactions" class="hidden px-5 py-12 text-center text-gray-500">No transactions yet. Tips will appear here once fans start paying.</div>
+          <div id="no-transactions" class="hidden px-5 py-12 text-center text-gray-400">No transactions yet.</div>
         </div>
       </div>
 
       <!-- Stripe Accounts Panel -->
       <div id="panel-accounts" class="hidden fade-in">
-        <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-          <div class="px-5 py-4 border-b border-gray-800">
-            <h2 class="font-semibold">Connected Stripe Accounts</h2>
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden transition-colors">
+          <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800">
+            <h2 class="font-semibold text-gray-900 dark:text-white">Connected Stripe Accounts</h2>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
-                <tr class="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
+                <tr class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider border-b border-gray-200 dark:border-gray-800">
                   <th class="text-left px-5 py-3">Account ID</th>
                   <th class="text-left px-5 py-3">Email</th>
                   <th class="text-left px-5 py-3">Charges</th>
@@ -161,36 +207,36 @@
               <tbody id="accounts-tbody"></tbody>
             </table>
           </div>
-          <div id="no-accounts" class="hidden px-5 py-12 text-center text-gray-500">No connected Stripe accounts yet.</div>
+          <div id="no-accounts" class="hidden px-5 py-12 text-center text-gray-400">No connected Stripe accounts yet.</div>
         </div>
       </div>
 
       <!-- Quick Links Panel -->
       <div id="panel-links" class="hidden fade-in">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <a href="https://dashboard.stripe.com/test/connect/accounts/overview" target="_blank" class="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-indigo-600 transition group">
-            <h3 class="font-semibold group-hover:text-indigo-400 transition">Stripe Connect Dashboard</h3>
-            <p class="text-gray-400 text-sm mt-1">Manage connected accounts, view payouts, and monitor activity.</p>
+          <a href="https://dashboard.stripe.com/test/connect/accounts/overview" target="_blank" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 hover:border-creo-purple dark:hover:border-creo-mint transition group">
+            <h3 class="font-semibold text-gray-900 dark:text-white group-hover:text-creo-purple dark:group-hover:text-creo-mint transition">Stripe Connect Dashboard</h3>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Manage connected accounts, view payouts, and monitor activity.</p>
           </a>
-          <a href="https://dashboard.stripe.com/test/payments" target="_blank" class="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-indigo-600 transition group">
-            <h3 class="font-semibold group-hover:text-indigo-400 transition">Stripe Payments</h3>
-            <p class="text-gray-400 text-sm mt-1">View all payments, refunds, and disputes.</p>
+          <a href="https://dashboard.stripe.com/test/payments" target="_blank" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 hover:border-creo-purple dark:hover:border-creo-mint transition group">
+            <h3 class="font-semibold text-gray-900 dark:text-white group-hover:text-creo-purple dark:group-hover:text-creo-mint transition">Stripe Payments</h3>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">View all payments, refunds, and disputes.</p>
           </a>
-          <a href="https://supabase.com/dashboard/project/qddxoyjtoxtdcezwuvcq" target="_blank" class="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-indigo-600 transition group">
-            <h3 class="font-semibold group-hover:text-indigo-400 transition">Supabase Dashboard</h3>
-            <p class="text-gray-400 text-sm mt-1">Database, auth users, edge functions, and storage.</p>
+          <a href="https://supabase.com/dashboard/project/qddxoyjtoxtdcezwuvcq" target="_blank" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 hover:border-creo-purple dark:hover:border-creo-mint transition group">
+            <h3 class="font-semibold text-gray-900 dark:text-white group-hover:text-creo-purple dark:group-hover:text-creo-mint transition">Supabase Dashboard</h3>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Database, auth users, edge functions, and storage.</p>
           </a>
-          <a href="https://github.com/FullnessMindset/creator-tips" target="_blank" class="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-indigo-600 transition group">
-            <h3 class="font-semibold group-hover:text-indigo-400 transition">GitHub Repository</h3>
-            <p class="text-gray-400 text-sm mt-1">Source code, deployments, and GitHub Pages settings.</p>
+          <a href="https://github.com/FullnessMindset/creator-tips" target="_blank" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 hover:border-creo-purple dark:hover:border-creo-mint transition group">
+            <h3 class="font-semibold text-gray-900 dark:text-white group-hover:text-creo-purple dark:group-hover:text-creo-mint transition">GitHub Repository</h3>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Source code, deployments, and GitHub Pages settings.</p>
           </a>
-          <a href="https://fullnessmindset.github.io/creator-tips/index.html" target="_blank" class="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-green-600 transition group">
-            <h3 class="font-semibold group-hover:text-green-400 transition">Creator Dashboard (Live)</h3>
-            <p class="text-gray-400 text-sm mt-1">The public-facing creator sign-up and onboarding page.</p>
+          <a href="https://fullnessmindset.github.io/creator-tips/index.html" target="_blank" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 hover:border-green-500 transition group">
+            <h3 class="font-semibold text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition">Creator Dashboard (Live)</h3>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">The public-facing creator sign-up and onboarding page.</p>
           </a>
-          <a href="https://fullnessmindset.github.io/creator-tips/profile.html?u=test" target="_blank" class="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-green-600 transition group">
-            <h3 class="font-semibold group-hover:text-green-400 transition">Sample Profile Page</h3>
-            <p class="text-gray-400 text-sm mt-1">Preview how the public tipping page looks for fans.</p>
+          <a href="https://fullnessmindset.github.io/creator-tips/profile.html?u=test" target="_blank" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 hover:border-green-500 transition group">
+            <h3 class="font-semibold text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition">Sample Profile Page</h3>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Preview how the public tipping page looks for fans.</p>
           </a>
         </div>
       </div>
@@ -199,31 +245,54 @@
   </div>
 
   <!-- Edit Modal -->
-  <div id="edit-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50" onclick="if(event.target===this)closeModal()">
-    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 w-full max-w-md space-y-4">
-      <h3 class="text-lg font-bold">Edit Creator</h3>
+  <div id="edit-modal" class="hidden fixed inset-0 bg-black/40 dark:bg-black/60 flex items-center justify-center z-50" onclick="if(event.target===this)closeModal()">
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 w-full max-w-md space-y-4 transition-colors">
+      <h3 class="text-lg font-bold text-gray-900 dark:text-white">Edit Creator</h3>
       <input type="hidden" id="edit-id">
       <div>
-        <label class="text-xs text-gray-400 uppercase">Username</label>
-        <input id="edit-username" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-sm mt-1">
+        <label class="text-xs text-gray-500 dark:text-gray-400 uppercase">Username</label>
+        <input id="edit-username" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 p-2.5 rounded-lg text-sm mt-1 text-gray-900 dark:text-white">
       </div>
       <div>
-        <label class="text-xs text-gray-400 uppercase">Display Name</label>
-        <input id="edit-display" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-sm mt-1">
+        <label class="text-xs text-gray-500 dark:text-gray-400 uppercase">Display Name</label>
+        <input id="edit-display" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 p-2.5 rounded-lg text-sm mt-1 text-gray-900 dark:text-white">
       </div>
       <div>
-        <label class="text-xs text-gray-400 uppercase">Bio</label>
-        <textarea id="edit-bio" rows="3" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-sm mt-1"></textarea>
+        <label class="text-xs text-gray-500 dark:text-gray-400 uppercase">Bio</label>
+        <textarea id="edit-bio" rows="3" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 p-2.5 rounded-lg text-sm mt-1 text-gray-900 dark:text-white"></textarea>
       </div>
-      <div id="edit-stripe-info" class="text-xs text-gray-400 p-3 bg-gray-800 rounded-lg font-mono"></div>
+      <div id="edit-stripe-info" class="text-xs text-gray-500 dark:text-gray-400 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg font-mono"></div>
       <div class="flex space-x-3 pt-2">
-        <button onclick="saveEdit()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg font-semibold transition text-sm">Save Changes</button>
-        <button onclick="closeModal()" class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 py-2.5 rounded-lg font-semibold transition text-sm">Cancel</button>
+        <button onclick="saveEdit()" class="flex-1 bg-creo-purple hover:bg-creo-light dark:bg-creo-mint dark:hover:bg-creo-mintDark text-white dark:text-creo-purple py-2.5 rounded-lg font-semibold transition text-sm">Save Changes</button>
+        <button onclick="closeModal()" class="flex-1 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 py-2.5 rounded-lg font-semibold transition text-sm">Cancel</button>
       </div>
     </div>
   </div>
 
   <script>
+    // Theme
+    function initTheme() {
+      const saved = localStorage.getItem('creo-theme');
+      if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      }
+      updateThemeIcons();
+    }
+    function toggleTheme() {
+      document.documentElement.classList.toggle('dark');
+      localStorage.setItem('creo-theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+      updateThemeIcons();
+    }
+    function updateThemeIcons() {
+      const isDark = document.documentElement.classList.contains('dark');
+      const sun = document.getElementById('theme-icon-sun');
+      const moon = document.getElementById('theme-icon-moon');
+      if (sun && moon) { sun.classList.toggle('hidden', !isDark); moon.classList.toggle('hidden', isDark); }
+      const loginLabel = document.getElementById('theme-label-login');
+      if (loginLabel) loginLabel.textContent = isDark ? 'Light mode' : 'Dark mode';
+    }
+    initTheme();
+
     const SUPABASE_URL = "https://qddxoyjtoxtdcezwuvcq.supabase.co";
     const PROFILE_BASE = "https://fullnessmindset.github.io/creator-tips/profile.html?u=";
     let stripeKey = sessionStorage.getItem('admin_sk') || '';
@@ -231,14 +300,10 @@
 
     async function stripeLogin() {
       const key = document.getElementById('stripe-key').value.trim();
-      if (!key.startsWith('sk_')) {
-        showError('Key must start with sk_test_ or sk_live_');
-        return;
-      }
+      if (!key.startsWith('sk_')) { showError('Key must start with sk_test_ or sk_live_'); return; }
       const btn = document.getElementById('login-btn');
       btn.innerHTML = '<span class="loader"></span><span class="ml-2">Connecting...</span>';
       btn.disabled = true;
-
       try {
         const res = await apiCall('login', null, key);
         if (res.error) { showError(res.error); btn.innerHTML = '<span>Connect to Stripe</span>'; btn.disabled = false; return; }
@@ -257,15 +322,11 @@
 
     function showError(msg) {
       const el = document.getElementById('auth-error');
-      el.textContent = msg;
-      el.classList.remove('hidden');
+      el.textContent = msg; el.classList.remove('hidden');
     }
 
     async function apiCall(action, body = null, key = null) {
-      const opts = {
-        method: body ? 'POST' : 'GET',
-        headers: { 'Content-Type': 'application/json', 'x-stripe-key': key || stripeKey },
-      };
+      const opts = { method: body ? 'POST' : 'GET', headers: { 'Content-Type': 'application/json', 'x-stripe-key': key || stripeKey } };
       if (body) opts.body = JSON.stringify(body);
       const res = await fetch(SUPABASE_URL + '/functions/v1/admin-api?action=' + action, opts);
       return res.json();
@@ -274,18 +335,13 @@
     async function loadDashboard() {
       const data = await apiCall('dashboard');
       if (data.error) { alert('API error: ' + data.error); return; }
-
       document.getElementById('stat-total').textContent = data.stats.totalCreators;
       document.getElementById('stat-connected').textContent = data.stats.stripeConnected;
       document.getElementById('stat-pending').textContent = data.stats.notConnected;
       document.getElementById('stat-revenue').textContent = '$' + (data.stats.totalRevenue || 0).toFixed(2);
-
       if (data.platformBalance && data.platformBalance.length > 0) {
         document.getElementById('stat-balance').textContent = '$' + data.platformBalance.map(b => b.amount.toFixed(2)).join(', $');
-      } else {
-        document.getElementById('stat-balance').textContent = '$0.00';
-      }
-
+      } else { document.getElementById('stat-balance').textContent = '$0.00'; }
       allProfiles = data.profiles || [];
       renderCreators(allProfiles);
       renderTransactions(data.recentCharges || []);
@@ -295,28 +351,24 @@
     async function loadAccounts() {
       const data = await apiCall('connected-accounts');
       const tbody = document.getElementById('accounts-tbody');
-      if (!data.accounts || !data.accounts.length) {
-        tbody.innerHTML = '';
-        document.getElementById('no-accounts').classList.remove('hidden');
-        return;
-      }
+      if (!data.accounts || !data.accounts.length) { tbody.innerHTML = ''; document.getElementById('no-accounts').classList.remove('hidden'); return; }
       document.getElementById('no-accounts').classList.add('hidden');
       tbody.innerHTML = data.accounts.map(a => `
-        <tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition">
-          <td class="px-5 py-3 font-mono text-xs text-gray-300">${a.id}</td>
-          <td class="px-5 py-3 text-gray-400">${a.email || '-'}</td>
+        <tr class="border-b border-gray-100 dark:border-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition">
+          <td class="px-5 py-3 font-mono text-xs text-gray-600 dark:text-gray-300">${a.id}</td>
+          <td class="px-5 py-3 text-gray-500 dark:text-gray-400">${a.email || '-'}</td>
           <td class="px-5 py-3">${badge(a.charges_enabled)}</td>
           <td class="px-5 py-3">${badge(a.payouts_enabled)}</td>
-          <td class="px-5 py-3 text-gray-400">${a.country || '-'}</td>
-          <td class="px-5 py-3 text-gray-400">${new Date(a.created).toLocaleDateString()}</td>
+          <td class="px-5 py-3 text-gray-500 dark:text-gray-400">${a.country || '-'}</td>
+          <td class="px-5 py-3 text-gray-500 dark:text-gray-400">${new Date(a.created).toLocaleDateString()}</td>
         </tr>
       `).join('');
     }
 
     function badge(ok) {
       return ok
-        ? '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-900/50 text-green-400 border border-green-800">Yes</span>'
-        : '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-900/50 text-red-400 border border-red-800">No</span>';
+        ? '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800">Yes</span>'
+        : '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800">No</span>';
     }
 
     function renderCreators(profiles) {
@@ -324,17 +376,17 @@
       if (!profiles.length) { tbody.innerHTML = ''; document.getElementById('no-creators').classList.remove('hidden'); return; }
       document.getElementById('no-creators').classList.add('hidden');
       tbody.innerHTML = profiles.map(p => `
-        <tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition">
-          <td class="px-5 py-3 font-medium text-white">${esc(p.username)}</td>
-          <td class="px-5 py-3 text-gray-400 max-w-[180px] truncate">${esc(p.bio || '-')}</td>
+        <tr class="border-b border-gray-100 dark:border-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition">
+          <td class="px-5 py-3 font-medium text-gray-900 dark:text-white">${esc(p.username)}</td>
+          <td class="px-5 py-3 text-gray-500 dark:text-gray-400 max-w-[180px] truncate">${esc(p.bio || '-')}</td>
           <td class="px-5 py-3">${p.stripe_connect_id
-            ? '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-900/50 text-green-400 border border-green-800">Connected</span>'
-            : '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-900/50 text-yellow-400 border border-yellow-800">Pending</span>'}</td>
-          <td class="px-5 py-3 text-gray-400">${new Date(p.created_at).toLocaleDateString()}</td>
-          <td class="px-5 py-3"><a href="${PROFILE_BASE}${esc(p.username)}" target="_blank" class="text-indigo-400 hover:text-indigo-300 text-xs">View</a></td>
+            ? '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800">Connected</span>'
+            : '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800">Pending</span>'}</td>
+          <td class="px-5 py-3 text-gray-500 dark:text-gray-400">${new Date(p.created_at).toLocaleDateString()}</td>
+          <td class="px-5 py-3"><a href="${PROFILE_BASE}${esc(p.username)}" target="_blank" class="text-creo-purple dark:text-creo-mint hover:underline text-xs">View</a></td>
           <td class="px-5 py-3 space-x-2">
-            <button onclick="editCreator('${p.id}')" class="text-xs text-blue-400 hover:text-blue-300">Edit</button>
-            <button onclick="deleteCreator('${p.id}', '${esc(p.username)}')" class="text-xs text-red-400 hover:text-red-300">Delete</button>
+            <button onclick="editCreator('${p.id}')" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Edit</button>
+            <button onclick="deleteCreator('${p.id}', '${esc(p.username)}')" class="text-xs text-red-500 dark:text-red-400 hover:underline">Delete</button>
           </td>
         </tr>
       `).join('');
@@ -345,14 +397,14 @@
       if (!charges.length) { tbody.innerHTML = ''; document.getElementById('no-transactions').classList.remove('hidden'); return; }
       document.getElementById('no-transactions').classList.add('hidden');
       tbody.innerHTML = charges.map(c => `
-        <tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition">
-          <td class="px-5 py-3 text-gray-400 font-mono text-xs">${c.id.slice(0, 20)}...</td>
-          <td class="px-5 py-3 font-medium text-white">$${c.amount.toFixed(2)}</td>
-          <td class="px-5 py-3 text-emerald-400 font-medium">$${c.fee.toFixed(2)}</td>
+        <tr class="border-b border-gray-100 dark:border-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition">
+          <td class="px-5 py-3 text-gray-500 dark:text-gray-400 font-mono text-xs">${c.id.slice(0, 20)}...</td>
+          <td class="px-5 py-3 font-medium text-gray-900 dark:text-white">$${c.amount.toFixed(2)}</td>
+          <td class="px-5 py-3 text-emerald-600 dark:text-emerald-400 font-medium">$${c.fee.toFixed(2)}</td>
           <td class="px-5 py-3">${c.status === 'succeeded'
-            ? '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-900/50 text-green-400 border border-green-800">Succeeded</span>'
-            : '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-800 text-gray-400 border border-gray-700">' + c.status + '</span>'}</td>
-          <td class="px-5 py-3 text-gray-400">${new Date(c.created).toLocaleString()}</td>
+            ? '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800">Succeeded</span>'
+            : '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700">' + c.status + '</span>'}</td>
+          <td class="px-5 py-3 text-gray-500 dark:text-gray-400">${new Date(c.created).toLocaleString()}</td>
         </tr>
       `).join('');
     }
@@ -363,9 +415,10 @@
     }
 
     function showTab(tab) {
-      document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('bg-indigo-600', 'text-white'); b.classList.add('text-gray-400'); });
-      document.getElementById('tab-' + tab).classList.add('bg-indigo-600', 'text-white');
-      document.getElementById('tab-' + tab).classList.remove('text-gray-400');
+      document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('bg-creo-purple', 'dark:bg-creo-mint', 'text-white', 'dark:text-creo-purple'); b.classList.add('text-gray-500', 'dark:text-gray-400'); });
+      const active = document.getElementById('tab-' + tab);
+      active.classList.add('bg-creo-purple', 'dark:bg-creo-mint', 'text-white', 'dark:text-creo-purple');
+      active.classList.remove('text-gray-500', 'dark:text-gray-400');
       ['creators', 'transactions', 'accounts', 'links'].forEach(p => {
         document.getElementById('panel-' + p).classList.toggle('hidden', p !== tab);
       });
@@ -393,15 +446,10 @@
       const id = document.getElementById('edit-id').value;
       const res = await apiCall('update-profile', {
         profile_id: id,
-        updates: {
-          username: document.getElementById('edit-username').value.trim(),
-          display_name: document.getElementById('edit-display').value.trim(),
-          bio: document.getElementById('edit-bio').value.trim(),
-        }
+        updates: { username: document.getElementById('edit-username').value.trim(), display_name: document.getElementById('edit-display').value.trim(), bio: document.getElementById('edit-bio').value.trim() }
       });
       if (res.error) return alert('Error: ' + res.error);
-      closeModal();
-      loadDashboard();
+      closeModal(); loadDashboard();
     }
 
     async function deleteCreator(id, username) {
@@ -416,7 +464,6 @@
     function logout() { sessionStorage.removeItem('admin_sk'); stripeKey = ''; location.reload(); }
     function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
 
-    // Auto-login if key is in sessionStorage
     if (stripeKey) {
       apiCall('login').then(res => {
         if (res.error) { sessionStorage.removeItem('admin_sk'); stripeKey = ''; return; }
