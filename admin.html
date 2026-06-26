@@ -5,29 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard — Creator Tips Platform</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     .stat-card { transition: transform 0.15s; }
     .stat-card:hover { transform: translateY(-2px); }
     .fade-in { animation: fadeIn 0.3s ease-in; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .loader { border: 3px solid #e5e7eb; border-top: 3px solid #6366f1; border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite; display: inline-block; }
+    .loader { border: 3px solid #1e1e2e; border-top: 3px solid #6366f1; border-radius: 50%; width: 20px; height: 20px; animation: spin 0.8s linear infinite; display: inline-block; }
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body class="bg-gray-950 text-gray-100 min-h-screen">
 
-  <!-- Auth Gate -->
+  <!-- Stripe Auth Gate -->
   <div id="auth-gate" class="flex items-center justify-center min-h-screen">
-    <div class="bg-gray-900 border border-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-sm space-y-5">
-      <div class="text-center">
+    <div class="bg-gray-900 border border-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-sm space-y-5">
+      <div class="text-center space-y-2">
+        <div class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center mx-auto">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        </div>
         <h1 class="text-2xl font-bold text-white">Platform Admin</h1>
-        <p class="text-gray-400 text-sm mt-1">Restricted to platform owner</p>
+        <p class="text-gray-400 text-sm">Authenticate with your Stripe Secret Key</p>
       </div>
-      <input id="email" type="email" value="fullnessmindset@gmail.com" class="w-full bg-gray-800 border border-gray-700 p-3 rounded-lg text-sm" placeholder="Admin email">
-      <input id="password" type="password" class="w-full bg-gray-800 border border-gray-700 p-3 rounded-lg text-sm" placeholder="Password">
-      <button onclick="adminLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-semibold transition">Sign In</button>
+      <div>
+        <label class="text-xs text-gray-500 uppercase tracking-wider">Stripe Secret Key</label>
+        <input id="stripe-key" type="password" class="w-full bg-gray-800 border border-gray-700 p-3 rounded-lg text-sm mt-1 font-mono" placeholder="sk_test_...">
+      </div>
+      <button onclick="stripeLogin()" id="login-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center space-x-2">
+        <span>Connect to Stripe</span>
+      </button>
       <p id="auth-error" class="text-red-400 text-xs text-center hidden"></p>
+      <p class="text-gray-600 text-xs text-center">Your key is never stored — it stays in your browser session only.</p>
     </div>
   </div>
 
@@ -40,16 +47,19 @@
         <h1 class="text-lg font-bold">Creator Tips Admin</h1>
       </div>
       <div class="flex items-center space-x-4">
-        <span id="admin-email" class="text-gray-400 text-sm"></span>
-        <button onclick="refresh()" class="text-gray-400 hover:text-white text-sm bg-gray-800 px-3 py-1.5 rounded-lg transition">Refresh</button>
-        <button onclick="logout()" class="text-gray-400 hover:text-red-400 text-sm transition">Sign Out</button>
+        <span id="account-name" class="text-gray-400 text-sm"></span>
+        <button onclick="refresh()" class="text-gray-400 hover:text-white text-sm bg-gray-800 px-3 py-1.5 rounded-lg transition flex items-center space-x-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <span>Refresh</span>
+        </button>
+        <button onclick="logout()" class="text-gray-400 hover:text-red-400 text-sm transition">Disconnect</button>
       </div>
     </div>
 
     <div class="max-w-7xl mx-auto px-6 py-8 space-y-8">
 
       <!-- Stats Row -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4" id="stats-row">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div class="stat-card bg-gray-900 border border-gray-800 rounded-xl p-5">
           <p class="text-gray-400 text-xs uppercase tracking-wider">Total Creators</p>
           <p id="stat-total" class="text-3xl font-bold text-white mt-1">-</p>
@@ -63,7 +73,11 @@
           <p id="stat-pending" class="text-3xl font-bold text-yellow-400 mt-1">-</p>
         </div>
         <div class="stat-card bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <p class="text-gray-400 text-xs uppercase tracking-wider">Platform Balance</p>
+          <p class="text-gray-400 text-xs uppercase tracking-wider">Platform Revenue</p>
+          <p id="stat-revenue" class="text-3xl font-bold text-emerald-400 mt-1">-</p>
+        </div>
+        <div class="stat-card bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <p class="text-gray-400 text-xs uppercase tracking-wider">Available Balance</p>
           <p id="stat-balance" class="text-3xl font-bold text-indigo-400 mt-1">-</p>
         </div>
       </div>
@@ -72,15 +86,16 @@
       <div class="flex space-x-1 bg-gray-900 p-1 rounded-xl w-fit border border-gray-800">
         <button onclick="showTab('creators')" id="tab-creators" class="tab-btn px-5 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white transition">Creators</button>
         <button onclick="showTab('transactions')" id="tab-transactions" class="tab-btn px-5 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white transition">Transactions</button>
-        <button onclick="showTab('settings')" id="tab-settings" class="tab-btn px-5 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white transition">Quick Links</button>
+        <button onclick="showTab('accounts')" id="tab-accounts" class="tab-btn px-5 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white transition">Stripe Accounts</button>
+        <button onclick="showTab('links')" id="tab-links" class="tab-btn px-5 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white transition">Quick Links</button>
       </div>
 
-      <!-- Creators Table -->
+      <!-- Creators Panel -->
       <div id="panel-creators" class="fade-in">
         <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
           <div class="px-5 py-4 border-b border-gray-800 flex items-center justify-between">
             <h2 class="font-semibold">All Creators</h2>
-            <input id="search-creators" oninput="filterCreators()" type="text" placeholder="Search by username..." class="bg-gray-800 border border-gray-700 px-3 py-1.5 rounded-lg text-sm w-64">
+            <input id="search-creators" oninput="filterCreators()" type="text" placeholder="Search..." class="bg-gray-800 border border-gray-700 px-3 py-1.5 rounded-lg text-sm w-56">
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
@@ -88,9 +103,9 @@
                 <tr class="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
                   <th class="text-left px-5 py-3">Username</th>
                   <th class="text-left px-5 py-3">Bio</th>
-                  <th class="text-left px-5 py-3">Stripe Status</th>
+                  <th class="text-left px-5 py-3">Stripe</th>
                   <th class="text-left px-5 py-3">Joined</th>
-                  <th class="text-left px-5 py-3">Profile Link</th>
+                  <th class="text-left px-5 py-3">Profile</th>
                   <th class="text-left px-5 py-3">Actions</th>
                 </tr>
               </thead>
@@ -101,7 +116,7 @@
         </div>
       </div>
 
-      <!-- Transactions Table -->
+      <!-- Transactions Panel -->
       <div id="panel-transactions" class="hidden fade-in">
         <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
           <div class="px-5 py-4 border-b border-gray-800">
@@ -111,9 +126,9 @@
             <table class="w-full text-sm">
               <thead>
                 <tr class="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
-                  <th class="text-left px-5 py-3">ID</th>
+                  <th class="text-left px-5 py-3">Charge ID</th>
                   <th class="text-left px-5 py-3">Amount</th>
-                  <th class="text-left px-5 py-3">Platform Fee (5%)</th>
+                  <th class="text-left px-5 py-3">Platform Fee</th>
                   <th class="text-left px-5 py-3">Status</th>
                   <th class="text-left px-5 py-3">Date</th>
                 </tr>
@@ -121,12 +136,37 @@
               <tbody id="transactions-tbody"></tbody>
             </table>
           </div>
-          <div id="no-transactions" class="hidden px-5 py-12 text-center text-gray-500">No transactions yet.</div>
+          <div id="no-transactions" class="hidden px-5 py-12 text-center text-gray-500">No transactions yet. Tips will appear here once fans start paying.</div>
         </div>
       </div>
 
-      <!-- Quick Links -->
-      <div id="panel-settings" class="hidden fade-in">
+      <!-- Stripe Accounts Panel -->
+      <div id="panel-accounts" class="hidden fade-in">
+        <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+          <div class="px-5 py-4 border-b border-gray-800">
+            <h2 class="font-semibold">Connected Stripe Accounts</h2>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
+                  <th class="text-left px-5 py-3">Account ID</th>
+                  <th class="text-left px-5 py-3">Email</th>
+                  <th class="text-left px-5 py-3">Charges</th>
+                  <th class="text-left px-5 py-3">Payouts</th>
+                  <th class="text-left px-5 py-3">Country</th>
+                  <th class="text-left px-5 py-3">Created</th>
+                </tr>
+              </thead>
+              <tbody id="accounts-tbody"></tbody>
+            </table>
+          </div>
+          <div id="no-accounts" class="hidden px-5 py-12 text-center text-gray-500">No connected Stripe accounts yet.</div>
+        </div>
+      </div>
+
+      <!-- Quick Links Panel -->
+      <div id="panel-links" class="hidden fade-in">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <a href="https://dashboard.stripe.com/test/connect/accounts/overview" target="_blank" class="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-indigo-600 transition group">
             <h3 class="font-semibold group-hover:text-indigo-400 transition">Stripe Connect Dashboard</h3>
@@ -159,7 +199,7 @@
   </div>
 
   <!-- Edit Modal -->
-  <div id="edit-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+  <div id="edit-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50" onclick="if(event.target===this)closeModal()">
     <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 w-full max-w-md space-y-4">
       <h3 class="text-lg font-bold">Edit Creator</h3>
       <input type="hidden" id="edit-id">
@@ -175,7 +215,7 @@
         <label class="text-xs text-gray-400 uppercase">Bio</label>
         <textarea id="edit-bio" rows="3" class="w-full bg-gray-800 border border-gray-700 p-2.5 rounded-lg text-sm mt-1"></textarea>
       </div>
-      <div id="edit-stripe-info" class="text-xs text-gray-400 p-3 bg-gray-800 rounded-lg"></div>
+      <div id="edit-stripe-info" class="text-xs text-gray-400 p-3 bg-gray-800 rounded-lg font-mono"></div>
       <div class="flex space-x-3 pt-2">
         <button onclick="saveEdit()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg font-semibold transition text-sm">Save Changes</button>
         <button onclick="closeModal()" class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 py-2.5 rounded-lg font-semibold transition text-sm">Cancel</button>
@@ -185,33 +225,46 @@
 
   <script>
     const SUPABASE_URL = "https://qddxoyjtoxtdcezwuvcq.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZHhveWp0b3h0ZGNlend1dmNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MTUxNDIsImV4cCI6MjA5Nzk5MTE0Mn0.MEaMfib77T0B7HW-jI6nctc1a7WbIf1n7rKBhdc-Gm8";
     const PROFILE_BASE = "https://fullnessmindset.github.io/creator-tips/profile.html?u=";
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+    let stripeKey = sessionStorage.getItem('admin_sk') || '';
     let allProfiles = [];
-    let token = null;
 
-    async function adminLogin() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const { data, error } = await sb.auth.signInWithPassword({ email, password });
-      if (error) {
-        document.getElementById('auth-error').textContent = error.message;
-        document.getElementById('auth-error').classList.remove('hidden');
+    async function stripeLogin() {
+      const key = document.getElementById('stripe-key').value.trim();
+      if (!key.startsWith('sk_')) {
+        showError('Key must start with sk_test_ or sk_live_');
         return;
       }
-      token = data.session?.access_token;
-      document.getElementById('admin-email').textContent = email;
-      document.getElementById('auth-gate').classList.add('hidden');
-      document.getElementById('dashboard').classList.remove('hidden');
-      loadDashboard();
+      const btn = document.getElementById('login-btn');
+      btn.innerHTML = '<span class="loader"></span><span class="ml-2">Connecting...</span>';
+      btn.disabled = true;
+
+      try {
+        const res = await apiCall('login', null, key);
+        if (res.error) { showError(res.error); btn.innerHTML = '<span>Connect to Stripe</span>'; btn.disabled = false; return; }
+        stripeKey = key;
+        sessionStorage.setItem('admin_sk', key);
+        document.getElementById('account-name').textContent = res.account.name || res.account.id;
+        document.getElementById('auth-gate').classList.add('hidden');
+        document.getElementById('dashboard').classList.remove('hidden');
+        loadDashboard();
+      } catch (e) {
+        showError('Connection failed: ' + e.message);
+        btn.innerHTML = '<span>Connect to Stripe</span>';
+        btn.disabled = false;
+      }
     }
 
-    async function apiCall(action, body = null) {
+    function showError(msg) {
+      const el = document.getElementById('auth-error');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    async function apiCall(action, body = null, key = null) {
       const opts = {
         method: body ? 'POST' : 'GET',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        headers: { 'Content-Type': 'application/json', 'x-stripe-key': key || stripeKey },
       };
       if (body) opts.body = JSON.stringify(body);
       const res = await fetch(SUPABASE_URL + '/functions/v1/admin-api?action=' + action, opts);
@@ -220,11 +273,12 @@
 
     async function loadDashboard() {
       const data = await apiCall('dashboard');
-      if (data.error) { alert('Admin API error: ' + data.error); return; }
+      if (data.error) { alert('API error: ' + data.error); return; }
 
       document.getElementById('stat-total').textContent = data.stats.totalCreators;
       document.getElementById('stat-connected').textContent = data.stats.stripeConnected;
       document.getElementById('stat-pending').textContent = data.stats.notConnected;
+      document.getElementById('stat-revenue').textContent = '$' + (data.stats.totalRevenue || 0).toFixed(2);
 
       if (data.platformBalance && data.platformBalance.length > 0) {
         document.getElementById('stat-balance').textContent = '$' + data.platformBalance.map(b => b.amount.toFixed(2)).join(', $');
@@ -235,26 +289,47 @@
       allProfiles = data.profiles || [];
       renderCreators(allProfiles);
       renderTransactions(data.recentCharges || []);
+      loadAccounts();
+    }
+
+    async function loadAccounts() {
+      const data = await apiCall('connected-accounts');
+      const tbody = document.getElementById('accounts-tbody');
+      if (!data.accounts || !data.accounts.length) {
+        tbody.innerHTML = '';
+        document.getElementById('no-accounts').classList.remove('hidden');
+        return;
+      }
+      document.getElementById('no-accounts').classList.add('hidden');
+      tbody.innerHTML = data.accounts.map(a => `
+        <tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition">
+          <td class="px-5 py-3 font-mono text-xs text-gray-300">${a.id}</td>
+          <td class="px-5 py-3 text-gray-400">${a.email || '-'}</td>
+          <td class="px-5 py-3">${badge(a.charges_enabled)}</td>
+          <td class="px-5 py-3">${badge(a.payouts_enabled)}</td>
+          <td class="px-5 py-3 text-gray-400">${a.country || '-'}</td>
+          <td class="px-5 py-3 text-gray-400">${new Date(a.created).toLocaleDateString()}</td>
+        </tr>
+      `).join('');
+    }
+
+    function badge(ok) {
+      return ok
+        ? '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-900/50 text-green-400 border border-green-800">Yes</span>'
+        : '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-900/50 text-red-400 border border-red-800">No</span>';
     }
 
     function renderCreators(profiles) {
       const tbody = document.getElementById('creators-tbody');
-      if (!profiles.length) {
-        tbody.innerHTML = '';
-        document.getElementById('no-creators').classList.remove('hidden');
-        return;
-      }
+      if (!profiles.length) { tbody.innerHTML = ''; document.getElementById('no-creators').classList.remove('hidden'); return; }
       document.getElementById('no-creators').classList.add('hidden');
       tbody.innerHTML = profiles.map(p => `
         <tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition">
           <td class="px-5 py-3 font-medium text-white">${esc(p.username)}</td>
-          <td class="px-5 py-3 text-gray-400 max-w-[200px] truncate">${esc(p.bio || '-')}</td>
-          <td class="px-5 py-3">
-            ${p.stripe_connect_id
-              ? '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-900/50 text-green-400 border border-green-800">Connected</span>'
-              : '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-900/50 text-yellow-400 border border-yellow-800">Pending</span>'
-            }
-          </td>
+          <td class="px-5 py-3 text-gray-400 max-w-[180px] truncate">${esc(p.bio || '-')}</td>
+          <td class="px-5 py-3">${p.stripe_connect_id
+            ? '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-900/50 text-green-400 border border-green-800">Connected</span>'
+            : '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-900/50 text-yellow-400 border border-yellow-800">Pending</span>'}</td>
           <td class="px-5 py-3 text-gray-400">${new Date(p.created_at).toLocaleDateString()}</td>
           <td class="px-5 py-3"><a href="${PROFILE_BASE}${esc(p.username)}" target="_blank" class="text-indigo-400 hover:text-indigo-300 text-xs">View</a></td>
           <td class="px-5 py-3 space-x-2">
@@ -267,23 +342,16 @@
 
     function renderTransactions(charges) {
       const tbody = document.getElementById('transactions-tbody');
-      if (!charges.length) {
-        tbody.innerHTML = '';
-        document.getElementById('no-transactions').classList.remove('hidden');
-        return;
-      }
+      if (!charges.length) { tbody.innerHTML = ''; document.getElementById('no-transactions').classList.remove('hidden'); return; }
       document.getElementById('no-transactions').classList.add('hidden');
       tbody.innerHTML = charges.map(c => `
         <tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition">
-          <td class="px-5 py-3 text-gray-400 font-mono text-xs">${c.id.slice(0, 18)}...</td>
-          <td class="px-5 py-3 font-medium text-white">$${c.amount.toFixed(2)} ${c.currency.toUpperCase()}</td>
-          <td class="px-5 py-3 text-indigo-400">$${c.fee.toFixed(2)}</td>
-          <td class="px-5 py-3">
-            ${c.status === 'succeeded'
-              ? '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-900/50 text-green-400 border border-green-800">Succeeded</span>'
-              : `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-800 text-gray-400 border border-gray-700">${c.status}</span>`
-            }
-          </td>
+          <td class="px-5 py-3 text-gray-400 font-mono text-xs">${c.id.slice(0, 20)}...</td>
+          <td class="px-5 py-3 font-medium text-white">$${c.amount.toFixed(2)}</td>
+          <td class="px-5 py-3 text-emerald-400 font-medium">$${c.fee.toFixed(2)}</td>
+          <td class="px-5 py-3">${c.status === 'succeeded'
+            ? '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-900/50 text-green-400 border border-green-800">Succeeded</span>'
+            : '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-800 text-gray-400 border border-gray-700">' + c.status + '</span>'}</td>
           <td class="px-5 py-3 text-gray-400">${new Date(c.created).toLocaleString()}</td>
         </tr>
       `).join('');
@@ -291,15 +359,14 @@
 
     function filterCreators() {
       const q = document.getElementById('search-creators').value.toLowerCase();
-      const filtered = allProfiles.filter(p => p.username.toLowerCase().includes(q) || (p.bio || '').toLowerCase().includes(q));
-      renderCreators(filtered);
+      renderCreators(allProfiles.filter(p => p.username.toLowerCase().includes(q) || (p.bio || '').toLowerCase().includes(q)));
     }
 
     function showTab(tab) {
       document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('bg-indigo-600', 'text-white'); b.classList.add('text-gray-400'); });
       document.getElementById('tab-' + tab).classList.add('bg-indigo-600', 'text-white');
       document.getElementById('tab-' + tab).classList.remove('text-gray-400');
-      ['creators', 'transactions', 'settings'].forEach(p => {
+      ['creators', 'transactions', 'accounts', 'links'].forEach(p => {
         document.getElementById('panel-' + p).classList.toggle('hidden', p !== tab);
       });
     }
@@ -311,28 +378,27 @@
       document.getElementById('edit-username').value = p.username || '';
       document.getElementById('edit-display').value = p.display_name || '';
       document.getElementById('edit-bio').value = p.bio || '';
-
-      let stripeInfo = 'No Stripe account connected.';
+      let info = 'No Stripe account connected.';
       if (p.stripe_connect_id) {
-        stripeInfo = 'Stripe ID: ' + p.stripe_connect_id + ' — Loading details...';
-        document.getElementById('edit-stripe-info').textContent = stripeInfo;
-        const details = await apiCall('stripe-account-status', { connect_id: p.stripe_connect_id });
-        if (!details.error) {
-          stripeInfo = `Stripe ID: ${details.id} | Charges: ${details.charges_enabled ? 'Yes' : 'No'} | Payouts: ${details.payouts_enabled ? 'Yes' : 'No'} | Country: ${details.country || 'N/A'}`;
-        }
+        info = 'Stripe ID: ' + p.stripe_connect_id + ' — loading...';
+        document.getElementById('edit-stripe-info').textContent = info;
+        const d = await apiCall('stripe-account-status', { connect_id: p.stripe_connect_id });
+        if (!d.error) info = `ID: ${d.id} | Charges: ${d.charges_enabled ? 'Yes' : 'No'} | Payouts: ${d.payouts_enabled ? 'Yes' : 'No'} | Country: ${d.country || 'N/A'}`;
       }
-      document.getElementById('edit-stripe-info').textContent = stripeInfo;
+      document.getElementById('edit-stripe-info').textContent = info;
       document.getElementById('edit-modal').classList.remove('hidden');
     }
 
     async function saveEdit() {
       const id = document.getElementById('edit-id').value;
-      const updates = {
-        username: document.getElementById('edit-username').value.trim(),
-        display_name: document.getElementById('edit-display').value.trim(),
-        bio: document.getElementById('edit-bio').value.trim(),
-      };
-      const res = await apiCall('update-profile', { profile_id: id, updates });
+      const res = await apiCall('update-profile', {
+        profile_id: id,
+        updates: {
+          username: document.getElementById('edit-username').value.trim(),
+          display_name: document.getElementById('edit-display').value.trim(),
+          bio: document.getElementById('edit-bio').value.trim(),
+        }
+      });
       if (res.error) return alert('Error: ' + res.error);
       closeModal();
       loadDashboard();
@@ -347,19 +413,19 @@
 
     function closeModal() { document.getElementById('edit-modal').classList.add('hidden'); }
     function refresh() { loadDashboard(); }
-    async function logout() { await sb.auth.signOut(); location.reload(); }
+    function logout() { sessionStorage.removeItem('admin_sk'); stripeKey = ''; location.reload(); }
     function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
 
-    (async () => {
-      const { data: { session } } = await sb.auth.getSession();
-      if (session && session.user?.email === 'fullnessmindset@gmail.com') {
-        token = session.access_token;
-        document.getElementById('admin-email').textContent = session.user.email;
+    // Auto-login if key is in sessionStorage
+    if (stripeKey) {
+      apiCall('login').then(res => {
+        if (res.error) { sessionStorage.removeItem('admin_sk'); stripeKey = ''; return; }
+        document.getElementById('account-name').textContent = res.account.name || res.account.id;
         document.getElementById('auth-gate').classList.add('hidden');
         document.getElementById('dashboard').classList.remove('hidden');
         loadDashboard();
-      }
-    })();
+      });
+    }
   </script>
 </body>
 </html>
