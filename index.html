@@ -177,7 +177,12 @@
         document.getElementById('dashboard-section').classList.remove('hidden');
         document.getElementById('user-welcome').innerText = `Hola, ${user.email}`;
 
-        const { data } = await sb.from('profiles').select('*').eq('id', user.id).single();
+        let { data } = await sb.from('profiles').select('*').eq('id', user.id).single();
+        if (!data) {
+          await sb.from('profiles').insert([{ id: user.id, username: 'user_' + Math.floor(Math.random() * 100000) }]);
+          const res = await sb.from('profiles').select('*').eq('id', user.id).single();
+          data = res.data;
+        }
         if (data) {
           currentProfile = data;
           document.getElementById('username').value = data.username || '';
