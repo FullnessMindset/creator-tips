@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Creator Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 p-8">
+  <div class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md space-y-6">
+    <h2 class="text-2xl font-bold tracking-tight">Creator Dashboard Setup</h2>
+
+    <div id="auth-section" class="space-y-4">
+      <input id="email" type="email" placeholder="Email" class="w-full border p-2 rounded">
+      <input id="password" type="password" placeholder="Password" class="w-full border p-2 rounded">
+      <div class="flex space-x-2">
+        <button onclick="signUp()" class="bg-blue-600 text-white px-4 py-2 rounded w-1/2">Sign Up</button>
+        <button onclick="signIn()" class="bg-gray-200 px-4 py-2 rounded w-1/2">Sign In</button>
+      </div>
+    </div>
+
+    <div id="dashboard-section" class="hidden space-y-4">
+      <p id="user-welcome" class="font-medium"></p>
+      <input id="username" type="text" placeholder="Unique Username" class="w-full border p-2 rounded">
+      <textarea id="bio" placeholder="Your Creator Bio" class="w-full border p-2 rounded"></textarea>
+      <button onclick="saveProfile()" class="w-full bg-green-600 text-white py-2 rounded">Save Profile Details</button>
+
+      <hr>
+
+      <div class="p-4 bg-yellow-50 rounded border border-yellow-200">
+        <p class="text-sm text-yellow-800 mb-2 font-semibold">Step 2: Connect Financials</p>
+        <button id="stripe-btn" onclick="startStripeOnboarding()" class="w-full bg-black text-white py-2 rounded font-bold">Link Stripe Account</button>
+      </div>
+
+      <div class="p-4 bg-blue-50 rounded border border-blue-200">
+        <p class="text-sm text-blue-800 mb-1 font-semibold">Your Public Profile Link:</p>
+        <p id="profile-link" class="text-xs text-blue-600 break-all"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://qddxoyjtoxtdcezwuvcq.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZHhveWp0b3h0ZGNlend1dmNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MTUxNDIsImV4cCI6MjA5Nzk5MTE0Mn0.MEaMfib77T0B7HW-jI6nctc1a7WbIf1n7rKBhdc-Gm8";
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function checkUser() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (user) {
+        document.getElementById('auth-section').classList.add('hidden');
+        document.getElementById('dashboard-section').classList.remove('hidden');
+        document.getElementById('user-welcome').innerText = `Welcome, ${user.email}`;
+
+        const { data } = await sb.from('profiles').select('*').eq('id', user.id).single();
+        if (data) {
+          document.getElementById('username').value = data.username || '';
+          document.getElementById('bio').value = data.bio || '';
+          document.getElementById('profile-link').innerText =
+            'https://qddxoyjtoxtdcezwuvcq.supabase.co/storage/v1/object/public/website/profile.html?u=' + (data.username || '');
+          if (data.stripe_connect_id) {
+            document.getElementById('stripe-btn').innerText = "Stripe Connected ✓";
+            document.getElementById('stripe-btn').disabled = true;
+            document.getElementById('stripe-btn').classList.replace('bg-black', 'bg-green-700');
+          }
+        }
+      }
+    }
+
+    async function signUp() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const { data, error } = await sb.auth.signUp({ email, password });
+      if (error) return alert(error.message);
+      await sb.from('profiles').insert([{
+        id: data.user.id,
+        username: 'user_' + Math.floor(Math.random() * 100000)
+      }]);
+      checkUser();
+    }
+
+    async function signIn() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) return alert(error.message);
+      checkUser();
+    }
+
+    async function saveProfile() {
+      const { data: { user } } = await sb.auth.getUser();
+      const username = document.getElementById('username').value.trim();
+      const bio = document.getElementById('bio').value.trim();
+      if (username.length < 3) return alert("Username must be at least 3 characters.");
+      const { error } = await sb.from('profiles')
+        .update({ username, bio, display_name: username })
+        .eq('id', user.id);
+      if (error) return alert(error.message);
+      document.getElementById('profile-link').innerText =
+        'https://qddxoyjtoxtdcezwuvcq.supabase.co/storage/v1/object/public/website/profile.html?u=' + username;
+      alert("Profile updated!");
+    }
+
+    async function startStripeOnboarding() {
+      const session = await sb.auth.getSession();
+      const token = session.data.session?.access_token;
+      if (!token) return alert("Please sign in first.");
+
+      document.getElementById('stripe-btn').innerText = "Redirecting to Stripe...";
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/stripe-onboard`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ redirect_url: 'https://qddxoyjtoxtdcezwuvcq.supabase.co/storage/v1/object/public/website/redirect.html' })
+      });
+      const data = await response.json();
+      if (data.url) window.location.href = data.url;
+      else alert("Failed to start Stripe onboarding: " + (data.error || "Unknown error"));
+    }
+
+    window.onload = checkUser;
+  </script>
+</body>
+</html>

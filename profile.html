@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Support Creator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col justify-between">
+
+  <div class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-md space-y-6 mt-12 w-full">
+    <div class="text-center space-y-2">
+      <h1 id="profile-name" class="text-3xl font-bold">Loading...</h1>
+      <p id="profile-bio" class="text-gray-600">Please wait while we fetch the creator's space.</p>
+    </div>
+
+    <div class="border-t pt-6 space-y-4">
+      <label class="block font-medium text-sm text-gray-700">Choose custom support amount (USD)</label>
+      <div class="relative rounded-md shadow-sm">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <span class="text-gray-500 sm:text-sm">$</span>
+        </div>
+        <input type="number" id="tip-amount" min="1" value="5.00" step="0.50" class="w-full pl-7 pr-12 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+      </div>
+
+      <button onclick="processTip()" id="pay-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl transition duration-150">
+        Support This Creator
+      </button>
+    </div>
+  </div>
+
+  <footer class="max-w-md mx-auto p-6 text-center text-xs text-gray-400 leading-relaxed mb-6">
+    Terms of Support: Payments made here are voluntary commercial tips to independent creators. They are non-refundable, do not include physical goods, equity, or commercial rights, and are not tax-deductible as charitable donations. Creators are independently responsible for their own local income taxes.
+  </footer>
+
+  <script>
+    const SUPABASE_URL = "https://qddxoyjtoxtdcezwuvcq.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZHhveWp0b3h0ZGNlend1dmNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MTUxNDIsImV4cCI6MjA5Nzk5MTE0Mn0.MEaMfib77T0B7HW-jI6nctc1a7WbIf1n7rKBhdc-Gm8";
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let creatorConnectId = null;
+    const urlParams = new URLSearchParams(window.location.search);
+    const username = urlParams.get('u');
+
+    async function fetchProfile() {
+      if (!username) {
+        document.getElementById('profile-name').innerText = "No profile chosen";
+        document.getElementById('profile-bio').innerText = "";
+        return;
+      }
+      const { data, error } = await sb.from('profiles').select('*').eq('username', username).single();
+      if (error || !data) {
+        document.getElementById('profile-name').innerText = "Profile Not Found";
+        document.getElementById('profile-bio').innerText = "This creator doesn't exist or hasn't set up their page yet.";
+      } else {
+        document.getElementById('profile-name').innerText = data.display_name || data.username;
+        document.getElementById('profile-bio').innerText = data.bio || 'Welcome to my support page!';
+        creatorConnectId = data.stripe_connect_id;
+        if (!creatorConnectId) {
+          document.getElementById('pay-btn').disabled = true;
+          document.getElementById('pay-btn').innerText = "Payouts Not Configured Yet";
+          document.getElementById('pay-btn').classList.replace('bg-indigo-600', 'bg-gray-400');
+          document.getElementById('pay-btn').classList.remove('hover:bg-indigo-700');
+        }
+      }
+    }
+
+    async function processTip() {
+      const amount = parseFloat(document.getElementById('tip-amount').value);
+      if (amount < 1 || isNaN(amount)) return alert("Minimum tip amount is $1.00");
+
+      const btn = document.getElementById('pay-btn');
+      btn.innerText = "Processing Transaction...";
+      btn.disabled = true;
+
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/create-checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          creator_connect_id: creatorConnectId,
+          amount_usd: amount,
+          success_url: 'https://qddxoyjtoxtdcezwuvcq.supabase.co/storage/v1/object/public/website/profile.html?u=' + username + '&status=completed',
+          cancel_url: window.location.href
+        })
+      });
+
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert("Checkout generation failed: " + (data.error || "Unknown error"));
+        btn.innerText = "Support This Creator";
+        btn.disabled = false;
+      }
+    }
+
+    window.onload = () => {
+      fetchProfile();
+      if (urlParams.get('status') === 'completed') {
+        alert('Thank you for your support!');
+      }
+    };
+  </script>
+</body>
+</html>

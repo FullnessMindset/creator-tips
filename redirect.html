@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connecting Financial Account...</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen text-center">
+  <div class="bg-white p-8 rounded-lg shadow border max-w-sm">
+    <h1 class="text-xl font-bold text-gray-800 mb-2">Syncing with Stripe</h1>
+    <p class="text-gray-500 text-sm">Please hold on while we finalize your verification...</p>
+    <p id="status-msg" class="mt-4 text-sm font-medium"></p>
+  </div>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const status = urlParams.get('status');
+
+    if (status === 'success') {
+      document.getElementById('status-msg').innerText = "Stripe Account Verified! Redirecting...";
+      document.getElementById('status-msg').classList.add('text-green-600');
+    } else if (status === 'refresh') {
+      document.getElementById('status-msg').innerText = "Onboarding incomplete. Redirecting to retry...";
+      document.getElementById('status-msg').classList.add('text-yellow-600');
+    }
+
+    setTimeout(() => { window.location.href = "https://qddxoyjtoxtdcezwuvcq.supabase.co/storage/v1/object/public/website/index.html"; }, 2500);
+  </script>
+</body>
+</html>
