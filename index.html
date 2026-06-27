@@ -9,7 +9,7 @@
   <meta name="description" content="CREO — Panel de creador. Gestiona tu perfil, metas y contenido">
   <meta property="og:title" content="CREO — Panel de Creador">
   <meta property="og:description" content="Gestiona tu perfil, metas y contenido en CREO">
-  <meta property="og:image" content="https://fullnessmindset.github.io/creator-tips/assets/logo-icon.png">
+  <meta property="og:image" content="https://fullnessmindset.github.io/creo/assets/logo-icon.png">
   <meta property="og:type" content="website">
   <link rel="icon" href="assets/logo-icon.png" type="image/png">
   <link rel="apple-touch-icon" href="assets/logo-icon.png">
@@ -429,7 +429,7 @@
           document.getElementById('social-tiktok').value = socials.tiktok || '';
           document.getElementById('social-youtube').value = socials.youtube || '';
           document.getElementById('social-twitter').value = socials.twitter || '';
-          document.getElementById('profile-link').innerText = 'https://fullnessmindset.github.io/creator-tips/profile.html?u=' + (data.username || '');
+          document.getElementById('profile-link').innerText = 'https://fullnessmindset.github.io/creo/profile.html?u=' + (data.username || '');
           document.getElementById('v-email').value = user.email;
           document.getElementById('v-fullname').value = data.full_name || '';
           document.getElementById('v-phone').value = data.phone || '';
@@ -679,7 +679,7 @@
       const { error } = await sb.from('profiles').update({ username, display_name: display_name || username, bio, social_links }).eq('id', currentUser.id);
       btn.innerText = 'Guardar Perfil'; btn.disabled = false;
       if (error) return showToast(error.message, 'error');
-      document.getElementById('profile-link').innerText = 'https://fullnessmindset.github.io/creator-tips/profile.html?u=' + username;
+      document.getElementById('profile-link').innerText = 'https://fullnessmindset.github.io/creo/profile.html?u=' + username;
       currentProfile.social_links = social_links;
       showToast('Perfil guardado', 'success');
     }
@@ -982,7 +982,7 @@
       const response = await fetch(`${SUPABASE_URL}/functions/v1/stripe-onboard`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ redirect_url: 'https://fullnessmindset.github.io/creator-tips/redirect.html' })
+        body: JSON.stringify({ redirect_url: 'https://fullnessmindset.github.io/creo/redirect.html' })
       });
       const data = await response.json();
       if (data.url) window.location.href = data.url;
