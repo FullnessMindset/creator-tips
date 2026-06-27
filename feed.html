@@ -106,7 +106,7 @@
         card.innerHTML = `
           <div class="relative">
             <!-- Video -->
-            <div class="w-full">${getEmbedHTML(post.video_url, post.video_type, 'aspect-[9/16] max-h-[70vh]')}</div>
+            <div class="w-full">${post.video_type === 'direct' && post.video_url && !post.video_url.includes('youtube') ? `<video src="${esc(post.video_url)}" class="w-full aspect-[9/16] max-h-[70vh] object-cover" controls playsinline preload="metadata"></video>` : getEmbedHTML(post.video_url, post.video_type, 'aspect-[9/16] max-h-[70vh]')}</div>
 
             <!-- Right action column -->
             <div class="absolute right-3 bottom-20 flex flex-col items-center gap-4">

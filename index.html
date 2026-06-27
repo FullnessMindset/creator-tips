@@ -272,7 +272,64 @@
       <div id="panel-posts" class="tab-panel hidden space-y-4">
         <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow border border-gray-200 dark:border-gray-800 space-y-4">
           <h3 class="font-bold text-gray-900 dark:text-white">Publicar Video</h3>
-          <input id="post-url" type="url" placeholder="URL del video (YouTube, TikTok, Instagram)" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint text-sm">
+
+          <!-- Post Mode Selector -->
+          <div class="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1 gap-1">
+            <button onclick="setPostMode('url')" id="pm-url" class="flex-1 py-2 text-xs font-semibold rounded-md text-center transition bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm">URL (YouTube, TikTok)</button>
+            <button onclick="setPostMode('upload')" id="pm-upload" class="flex-1 py-2 text-xs font-semibold rounded-md text-center transition text-gray-500 dark:text-gray-400">Subir Video</button>
+            <button onclick="setPostMode('record')" id="pm-record" class="flex-1 py-2 text-xs font-semibold rounded-md text-center transition text-gray-500 dark:text-gray-400">Grabar</button>
+          </div>
+
+          <!-- Mode: URL -->
+          <div id="post-mode-url">
+            <input id="post-url" type="url" placeholder="URL del video (YouTube, TikTok, Instagram)" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint text-sm">
+          </div>
+
+          <!-- Mode: Upload -->
+          <div id="post-mode-upload" class="hidden space-y-3">
+            <div id="upload-drop-zone" class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-6 text-center cursor-pointer hover:border-creo-mint transition" onclick="document.getElementById('post-video-file').click()">
+              <svg class="w-10 h-10 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Toca para seleccionar un video</p>
+              <p class="text-[10px] text-gray-400 mt-1">MP4, MOV, WebM. Max 50MB</p>
+            </div>
+            <input type="file" id="post-video-file" accept="video/*" class="hidden" onchange="handleVideoFileSelect(this)">
+            <div id="upload-preview" class="hidden rounded-xl overflow-hidden bg-black">
+              <video id="upload-video-preview" class="w-full max-h-64 mx-auto" controls></video>
+            </div>
+            <div id="upload-progress" class="hidden">
+              <div class="flex items-center gap-3">
+                <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                  <div id="upload-progress-bar" class="bg-creo-mint h-full rounded-full transition-all duration-300" style="width:0%"></div>
+                </div>
+                <span id="upload-progress-text" class="text-xs text-gray-500 dark:text-gray-400 font-medium">0%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mode: Record -->
+          <div id="post-mode-record" class="hidden space-y-3">
+            <div id="camera-container" class="relative rounded-xl overflow-hidden bg-black">
+              <video id="camera-preview" class="w-full max-h-64 mx-auto" autoplay muted playsinline></video>
+              <div id="rec-indicator" class="hidden absolute top-3 left-3 flex items-center gap-1.5 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-full">
+                <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span> REC
+              </div>
+              <div id="rec-timer" class="hidden absolute top-3 right-3 bg-black/60 text-white text-xs font-mono px-2 py-1 rounded">00:00</div>
+            </div>
+            <div id="recorded-preview" class="hidden rounded-xl overflow-hidden bg-black">
+              <video id="recorded-video" class="w-full max-h-64 mx-auto" controls></video>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="toggleRecording()" id="rec-btn" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-lg font-semibold transition text-sm flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>
+                Iniciar Grabación
+              </button>
+              <button onclick="switchCamera()" id="switch-cam-btn" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 p-2.5 rounded-lg transition" title="Cambiar cámara">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              </button>
+            </div>
+            <p class="text-[10px] text-gray-400 text-center">Max 2 minutos. El video se sube automáticamente.</p>
+          </div>
+
           <textarea id="post-caption" placeholder="Escribe un caption..." rows="2" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint text-sm"></textarea>
           <button onclick="createPost()" id="create-post-btn" class="w-full bg-creo-purple hover:bg-creo-light dark:bg-creo-mint dark:hover:bg-creo-mintDark text-white dark:text-creo-purple py-3 rounded-xl font-semibold transition">Publicar</button>
         </div>
@@ -668,34 +725,204 @@
     async function deleteMeta(id) { if (!confirm('¿Eliminar?')) return; await sb.from('metas').delete().eq('id', id); loadMetas(); }
 
     // POSTS
+    let postMode = 'url';
+    let uploadedVideoUrl = null;
+    let mediaStream = null;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let recordedBlob = null;
+    let isRecording = false;
+    let recTimerInterval = null;
+    let recSeconds = 0;
+    let facingMode = 'user';
+
+    function setPostMode(mode) {
+      postMode = mode;
+      ['url', 'upload', 'record'].forEach(m => {
+        document.getElementById('post-mode-' + m).classList.toggle('hidden', m !== mode);
+        const btn = document.getElementById('pm-' + m);
+        if (m === mode) { btn.className = 'flex-1 py-2 text-xs font-semibold rounded-md text-center transition bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'; }
+        else { btn.className = 'flex-1 py-2 text-xs font-semibold rounded-md text-center transition text-gray-500 dark:text-gray-400'; }
+      });
+      uploadedVideoUrl = null;
+      recordedBlob = null;
+      if (mode === 'record') startCamera();
+      else stopCamera();
+    }
+
+    function handleVideoFileSelect(input) {
+      const file = input.files[0];
+      if (!file) return;
+      if (file.size > 50 * 1024 * 1024) return showToast('Video max 50MB', 'error');
+      const preview = document.getElementById('upload-video-preview');
+      preview.src = URL.createObjectURL(file);
+      document.getElementById('upload-preview').classList.remove('hidden');
+      document.getElementById('upload-drop-zone').classList.add('hidden');
+    }
+
+    async function uploadVideoFile(file) {
+      const ext = file.name ? file.name.split('.').pop() : 'webm';
+      const path = `${currentUser.id}/${Date.now()}.${ext}`;
+      document.getElementById('upload-progress').classList.remove('hidden');
+      document.getElementById('upload-progress-bar').style.width = '10%';
+      document.getElementById('upload-progress-text').textContent = '10%';
+
+      const { data, error } = await sb.storage.from('videos').upload(path, file, { upsert: true });
+
+      if (error) {
+        document.getElementById('upload-progress').classList.add('hidden');
+        throw error;
+      }
+
+      document.getElementById('upload-progress-bar').style.width = '100%';
+      document.getElementById('upload-progress-text').textContent = '100%';
+
+      const { data: urlData } = sb.storage.from('videos').getPublicUrl(path);
+      return urlData.publicUrl;
+    }
+
+    async function startCamera() {
+      try {
+        if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode }, audio: true });
+        const preview = document.getElementById('camera-preview');
+        preview.srcObject = mediaStream;
+        document.getElementById('camera-container').classList.remove('hidden');
+        document.getElementById('recorded-preview').classList.add('hidden');
+      } catch (e) {
+        showToast('No se pudo acceder a la cámara: ' + e.message, 'error');
+      }
+    }
+
+    function stopCamera() {
+      if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+      if (isRecording) stopRecording();
+    }
+
+    function switchCamera() {
+      facingMode = facingMode === 'user' ? 'environment' : 'user';
+      if (postMode === 'record' && !isRecording) startCamera();
+    }
+
+    function toggleRecording() {
+      if (isRecording) stopRecording();
+      else startRecording();
+    }
+
+    function startRecording() {
+      if (!mediaStream) return showToast('Cámara no disponible', 'error');
+      recordedChunks = [];
+      recordedBlob = null;
+      recSeconds = 0;
+
+      const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus') ? 'video/webm;codecs=vp9,opus' :
+        MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4';
+
+      mediaRecorder = new MediaRecorder(mediaStream, { mimeType });
+      mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+      mediaRecorder.onstop = () => {
+        recordedBlob = new Blob(recordedChunks, { type: mimeType });
+        const url = URL.createObjectURL(recordedBlob);
+        document.getElementById('recorded-video').src = url;
+        document.getElementById('recorded-preview').classList.remove('hidden');
+        document.getElementById('camera-container').classList.add('hidden');
+      };
+
+      mediaRecorder.start(1000);
+      isRecording = true;
+      document.getElementById('rec-indicator').classList.remove('hidden');
+      document.getElementById('rec-timer').classList.remove('hidden');
+      document.getElementById('rec-btn').innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg> Detener';
+      document.getElementById('rec-btn').className = 'flex-1 bg-gray-800 hover:bg-gray-900 text-white py-2.5 rounded-lg font-semibold transition text-sm flex items-center justify-center gap-2';
+
+      recTimerInterval = setInterval(() => {
+        recSeconds++;
+        const m = String(Math.floor(recSeconds / 60)).padStart(2, '0');
+        const s = String(recSeconds % 60).padStart(2, '0');
+        document.getElementById('rec-timer').textContent = m + ':' + s;
+        if (recSeconds >= 120) stopRecording();
+      }, 1000);
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+      isRecording = false;
+      clearInterval(recTimerInterval);
+      document.getElementById('rec-indicator').classList.add('hidden');
+      document.getElementById('rec-timer').classList.add('hidden');
+      document.getElementById('rec-btn').innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg> Grabar de Nuevo';
+      document.getElementById('rec-btn').className = 'flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-lg font-semibold transition text-sm flex items-center justify-center gap-2';
+      stopCamera();
+    }
+
     async function loadPosts() {
       const { data } = await sb.from('posts').select('*').eq('creator_id', currentUser.id).order('created_at', { ascending: false });
       const list = document.getElementById('posts-list');
       if (!data || data.length === 0) { list.innerHTML = '<p class="text-center text-gray-400 text-sm py-4">No tienes publicaciones aún.</p>'; return; }
-      list.innerHTML = data.map(p => `
-        <div class="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 space-y-2">
+      list.innerHTML = data.map(p => {
+        const isDirectVideo = p.video_type === 'direct' && p.video_url && !p.video_url.includes('youtube') && !p.video_url.includes('tiktok');
+        const videoHtml = isDirectVideo
+          ? `<video src="${esc(p.video_url)}" class="w-full aspect-video rounded-lg" controls preload="metadata"></video>`
+          : getEmbedHTML(p.video_url, p.video_type, 'aspect-video');
+        return `<div class="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 space-y-2">
           <div class="flex justify-between items-start">
             <div class="flex-1 mr-3"><p class="text-sm font-medium text-gray-900 dark:text-white truncate">${esc(p.caption || 'Sin caption')}</p><p class="text-xs text-gray-400 mt-1">${p.video_type} · ${new Date(p.created_at).toLocaleDateString()}</p></div>
             <button onclick="deletePost('${p.id}')" class="text-xs px-2 py-1 rounded bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">Eliminar</button>
           </div>
-          <div class="rounded-lg overflow-hidden">${getEmbedHTML(p.video_url, p.video_type, 'aspect-video')}</div>
-        </div>`).join('');
+          <div class="rounded-lg overflow-hidden">${videoHtml}</div>
+        </div>`;
+      }).join('');
     }
 
     async function createPost() {
       const btn = document.getElementById('create-post-btn');
       btn.innerText = 'Publicando...'; btn.disabled = true;
-      const video_url = document.getElementById('post-url').value.trim();
       const caption = document.getElementById('post-caption').value.trim();
-      if (!video_url) { btn.innerText = 'Publicar'; btn.disabled = false; return showToast('Ingresa la URL del video', 'error'); }
-      const video_type = detectVideoType(video_url);
-      const { error } = await sb.from('posts').insert([{ creator_id: currentUser.id, video_url, video_type, caption }]);
-      btn.innerText = 'Publicar'; btn.disabled = false;
-      if (error) return showToast(error.message, 'error');
-      document.getElementById('post-url').value = '';
-      document.getElementById('post-caption').value = '';
-      showToast('Video publicado', 'success');
-      loadPosts();
+
+      let video_url = '';
+      let video_type = 'direct';
+
+      try {
+        if (postMode === 'url') {
+          video_url = document.getElementById('post-url').value.trim();
+          if (!video_url) { btn.innerText = 'Publicar'; btn.disabled = false; return showToast('Ingresa la URL del video', 'error'); }
+          video_type = detectVideoType(video_url);
+
+        } else if (postMode === 'upload') {
+          const fileInput = document.getElementById('post-video-file');
+          const file = fileInput.files[0];
+          if (!file) { btn.innerText = 'Publicar'; btn.disabled = false; return showToast('Selecciona un video primero', 'error'); }
+          showToast('Subiendo video...', 'info');
+          video_url = await uploadVideoFile(file);
+          video_type = 'direct';
+
+        } else if (postMode === 'record') {
+          if (!recordedBlob) { btn.innerText = 'Publicar'; btn.disabled = false; return showToast('Graba un video primero', 'error'); }
+          showToast('Subiendo grabación...', 'info');
+          const file = new File([recordedBlob], `recording_${Date.now()}.webm`, { type: recordedBlob.type });
+          video_url = await uploadVideoFile(file);
+          video_type = 'direct';
+        }
+
+        const { error } = await sb.from('posts').insert([{ creator_id: currentUser.id, video_url, video_type, caption }]);
+        btn.innerText = 'Publicar'; btn.disabled = false;
+        if (error) return showToast(error.message, 'error');
+
+        document.getElementById('post-url').value = '';
+        document.getElementById('post-caption').value = '';
+        document.getElementById('post-video-file').value = '';
+        document.getElementById('upload-preview').classList.add('hidden');
+        document.getElementById('upload-drop-zone').classList.remove('hidden');
+        document.getElementById('upload-progress').classList.add('hidden');
+        document.getElementById('recorded-preview').classList.add('hidden');
+        uploadedVideoUrl = null;
+        recordedBlob = null;
+        showToast('Video publicado', 'success');
+        loadPosts();
+      } catch (e) {
+        btn.innerText = 'Publicar'; btn.disabled = false;
+        showToast('Error: ' + e.message, 'error');
+      }
     }
 
     async function deletePost(id) { if (!confirm('¿Eliminar?')) return; await sb.from('posts').delete().eq('id', id); loadPosts(); }
