@@ -24,10 +24,8 @@
     </button>
   </div>
 
-  <!-- Main Container -->
   <div class="max-w-lg mx-auto px-4 pt-6 pb-24 space-y-6">
-
-    <!-- Logo Header -->
+    <!-- Logo -->
     <div class="text-center space-y-2">
       <img src="assets/logo-icon.png" alt="CREO" class="w-16 h-16 mx-auto rounded">
       <h2 class="text-2xl font-bold tracking-[0.2em] text-creo-purple dark:text-white">CREO</h2>
@@ -45,7 +43,12 @@
       </div>
     </div>
 
-    <!-- DASHBOARD SECTION -->
+    <!-- VERIFICATION STATUS BANNER -->
+    <div id="status-banner" class="hidden">
+      <!-- Filled dynamically -->
+    </div>
+
+    <!-- DASHBOARD -->
     <div id="dashboard-section" class="hidden space-y-6">
       <div class="bg-white dark:bg-gray-900 p-4 rounded-xl shadow border border-gray-200 dark:border-gray-800 flex items-center justify-between">
         <p id="user-welcome" class="font-medium text-gray-900 dark:text-white text-sm"></p>
@@ -53,35 +56,60 @@
       </div>
 
       <!-- TABS -->
-      <div class="flex bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-        <button onclick="showTab('profile')" id="tab-profile" class="flex-1 py-3 text-xs font-semibold text-center transition tab-active">Perfil</button>
-        <button onclick="showTab('metas')" id="tab-metas" class="flex-1 py-3 text-xs font-semibold text-center transition text-gray-400">Mis Metas</button>
-        <button onclick="showTab('posts')" id="tab-posts" class="flex-1 py-3 text-xs font-semibold text-center transition text-gray-400">Mis Posts</button>
-        <button onclick="showTab('stripe')" id="tab-stripe" class="flex-1 py-3 text-xs font-semibold text-center transition text-gray-400">Stripe</button>
+      <div class="flex bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden text-[11px]">
+        <button onclick="showTab('profile')" id="tab-profile" class="flex-1 py-3 font-semibold text-center transition tab-active">Perfil</button>
+        <button onclick="showTab('verify')" id="tab-verify" class="flex-1 py-3 font-semibold text-center transition text-gray-400">Verificación</button>
+        <button onclick="showTab('metas')" id="tab-metas" class="flex-1 py-3 font-semibold text-center transition text-gray-400">Mis Metas</button>
+        <button onclick="showTab('posts')" id="tab-posts" class="flex-1 py-3 font-semibold text-center transition text-gray-400">Mis Posts</button>
+        <button onclick="showTab('stripe')" id="tab-stripe" class="flex-1 py-3 font-semibold text-center transition text-gray-400">Stripe</button>
       </div>
 
       <!-- TAB: Profile -->
       <div id="panel-profile" class="tab-panel space-y-4">
-        <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow border border-gray-200 dark:border-gray-800 space-y-4 transition-colors">
+        <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow border border-gray-200 dark:border-gray-800 space-y-4">
           <h3 class="font-bold text-gray-900 dark:text-white">Información del Perfil</h3>
+
+          <!-- Avatar Upload -->
           <div>
-            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Nombre de Usuario (único)</label>
-            <input id="username" type="text" placeholder="mi_nombre" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint">
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Nombre para Mostrar</label>
-            <input id="display_name" type="text" placeholder="Tu Nombre Artístico" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint">
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Bio</label>
-            <textarea id="bio" placeholder="Cuéntale al mundo quién eres..." rows="3" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint"></textarea>
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">URL de Avatar (imagen de perfil)</label>
-            <input id="avatar_url" type="url" placeholder="https://ejemplo.com/mi-foto.jpg" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint">
+            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Foto de Perfil</label>
+            <div class="flex items-center gap-4">
+              <div id="avatar-preview" class="w-20 h-20 rounded-full bg-creo-purple/10 dark:bg-creo-mint/10 flex items-center justify-center overflow-hidden border-2 border-gray-200 dark:border-gray-700">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+              </div>
+              <div class="flex-1">
+                <input type="file" id="avatar-file" accept="image/*" onchange="uploadFile('avatar-file','avatars','avatar_url','avatar-preview')" class="block w-full text-xs text-gray-500 file:mr-2 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-creo-purple/10 file:text-creo-purple dark:file:bg-creo-mint/10 dark:file:text-creo-mint hover:file:opacity-80 cursor-pointer">
+                <p class="text-[10px] text-gray-400 mt-1">JPG, PNG. Max 2MB</p>
+              </div>
+            </div>
           </div>
 
-          <h4 class="font-semibold text-sm text-gray-700 dark:text-gray-300 pt-2">Redes Sociales</h4>
+          <!-- Cover Upload -->
+          <div>
+            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Imagen de Portada</label>
+            <div id="cover-preview" class="w-full h-24 rounded-lg bg-gray-100 dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center overflow-hidden">
+              <span class="text-xs text-gray-400">Sin portada</span>
+            </div>
+            <input type="file" id="cover-file" accept="image/*" onchange="uploadFile('cover-file','covers','cover_url','cover-preview')" class="mt-2 block w-full text-xs text-gray-500 file:mr-2 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-creo-purple/10 file:text-creo-purple dark:file:bg-creo-mint/10 dark:file:text-creo-mint cursor-pointer">
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Nombre de Usuario</label>
+              <input id="username" type="text" placeholder="mi_nombre" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Nombre para Mostrar</label>
+              <input id="display_name" type="text" placeholder="Tu Nombre" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint text-sm">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Bio</label>
+            <textarea id="bio" placeholder="Cuéntale al mundo quién eres..." rows="2" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint text-sm"></textarea>
+          </div>
+
+          <h4 class="font-semibold text-sm text-gray-700 dark:text-gray-300 pt-2">Redes Sociales <span class="text-red-500">*</span></h4>
+          <p class="text-[10px] text-gray-400 -mt-3">Al menos 1 red social es requerida</p>
           <div class="grid grid-cols-2 gap-3">
             <input id="social-instagram" type="url" placeholder="Instagram URL" class="border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint">
             <input id="social-tiktok" type="url" placeholder="TikTok URL" class="border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint">
@@ -98,15 +126,131 @@
         </div>
       </div>
 
+      <!-- TAB: Verification -->
+      <div id="panel-verify" class="tab-panel hidden space-y-4">
+        <!-- Verification Status Card -->
+        <div id="verify-status-card" class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow border border-gray-200 dark:border-gray-800 space-y-3">
+          <!-- Filled dynamically -->
+        </div>
+
+        <!-- Verification Form -->
+        <div id="verify-form" class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow border border-gray-200 dark:border-gray-800 space-y-4">
+          <h3 class="font-bold text-gray-900 dark:text-white">Solicitud de Verificación</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">Para proteger a los Supporters y mantener la integridad de CREO, todos los creadores deben ser verificados antes de recibir pagos. Completa la información y envía tu solicitud.</p>
+
+          <div class="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+            <p class="text-xs text-amber-800 dark:text-amber-300 font-semibold mb-1">Política de Contenido</p>
+            <ul class="text-[10px] text-amber-700 dark:text-amber-400 space-y-0.5">
+              <li>• No se permite contenido sexual o para adultos</li>
+              <li>• No se permiten metas para drogas o sustancias ilegales</li>
+              <li>• No se aceptan solicitudes de donaciones — todo es apoyo voluntario</li>
+              <li>• Las metas deben ser para herramientas, equipos o necesidades legítimas del creador</li>
+              <li>• Empresas deben presentar documentos legales (LLC, licencia comercial)</li>
+            </ul>
+          </div>
+
+          <h4 class="font-semibold text-sm text-gray-700 dark:text-gray-300">Información Personal <span class="text-red-500">*</span></h4>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[10px] text-gray-500 dark:text-gray-400 mb-1">Nombre Completo</label>
+              <input id="v-fullname" type="text" placeholder="Nombre Apellido" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint">
+            </div>
+            <div>
+              <label class="block text-[10px] text-gray-500 dark:text-gray-400 mb-1">Teléfono</label>
+              <input id="v-phone" type="tel" placeholder="+1 (555) 000-0000" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint">
+            </div>
+          </div>
+          <div>
+            <label class="block text-[10px] text-gray-500 dark:text-gray-400 mb-1">Email de Contacto</label>
+            <input id="v-email" type="email" placeholder="tu@email.com" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint">
+          </div>
+
+          <h4 class="font-semibold text-sm text-gray-700 dark:text-gray-300 pt-2">Tipo de Cuenta</h4>
+          <div class="flex gap-3">
+            <label class="flex-1 flex items-center gap-2 p-3 border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer hover:border-creo-mint transition">
+              <input type="radio" name="business_type" value="personal" checked class="accent-creo-mint">
+              <div>
+                <p class="text-sm font-medium text-gray-900 dark:text-white">Personal</p>
+                <p class="text-[10px] text-gray-400">Creador individual</p>
+              </div>
+            </label>
+            <label class="flex-1 flex items-center gap-2 p-3 border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer hover:border-creo-mint transition">
+              <input type="radio" name="business_type" value="company" class="accent-creo-mint">
+              <div>
+                <p class="text-sm font-medium text-gray-900 dark:text-white">Empresa</p>
+                <p class="text-[10px] text-gray-400">LLC / Negocio</p>
+              </div>
+            </label>
+          </div>
+
+          <!-- Business fields (shown when company selected) -->
+          <div id="business-fields" class="hidden space-y-3">
+            <div>
+              <label class="block text-[10px] text-gray-500 dark:text-gray-400 mb-1">Nombre de la Empresa</label>
+              <input id="v-business" type="text" placeholder="Mi Empresa LLC" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint">
+            </div>
+            <div>
+              <label class="block text-[10px] text-gray-500 dark:text-gray-400 mb-1">Documentos Legales (LLC, Licencia Comercial) <span class="text-red-500">*</span></label>
+              <input type="file" id="doc-file" accept=".pdf,.jpg,.png,.jpeg" multiple onchange="uploadDocument()" class="block w-full text-xs text-gray-500 file:mr-2 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-creo-purple/10 file:text-creo-purple dark:file:bg-creo-mint/10 dark:file:text-creo-mint cursor-pointer">
+              <p class="text-[10px] text-gray-400 mt-1">PDF, JPG o PNG. Sube tus documentos de incorporación.</p>
+              <div id="doc-list" class="mt-2 space-y-1"></div>
+            </div>
+          </div>
+
+          <h4 class="font-semibold text-sm text-gray-700 dark:text-gray-300 pt-2">Redes Sociales <span class="text-red-500">*</span></h4>
+          <p class="text-[10px] text-gray-400 -mt-3">Requerido: al menos 2 perfiles de redes sociales activos</p>
+          <p id="social-verify-note" class="text-[10px] text-gray-400">Las redes se toman de tu perfil. Guarda tu perfil primero si aún no las has agregado.</p>
+
+          <!-- Identity Verification -->
+          <div class="p-4 bg-creo-purple/5 dark:bg-creo-mint/5 rounded-xl border border-creo-purple/20 dark:border-creo-mint/20 space-y-3">
+            <h4 class="font-semibold text-sm text-gray-900 dark:text-white flex items-center gap-2">
+              <svg class="w-5 h-5 text-creo-purple dark:text-creo-mint" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              Verificación de Identidad (Stripe Identity)
+            </h4>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Stripe verificará tu identidad con foto de documento + selfie. Esto garantiza que eres una persona real. <strong>Costo: $1.50 USD</strong> (cargo único al creador).</p>
+            <div id="identity-status" class="text-xs font-medium text-gray-500">No verificado</div>
+            <button onclick="startIdentityVerification()" id="identity-btn" class="w-full bg-creo-purple dark:bg-white text-white dark:text-creo-purple py-2 rounded-lg font-bold text-sm transition hover:opacity-90">Iniciar Verificación de Identidad — $1.50</button>
+          </div>
+
+          <button onclick="submitApplication()" id="submit-app-btn" class="w-full bg-creo-mint hover:bg-creo-mintDark text-creo-purple font-bold py-3 rounded-xl transition text-sm">Enviar Solicitud para Revisión</button>
+          <p class="text-[10px] text-gray-400 text-center">Tu perfil será revisado por nuestro equipo. Te notificaremos cuando seas aprobado.</p>
+        </div>
+      </div>
+
       <!-- TAB: Metas -->
       <div id="panel-metas" class="tab-panel hidden space-y-4">
-        <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow border border-gray-200 dark:border-gray-800 space-y-4 transition-colors">
+        <div id="meta-locked" class="hidden bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl border border-amber-200 dark:border-amber-800 text-center">
+          <p class="text-sm text-amber-800 dark:text-amber-300 font-semibold">Debes ser verificado para crear metas</p>
+          <p class="text-xs text-amber-700 dark:text-amber-400 mt-1">Ve a la pestaña "Verificación" para iniciar el proceso.</p>
+        </div>
+
+        <div id="meta-form-container" class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow border border-gray-200 dark:border-gray-800 space-y-4">
           <h3 class="font-bold text-gray-900 dark:text-white">Crear Nueva Meta</h3>
-          <input id="meta-title" type="text" placeholder="Título de la meta" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint">
-          <textarea id="meta-desc" placeholder="Describe tu meta..." rows="2" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint"></textarea>
+
+          <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <p class="text-[10px] text-blue-800 dark:text-blue-300 leading-relaxed"><strong>Recomendación:</strong> Sube screenshots de los precios del producto/herramienta que necesitas con el link directo de compra. Esto genera credibilidad y transparencia para tus Supporters.</p>
+          </div>
+
+          <input id="meta-title" type="text" placeholder="Título de la meta (ej: Nueva cámara para contenido)" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint text-sm">
+          <textarea id="meta-desc" placeholder="¿Qué necesitas y para qué? Describe brevemente tu meta y cómo ayudará a tu trabajo como creador..." rows="3" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint text-sm"></textarea>
+
+          <!-- Meta Images -->
+          <div>
+            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Imágenes / Screenshots de precio <span class="text-red-500">*</span></label>
+            <input type="file" id="meta-images-file" accept="image/*" multiple onchange="uploadMetaImages()" class="block w-full text-xs text-gray-500 file:mr-2 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-creo-purple/10 file:text-creo-purple dark:file:bg-creo-mint/10 dark:file:text-creo-mint cursor-pointer">
+            <p class="text-[10px] text-gray-400 mt-1">Sube imágenes del producto, screenshots de precios, o evidencia visual</p>
+            <div id="meta-images-preview" class="flex flex-wrap gap-2 mt-2"></div>
+          </div>
+
+          <!-- Product Links -->
+          <div>
+            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Link de compra del producto (opcional pero recomendado)</label>
+            <input id="meta-product-link" type="url" placeholder="https://amazon.com/product..." class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint">
+          </div>
+
           <div class="grid grid-cols-3 gap-3">
             <div>
-              <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Meta ($)</label>
+              <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Meta ($) <span class="text-red-500">*</span></label>
               <input id="meta-goal" type="number" min="10" step="1" placeholder="500" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint">
             </div>
             <div>
@@ -125,14 +269,13 @@
       </div>
 
       <!-- TAB: Posts -->
-      <div id="panel-posts" class="tab-panel hidden space-y-4" id="post">
-        <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow border border-gray-200 dark:border-gray-800 space-y-4 transition-colors">
+      <div id="panel-posts" class="tab-panel hidden space-y-4">
+        <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow border border-gray-200 dark:border-gray-800 space-y-4">
           <h3 class="font-bold text-gray-900 dark:text-white">Publicar Video</h3>
-          <input id="post-url" type="url" placeholder="URL del video (YouTube, TikTok, Instagram)" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint">
-          <textarea id="post-caption" placeholder="Escribe un caption..." rows="2" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint"></textarea>
+          <input id="post-url" type="url" placeholder="URL del video (YouTube, TikTok, Instagram)" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint text-sm">
+          <textarea id="post-caption" placeholder="Escribe un caption..." rows="2" class="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-creo-purple dark:focus:ring-creo-mint text-sm"></textarea>
           <button onclick="createPost()" id="create-post-btn" class="w-full bg-creo-purple hover:bg-creo-light dark:bg-creo-mint dark:hover:bg-creo-mintDark text-white dark:text-creo-purple py-3 rounded-xl font-semibold transition">Publicar</button>
         </div>
-
         <div id="posts-list" class="space-y-3"></div>
       </div>
 
@@ -140,11 +283,11 @@
       <div id="panel-stripe" class="tab-panel hidden space-y-4">
         <div class="bg-amber-50 dark:bg-yellow-900/20 p-6 rounded-xl border border-amber-200 dark:border-yellow-800 space-y-3">
           <h3 class="font-bold text-amber-800 dark:text-yellow-300">Conexión con Stripe</h3>
-          <p class="text-sm text-amber-700 dark:text-yellow-400">Conecta tu cuenta de Stripe para recibir pagos de tus fans.</p>
+          <p class="text-sm text-amber-700 dark:text-yellow-400">Conecta tu cuenta de Stripe para recibir pagos.</p>
           <button id="stripe-btn" onclick="startStripeOnboarding()" class="w-full bg-creo-purple dark:bg-white text-white dark:text-creo-purple py-3 rounded-xl font-bold transition hover:opacity-90">Conectar Stripe</button>
         </div>
         <div class="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800">
-          <p class="text-xs text-gray-500 dark:text-gray-400">Stripe maneja todo el procesamiento de pagos de forma segura. CREO retiene un 5% de comisión por transacción.</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">CREO retiene un 5% de comisión por transacción. Stripe maneja todo el procesamiento de pagos de forma segura.</p>
         </div>
       </div>
     </div>
@@ -156,7 +299,6 @@
   </style>
 
   <script>
-    // Tab switching
     function showTab(tab) {
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
       document.querySelectorAll('[id^="tab-"]').forEach(t => { t.classList.remove('tab-active'); t.classList.add('text-gray-400'); });
@@ -166,8 +308,16 @@
       tabBtn.classList.remove('text-gray-400');
     }
 
+    // Business type toggle
+    document.querySelectorAll('input[name="business_type"]').forEach(r => {
+      r.addEventListener('change', () => {
+        document.getElementById('business-fields').classList.toggle('hidden', r.value !== 'company');
+      });
+    });
+
     let currentUser = null;
     let currentProfile = null;
+    let metaImageUrls = [];
 
     async function checkUser() {
       const { data: { user } } = await sb.auth.getUser();
@@ -188,13 +338,27 @@
           document.getElementById('username').value = data.username || '';
           document.getElementById('display_name').value = data.display_name || '';
           document.getElementById('bio').value = data.bio || '';
-          document.getElementById('avatar_url').value = data.avatar_url || '';
           const socials = data.social_links || {};
           document.getElementById('social-instagram').value = socials.instagram || '';
           document.getElementById('social-tiktok').value = socials.tiktok || '';
           document.getElementById('social-youtube').value = socials.youtube || '';
           document.getElementById('social-twitter').value = socials.twitter || '';
           document.getElementById('profile-link').innerText = 'https://fullnessmindset.github.io/creator-tips/profile.html?u=' + (data.username || '');
+          document.getElementById('v-email').value = user.email;
+          document.getElementById('v-fullname').value = data.full_name || '';
+          document.getElementById('v-phone').value = data.phone || '';
+          if (data.business_name) document.getElementById('v-business').value = data.business_name;
+          if (data.business_type === 'company') {
+            document.querySelector('input[name="business_type"][value="company"]').checked = true;
+            document.getElementById('business-fields').classList.remove('hidden');
+          }
+
+          if (data.avatar_url) {
+            document.getElementById('avatar-preview').innerHTML = `<img src="${data.avatar_url}" class="w-full h-full object-cover">`;
+          }
+          if (data.cover_url) {
+            document.getElementById('cover-preview').innerHTML = `<img src="${data.cover_url}" class="w-full h-full object-cover">`;
+          }
 
           if (data.stripe_connect_id) {
             document.getElementById('stripe-btn').innerText = "Stripe Conectado ✓";
@@ -202,6 +366,7 @@
             document.getElementById('stripe-btn').className = "w-full bg-green-600 text-white py-3 rounded-xl font-bold cursor-default";
           }
 
+          updateVerificationUI(data);
           loadMetas();
           loadPosts();
         }
@@ -209,6 +374,184 @@
       }
     }
 
+    function updateVerificationUI(profile) {
+      const statusCard = document.getElementById('verify-status-card');
+      const banner = document.getElementById('status-banner');
+      const status = profile.verification_status || 'pending';
+      const metaLocked = document.getElementById('meta-locked');
+      const metaForm = document.getElementById('meta-form-container');
+
+      if (profile.identity_verified) {
+        document.getElementById('identity-status').innerHTML = '<span class="text-green-600 dark:text-green-400">✓ Identidad verificada</span>';
+        document.getElementById('identity-btn').innerText = "Verificado ✓";
+        document.getElementById('identity-btn').disabled = true;
+        document.getElementById('identity-btn').className = "w-full bg-green-600 text-white py-2 rounded-lg font-bold text-sm cursor-default";
+      }
+
+      if (status === 'approved') {
+        statusCard.innerHTML = '<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center"><svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></div><div><p class="font-bold text-green-700 dark:text-green-400">Cuenta Verificada</p><p class="text-xs text-gray-500 dark:text-gray-400">Tu cuenta está aprobada y activa</p></div></div>';
+        document.getElementById('verify-form').classList.add('hidden');
+        banner.classList.add('hidden');
+        metaLocked.classList.add('hidden');
+        metaForm.classList.remove('hidden');
+      } else if (status === 'submitted') {
+        statusCard.innerHTML = '<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center"><svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><div><p class="font-bold text-yellow-700 dark:text-yellow-400">En Revisión</p><p class="text-xs text-gray-500 dark:text-gray-400">Tu solicitud está siendo revisada por nuestro equipo</p></div></div>';
+        document.getElementById('verify-form').classList.add('hidden');
+        banner.innerHTML = '<div class="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-xl border border-yellow-200 dark:border-yellow-800 text-center"><p class="text-sm text-yellow-800 dark:text-yellow-300 font-semibold">Tu solicitud de verificación está en revisión</p></div>';
+        banner.classList.remove('hidden');
+        metaLocked.classList.remove('hidden');
+        metaForm.classList.add('hidden');
+      } else if (status === 'rejected') {
+        const reason = profile.rejection_reason || 'No se proporcionó razón';
+        statusCard.innerHTML = `<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center"><svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></div><div><p class="font-bold text-red-700 dark:text-red-400">Solicitud Rechazada</p><p class="text-xs text-gray-500 dark:text-gray-400">Razón: ${esc(reason)}</p><p class="text-xs text-gray-400 mt-1">Puedes corregir y enviar de nuevo.</p></div></div>`;
+        metaLocked.classList.remove('hidden');
+        metaForm.classList.add('hidden');
+      } else {
+        statusCard.innerHTML = '<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center"><svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></div><div><p class="font-bold text-gray-700 dark:text-gray-300">No Verificado</p><p class="text-xs text-gray-500 dark:text-gray-400">Completa el formulario abajo para solicitar verificación</p></div></div>';
+        metaLocked.classList.remove('hidden');
+        metaForm.classList.add('hidden');
+      }
+    }
+
+    // FILE UPLOADS
+    async function uploadFile(inputId, bucket, profileField, previewId) {
+      const input = document.getElementById(inputId);
+      const file = input.files[0];
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) return showToast('Archivo max 2MB', 'error');
+
+      const ext = file.name.split('.').pop();
+      const path = `${currentUser.id}/${Date.now()}.${ext}`;
+      const session = await sb.auth.getSession();
+
+      showToast('Subiendo...', 'info');
+      const { data, error } = await sb.storage.from(bucket).upload(path, file, { upsert: true });
+      if (error) return showToast('Error: ' + error.message, 'error');
+
+      const { data: urlData } = sb.storage.from(bucket).getPublicUrl(path);
+      const publicUrl = urlData.publicUrl;
+
+      await sb.from('profiles').update({ [profileField]: publicUrl }).eq('id', currentUser.id);
+
+      const preview = document.getElementById(previewId);
+      preview.innerHTML = `<img src="${publicUrl}" class="w-full h-full object-cover">`;
+      showToast('Imagen actualizada', 'success');
+    }
+
+    async function uploadMetaImages() {
+      const input = document.getElementById('meta-images-file');
+      const files = input.files;
+      if (!files.length) return;
+
+      const preview = document.getElementById('meta-images-preview');
+      const session = await sb.auth.getSession();
+
+      for (const file of files) {
+        if (file.size > 5 * 1024 * 1024) { showToast('Cada imagen max 5MB', 'error'); continue; }
+        const ext = file.name.split('.').pop();
+        const path = `${currentUser.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+
+        const { error } = await sb.storage.from('meta-images').upload(path, file);
+        if (error) { showToast('Error subiendo imagen', 'error'); continue; }
+
+        const { data: urlData } = sb.storage.from('meta-images').getPublicUrl(path);
+        metaImageUrls.push(urlData.publicUrl);
+
+        const thumb = document.createElement('div');
+        thumb.className = 'w-16 h-16 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700';
+        thumb.innerHTML = `<img src="${urlData.publicUrl}" class="w-full h-full object-cover">`;
+        preview.appendChild(thumb);
+      }
+      showToast(`${files.length} imagen(es) subida(s)`, 'success');
+    }
+
+    async function uploadDocument() {
+      const input = document.getElementById('doc-file');
+      const files = input.files;
+      if (!files.length) return;
+      const list = document.getElementById('doc-list');
+
+      for (const file of files) {
+        if (file.size > 10 * 1024 * 1024) { showToast('Documento max 10MB', 'error'); continue; }
+        const ext = file.name.split('.').pop();
+        const path = `${currentUser.id}/${Date.now()}_${file.name}`;
+
+        const { error } = await sb.storage.from('documents').upload(path, file);
+        if (error) { showToast('Error: ' + error.message, 'error'); continue; }
+
+        const { data: urlData } = sb.storage.from('documents').getPublicUrl(path);
+
+        await sb.from('verification_documents').insert([{
+          creator_id: currentUser.id,
+          file_url: urlData.publicUrl,
+          document_type: 'llc',
+          file_name: file.name,
+        }]);
+
+        const item = document.createElement('div');
+        item.className = 'text-xs text-green-600 dark:text-green-400 flex items-center gap-1';
+        item.innerHTML = `<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> ${esc(file.name)}`;
+        list.appendChild(item);
+      }
+      showToast('Documentos subidos', 'success');
+    }
+
+    // IDENTITY VERIFICATION
+    async function startIdentityVerification() {
+      const btn = document.getElementById('identity-btn');
+      btn.innerText = "Redirigiendo..."; btn.disabled = true;
+      const session = await sb.auth.getSession();
+      const token = session.data.session?.access_token;
+      if (!token) { btn.innerText = "Iniciar Verificación — $1.50"; btn.disabled = false; return showToast('Inicia sesión primero', 'error'); }
+
+      try {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/create-identity-verification`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ return_url: window.location.href.split('?')[0] + '?verification=complete' })
+        });
+        const data = await res.json();
+        if (data.url) window.location.href = data.url;
+        else { showToast('Error: ' + (data.error || 'Unknown'), 'error'); btn.innerText = "Iniciar Verificación — $1.50"; btn.disabled = false; }
+      } catch (e) { showToast('Error de conexión', 'error'); btn.innerText = "Iniciar Verificación — $1.50"; btn.disabled = false; }
+    }
+
+    // SUBMIT APPLICATION
+    async function submitApplication() {
+      const btn = document.getElementById('submit-app-btn');
+      const fullName = document.getElementById('v-fullname').value.trim();
+      const phone = document.getElementById('v-phone').value.trim();
+      const email = document.getElementById('v-email').value.trim();
+      const businessType = document.querySelector('input[name="business_type"]:checked').value;
+      const businessName = document.getElementById('v-business')?.value.trim() || '';
+
+      if (!fullName || !phone || !email) return showToast('Completa nombre, teléfono y email', 'error');
+
+      const socials = currentProfile?.social_links || {};
+      const socialCount = Object.values(socials).filter(v => v && v.trim()).length;
+      if (socialCount < 1) return showToast('Agrega al menos 1 red social en tu perfil primero', 'error');
+
+      if (businessType === 'company' && !businessName) return showToast('Ingresa el nombre de tu empresa', 'error');
+
+      btn.innerText = 'Enviando...'; btn.disabled = true;
+      const { error } = await sb.from('profiles').update({
+        full_name: fullName,
+        phone: phone,
+        business_type: businessType,
+        business_name: businessName || null,
+        verification_status: 'submitted',
+        submitted_at: new Date().toISOString(),
+      }).eq('id', currentUser.id);
+
+      btn.innerText = 'Enviar Solicitud para Revisión'; btn.disabled = false;
+      if (error) return showToast(error.message, 'error');
+
+      currentProfile.verification_status = 'submitted';
+      updateVerificationUI(currentProfile);
+      showToast('Solicitud enviada. Te notificaremos pronto.', 'success');
+    }
+
+    // AUTH
     async function signUp() {
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
@@ -229,66 +572,58 @@
       checkUser();
     }
 
-    async function signOut() {
-      await sb.auth.signOut();
-      location.reload();
-    }
+    async function signOut() { await sb.auth.signOut(); location.reload(); }
 
     async function saveProfile() {
       const btn = document.getElementById('save-profile-btn');
-      btn.innerText = 'Guardando...';
-      btn.disabled = true;
+      btn.innerText = 'Guardando...'; btn.disabled = true;
       const username = document.getElementById('username').value.trim();
       const display_name = document.getElementById('display_name').value.trim();
       const bio = document.getElementById('bio').value.trim();
-      const avatar_url = document.getElementById('avatar_url').value.trim();
       const social_links = {
         instagram: document.getElementById('social-instagram').value.trim(),
         tiktok: document.getElementById('social-tiktok').value.trim(),
         youtube: document.getElementById('social-youtube').value.trim(),
         twitter: document.getElementById('social-twitter').value.trim(),
       };
-      if (username.length < 3) { btn.innerText = 'Guardar Perfil'; btn.disabled = false; return showToast('El username debe tener al menos 3 caracteres', 'error'); }
-      const { error } = await sb.from('profiles').update({ username, display_name: display_name || username, bio, avatar_url, social_links }).eq('id', currentUser.id);
-      btn.innerText = 'Guardar Perfil';
-      btn.disabled = false;
+      const hasSocial = Object.values(social_links).some(v => v);
+      if (username.length < 3) { btn.innerText = 'Guardar Perfil'; btn.disabled = false; return showToast('Username mínimo 3 caracteres', 'error'); }
+      if (!hasSocial) { btn.innerText = 'Guardar Perfil'; btn.disabled = false; return showToast('Agrega al menos 1 red social', 'error'); }
+      const { error } = await sb.from('profiles').update({ username, display_name: display_name || username, bio, social_links }).eq('id', currentUser.id);
+      btn.innerText = 'Guardar Perfil'; btn.disabled = false;
       if (error) return showToast(error.message, 'error');
       document.getElementById('profile-link').innerText = 'https://fullnessmindset.github.io/creator-tips/profile.html?u=' + username;
-      showToast('Perfil actualizado', 'success');
+      currentProfile.social_links = social_links;
+      showToast('Perfil guardado', 'success');
     }
 
     // METAS
     async function loadMetas() {
       const { data } = await sb.from('metas').select('*').eq('creator_id', currentUser.id).order('created_at', { ascending: false });
       const list = document.getElementById('metas-list');
-      if (!data || data.length === 0) { list.innerHTML = '<p class="text-center text-gray-400 text-sm py-4">No tienes metas aún. Crea tu primera meta arriba.</p>'; return; }
+      if (!data || data.length === 0) { list.innerHTML = '<p class="text-center text-gray-400 text-sm py-4">No tienes metas aún.</p>'; return; }
       list.innerHTML = data.map(m => {
         const pct = m.goal_amount_cents > 0 ? Math.min(100, Math.round(m.raised_cents / m.goal_amount_cents * 100)) : 0;
         const raised = (m.raised_cents / 100).toFixed(2);
         const goal = (m.goal_amount_cents / 100).toFixed(2);
+        const imgs = m.images || [];
         return `<div class="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 space-y-2">
           <div class="flex justify-between items-start">
-            <div>
-              <h4 class="font-bold text-gray-900 dark:text-white">${esc(m.title)}</h4>
-              <p class="text-xs text-gray-500 dark:text-gray-400">${esc(m.description || '')}</p>
-            </div>
+            <div><h4 class="font-bold text-gray-900 dark:text-white">${esc(m.title)}</h4><p class="text-xs text-gray-500 dark:text-gray-400">${esc(m.description || '')}</p></div>
             <div class="flex gap-2">
               <button onclick="toggleMeta('${m.id}', ${!m.is_active})" class="text-xs px-2 py-1 rounded ${m.is_active ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}">${m.is_active ? 'Activa' : 'Inactiva'}</button>
               <button onclick="deleteMeta('${m.id}')" class="text-xs px-2 py-1 rounded bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">Eliminar</button>
             </div>
           </div>
-          <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
-            <div class="bg-creo-mint h-full rounded-full transition-all duration-500" style="width:${pct}%"></div>
-          </div>
-          <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-            <span>$${raised} / $${goal} (${pct}%)</span>
-            <span>${m.start_date} — ${m.end_date}</span>
-          </div>
+          ${imgs.length ? `<div class="flex gap-1 overflow-x-auto">${imgs.map(i => `<img src="${i}" class="w-14 h-14 rounded object-cover flex-shrink-0">`).join('')}</div>` : ''}
+          <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden"><div class="bg-creo-mint h-full rounded-full transition-all duration-500" style="width:${pct}%"></div></div>
+          <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400"><span>$${raised} / $${goal} (${pct}%)</span><span>${m.start_date} — ${m.end_date}</span></div>
         </div>`;
       }).join('');
     }
 
     async function createMeta() {
+      if (currentProfile?.verification_status !== 'approved') return showToast('Debes ser verificado para crear metas', 'error');
       const btn = document.getElementById('create-meta-btn');
       btn.innerText = 'Creando...'; btn.disabled = true;
       const title = document.getElementById('meta-title').value.trim();
@@ -296,35 +631,41 @@
       const goal = parseFloat(document.getElementById('meta-goal').value);
       const start_date = document.getElementById('meta-start').value;
       const end_date = document.getElementById('meta-end').value;
-      if (!title || !goal || goal < 10 || !start_date || !end_date) {
+      const productLink = document.getElementById('meta-product-link').value.trim();
+
+      if (!title || !description || !goal || goal < 10 || !start_date || !end_date) {
         btn.innerText = 'Crear Meta'; btn.disabled = false;
-        return showToast('Completa todos los campos. Meta mínima: $10', 'error');
+        return showToast('Completa título, descripción, meta ($10 min), y fechas', 'error');
       }
+      if (metaImageUrls.length === 0) {
+        btn.innerText = 'Crear Meta'; btn.disabled = false;
+        return showToast('Sube al menos una imagen de tu meta', 'error');
+      }
+
+      const product_links = productLink ? [{ url: productLink }] : [];
+
       const { error } = await sb.from('metas').insert([{
         creator_id: currentUser.id, title, description,
         goal_amount_cents: Math.round(goal * 100),
-        start_date, end_date
+        start_date, end_date,
+        images: metaImageUrls,
+        product_links,
+        requirement_text: description,
       }]);
       btn.innerText = 'Crear Meta'; btn.disabled = false;
       if (error) return showToast(error.message, 'error');
       document.getElementById('meta-title').value = '';
       document.getElementById('meta-desc').value = '';
       document.getElementById('meta-goal').value = '';
+      document.getElementById('meta-product-link').value = '';
+      document.getElementById('meta-images-preview').innerHTML = '';
+      metaImageUrls = [];
       showToast('Meta creada', 'success');
       loadMetas();
     }
 
-    async function toggleMeta(id, active) {
-      await sb.from('metas').update({ is_active: active }).eq('id', id);
-      loadMetas();
-    }
-
-    async function deleteMeta(id) {
-      if (!confirm('¿Eliminar esta meta?')) return;
-      await sb.from('metas').delete().eq('id', id);
-      showToast('Meta eliminada', 'info');
-      loadMetas();
-    }
+    async function toggleMeta(id, active) { await sb.from('metas').update({ is_active: active }).eq('id', id); loadMetas(); }
+    async function deleteMeta(id) { if (!confirm('¿Eliminar?')) return; await sb.from('metas').delete().eq('id', id); loadMetas(); }
 
     // POSTS
     async function loadPosts() {
@@ -334,15 +675,11 @@
       list.innerHTML = data.map(p => `
         <div class="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 space-y-2">
           <div class="flex justify-between items-start">
-            <div class="flex-1 mr-3">
-              <p class="text-sm font-medium text-gray-900 dark:text-white truncate">${esc(p.caption || 'Sin caption')}</p>
-              <p class="text-xs text-gray-400 mt-1">${p.video_type} · ${new Date(p.created_at).toLocaleDateString()}</p>
-            </div>
+            <div class="flex-1 mr-3"><p class="text-sm font-medium text-gray-900 dark:text-white truncate">${esc(p.caption || 'Sin caption')}</p><p class="text-xs text-gray-400 mt-1">${p.video_type} · ${new Date(p.created_at).toLocaleDateString()}</p></div>
             <button onclick="deletePost('${p.id}')" class="text-xs px-2 py-1 rounded bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">Eliminar</button>
           </div>
           <div class="rounded-lg overflow-hidden">${getEmbedHTML(p.video_url, p.video_type, 'aspect-video')}</div>
-        </div>
-      `).join('');
+        </div>`).join('');
     }
 
     async function createPost() {
@@ -361,19 +698,14 @@
       loadPosts();
     }
 
-    async function deletePost(id) {
-      if (!confirm('¿Eliminar este post?')) return;
-      await sb.from('posts').delete().eq('id', id);
-      showToast('Post eliminado', 'info');
-      loadPosts();
-    }
+    async function deletePost(id) { if (!confirm('¿Eliminar?')) return; await sb.from('posts').delete().eq('id', id); loadPosts(); }
 
     // STRIPE
     async function startStripeOnboarding() {
       const session = await sb.auth.getSession();
       const token = session.data.session?.access_token;
       if (!token) return showToast('Inicia sesión primero', 'error');
-      document.getElementById('stripe-btn').innerText = "Redirigiendo a Stripe...";
+      document.getElementById('stripe-btn').innerText = "Redirigiendo...";
       const response = await fetch(`${SUPABASE_URL}/functions/v1/stripe-onboard`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -384,15 +716,12 @@
       else { showToast('Error: ' + (data.error || 'Unknown'), 'error'); document.getElementById('stripe-btn').innerText = "Conectar Stripe"; }
     }
 
-    // Handle #post hash for bottom nav
-    if (window.location.hash === '#post') {
-      window.addEventListener('load', () => { showTab('posts'); });
+    if (window.location.hash === '#post') window.addEventListener('load', () => showTab('posts'));
+    if (new URLSearchParams(window.location.search).get('verification') === 'complete') {
+      window.addEventListener('load', () => { showTab('verify'); showToast('Verificación de identidad completada. Envía tu solicitud.', 'success'); });
     }
 
-    window.onload = () => {
-      checkUser();
-      renderBottomNav('dashboard');
-    };
+    window.onload = () => { checkUser(); renderBottomNav('dashboard'); };
   </script>
 </body>
 </html>
