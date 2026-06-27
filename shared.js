@@ -92,7 +92,7 @@ function renderBottomNav(activePage) {
   nav.className = 'fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 px-2 pb-[env(safe-area-inset-bottom)] transition-colors';
   const items = [
     { id: 'feed', label: 'Creadores', href: 'feed.html', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>' },
-    { id: 'explore', label: 'Explorar', href: 'feed.html', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>' },
+    { id: 'explore', label: 'Explorar', href: 'explore.html', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>' },
     { id: 'post', label: 'Publicar', href: 'index.html#post', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>', authOnly: true },
     { id: 'profile', label: 'Perfil', href: 'index.html', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>' },
     { id: 'dashboard', label: 'Panel', href: 'index.html', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>', authOnly: true }
@@ -126,6 +126,62 @@ async function updateNavAuth() {
       if (perfil) perfil.href = 'profile.html?u=' + data.username;
     }
   }
+}
+
+// Notifications
+async function loadNotificationBell() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+  const { count } = await sb.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_read', false);
+  const existing = document.getElementById('notif-bell');
+  if (existing) existing.remove();
+  const bell = document.createElement('div');
+  bell.id = 'notif-bell';
+  bell.className = 'fixed top-3 right-14 z-[60] cursor-pointer';
+  bell.onclick = () => toggleNotifPanel();
+  bell.innerHTML = `<div class="relative p-2"><svg class="w-5 h-5 text-gray-500 dark:text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>${count > 0 ? `<span class="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">${count > 9 ? '9+' : count}</span>` : ''}</div>`;
+  document.body.appendChild(bell);
+}
+
+async function toggleNotifPanel() {
+  let panel = document.getElementById('notif-panel');
+  if (panel) { panel.remove(); return; }
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+  const { data } = await sb.from('notifications').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(20);
+  panel = document.createElement('div');
+  panel.id = 'notif-panel';
+  panel.className = 'fixed top-12 right-4 z-[60] w-80 max-h-96 overflow-y-auto bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl';
+  if (!data || data.length === 0) {
+    panel.innerHTML = '<p class="text-center text-gray-400 dark:text-white/40 text-sm py-8">Sin notificaciones</p>';
+  } else {
+    const icons = { like: '❤️', comment: '💬', payment: '💰', approval: '✅', rejection: '❌' };
+    panel.innerHTML = `<div class="p-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center"><span class="font-bold text-sm">Notificaciones</span><button onclick="markAllRead()" class="text-xs text-creo-mint hover:underline">Marcar leídas</button></div>` +
+      data.map(n => `<div class="px-3 py-2.5 border-b border-gray-100 dark:border-gray-800 ${n.is_read ? 'opacity-60' : ''} hover:bg-gray-50 dark:hover:bg-white/5 transition"><div class="flex gap-2"><span>${icons[n.type] || '🔔'}</span><div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-900 dark:text-white">${esc(n.title)}</p>${n.body ? `<p class="text-xs text-gray-500 dark:text-white/50 truncate">${esc(n.body)}</p>` : ''}<p class="text-[10px] text-gray-400 mt-0.5">${new Date(n.created_at).toLocaleDateString()}</p></div></div></div>`).join('');
+  }
+  document.body.appendChild(panel);
+  document.addEventListener('click', closeNotifOnClickOutside);
+  await sb.from('notifications').update({ is_read: true }).eq('user_id', user.id).eq('is_read', false);
+  loadNotificationBell();
+}
+
+function closeNotifOnClickOutside(e) {
+  const panel = document.getElementById('notif-panel');
+  const bell = document.getElementById('notif-bell');
+  if (panel && !panel.contains(e.target) && !bell.contains(e.target)) {
+    panel.remove();
+    document.removeEventListener('click', closeNotifOnClickOutside);
+  }
+}
+
+async function markAllRead() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+  await sb.from('notifications').update({ is_read: true }).eq('user_id', user.id);
+  loadNotificationBell();
+  const panel = document.getElementById('notif-panel');
+  if (panel) panel.remove();
+  showToast('Notificaciones marcadas como leídas', 'success');
 }
 
 initTheme();

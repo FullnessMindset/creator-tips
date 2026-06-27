@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CREO — Creator Dashboard</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a0a3e">
+  <meta name="description" content="CREO — Panel de creador. Gestiona tu perfil, metas y contenido">
+  <meta property="og:title" content="CREO — Panel de Creador">
+  <meta property="og:description" content="Gestiona tu perfil, metas y contenido en CREO">
+  <meta property="og:image" content="https://fullnessmindset.github.io/creator-tips/assets/logo-icon.png">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="assets/logo-icon.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/logo-icon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
@@ -53,6 +62,26 @@
       <div class="bg-white dark:bg-gray-900 p-4 rounded-xl shadow border border-gray-200 dark:border-gray-800 flex items-center justify-between">
         <p id="user-welcome" class="font-medium text-gray-900 dark:text-white text-sm"></p>
         <button onclick="signOut()" class="text-xs text-gray-400 hover:text-red-500 transition">Salir</button>
+      </div>
+
+      <!-- STATS -->
+      <div id="creator-stats" class="hidden grid grid-cols-4 gap-2">
+        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-3 text-center">
+          <p id="stat-posts" class="text-lg font-black text-creo-purple dark:text-creo-mint">0</p>
+          <p class="text-[10px] text-gray-400">Posts</p>
+        </div>
+        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-3 text-center">
+          <p id="stat-likes" class="text-lg font-black text-creo-purple dark:text-creo-mint">0</p>
+          <p class="text-[10px] text-gray-400">Likes</p>
+        </div>
+        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-3 text-center">
+          <p id="stat-metas" class="text-lg font-black text-creo-purple dark:text-creo-mint">0</p>
+          <p class="text-[10px] text-gray-400">Metas</p>
+        </div>
+        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-3 text-center">
+          <p id="stat-comments" class="text-lg font-black text-creo-purple dark:text-creo-mint">0</p>
+          <p class="text-[10px] text-gray-400">Comments</p>
+        </div>
       </div>
 
       <!-- TABS -->
@@ -426,6 +455,7 @@
           updateVerificationUI(data);
           loadMetas();
           loadPosts();
+          loadCreatorStats(user.id);
         }
         updateNavAuth();
       }
@@ -927,6 +957,22 @@
 
     async function deletePost(id) { if (!confirm('¿Eliminar?')) return; await sb.from('posts').delete().eq('id', id); loadPosts(); }
 
+    // STATS
+    async function loadCreatorStats(userId) {
+      const [postsRes, metasRes] = await Promise.all([
+        sb.from('posts').select('id, like_count, comment_count').eq('creator_id', userId),
+        sb.from('metas').select('id', { count: 'exact', head: true }).eq('creator_id', userId)
+      ]);
+      const posts = postsRes.data || [];
+      const totalLikes = posts.reduce((sum, p) => sum + (p.like_count || 0), 0);
+      const totalComments = posts.reduce((sum, p) => sum + (p.comment_count || 0), 0);
+      document.getElementById('stat-posts').textContent = posts.length;
+      document.getElementById('stat-likes').textContent = totalLikes;
+      document.getElementById('stat-comments').textContent = totalComments;
+      document.getElementById('stat-metas').textContent = metasRes.count || 0;
+      document.getElementById('creator-stats').classList.remove('hidden');
+    }
+
     // STRIPE
     async function startStripeOnboarding() {
       const session = await sb.auth.getSession();
@@ -948,7 +994,7 @@
       window.addEventListener('load', () => { showTab('verify'); showToast('Verificación de identidad completada. Envía tu solicitud.', 'success'); });
     }
 
-    window.onload = () => { checkUser(); renderBottomNav('dashboard'); };
+    window.onload = () => { checkUser(); renderBottomNav('dashboard'); loadNotificationBell(); };
   </script>
 </body>
 </html>

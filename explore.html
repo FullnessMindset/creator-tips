@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CREO — Explorar Creadores</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a0a3e">
+  <meta property="og:title" content="CREO — Explorar Creadores">
+  <meta property="og:description" content="Descubre y apoya a creadores con tips, metas y suscripciones mensuales">
+  <meta property="og:image" content="https://fullnessmindset.github.io/creator-tips/assets/logo-icon.png">
+  <meta property="og:url" content="https://fullnessmindset.github.io/creator-tips/explore.html">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { colors: { creo: { purple: '#1a0a3e', light: '#2d1b69', mint: '#33f0b0', mintDark: '#28c48e' } } } }
+    }
+  </script>
+</head>
+<body class="bg-gray-50 dark:bg-creo-purple text-gray-900 dark:text-white min-h-screen transition-colors duration-300">
+  <script src="shared.js"></script>
+
+  <!-- Header -->
+  <div class="fixed top-0 left-0 right-0 z-40 bg-white/90 dark:bg-creo-purple/90 backdrop-blur-sm border-b border-gray-200 dark:border-white/10">
+    <div class="max-w-lg mx-auto px-4 py-3 space-y-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0"><img src="assets/logo-icon.png" alt="CREO" class="w-6 h-6 rounded-full object-contain"></div>
+          <h1 class="text-lg font-bold tracking-[0.15em]">EXPLORAR</h1>
+        </div>
+        <button onclick="toggleTheme()" class="text-gray-400 dark:text-white/60 hover:text-gray-600 dark:hover:text-white p-2 rounded-lg transition">
+          <svg id="icon-sun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <svg id="icon-moon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        </button>
+      </div>
+      <!-- Search -->
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input id="search-input" type="text" placeholder="Buscar creadores..." class="w-full pl-10 pr-4 py-2.5 bg-gray-100 dark:bg-white/10 border border-gray-200 dark:border-white/10 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-creo-mint text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/40">
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="max-w-lg mx-auto pt-32 pb-20 px-4">
+    <!-- Verified Creators Section -->
+    <h2 class="text-sm font-bold text-gray-500 dark:text-white/50 uppercase tracking-wider mb-3">Creadores Verificados</h2>
+    <div id="verified-creators" class="space-y-3 mb-8"></div>
+
+    <!-- All Creators -->
+    <h2 class="text-sm font-bold text-gray-500 dark:text-white/50 uppercase tracking-wider mb-3">Todos los Creadores</h2>
+    <div id="all-creators" class="space-y-3"></div>
+
+    <!-- Empty -->
+    <div id="no-results" class="hidden text-center py-12">
+      <svg class="w-12 h-12 text-gray-300 dark:text-white/20 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <p class="text-gray-400 dark:text-white/40 text-sm">No se encontraron creadores</p>
+    </div>
+
+    <!-- Loading -->
+    <div id="explore-loading" class="text-center py-12">
+      <div class="inline-block w-8 h-8 border-2 border-creo-mint border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  </div>
+
+  <script>
+    let allCreators = [];
+
+    function renderCreatorCard(p) {
+      const avatar = p.avatar_url
+        ? `<img src="${esc(p.avatar_url)}" class="w-12 h-12 rounded-full object-cover border-2 border-creo-mint">`
+        : `<div class="w-12 h-12 rounded-full bg-creo-mint/20 flex items-center justify-center border-2 border-creo-mint"><span class="text-creo-mint font-bold">${esc((p.display_name || p.username || '?')[0].toUpperCase())}</span></div>`;
+      const verified = p.verification_status === 'approved' ? '<svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>' : '';
+      const socials = p.social_links || {};
+      const socialCount = Object.values(socials).filter(v => v).length;
+
+      return `<a href="profile.html?u=${esc(p.username)}" class="flex items-center gap-3 p-3 bg-white dark:bg-white/5 rounded-xl border border-gray-200 dark:border-white/10 hover:border-creo-mint dark:hover:border-creo-mint transition group">
+        ${avatar}
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-1.5">
+            <span class="font-bold text-sm truncate">${esc(p.display_name || p.username)}</span>
+            ${verified}
+          </div>
+          <p class="text-xs text-gray-400 dark:text-white/40">@${esc(p.username)}</p>
+          ${p.bio ? `<p class="text-xs text-gray-500 dark:text-white/50 mt-0.5 line-clamp-1">${esc(p.bio)}</p>` : ''}
+        </div>
+        <div class="flex flex-col items-end gap-1">
+          ${socialCount > 0 ? `<span class="text-[10px] text-gray-400 dark:text-white/30">${socialCount} redes</span>` : ''}
+          <svg class="w-4 h-4 text-gray-300 dark:text-white/20 group-hover:text-creo-mint transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </div>
+      </a>`;
+    }
+
+    async function loadCreators() {
+      const { data, error } = await sb
+        .from('profiles')
+        .select('username, display_name, avatar_url, bio, social_links, verification_status, stripe_connect_id')
+        .not('username', 'is', null)
+        .order('created_at', { ascending: false });
+
+      document.getElementById('explore-loading').classList.add('hidden');
+      if (error || !data) return;
+
+      allCreators = data;
+      renderList(data);
+    }
+
+    function renderList(creators) {
+      const verified = creators.filter(c => c.verification_status === 'approved');
+      const rest = creators.filter(c => c.verification_status !== 'approved');
+
+      document.getElementById('verified-creators').innerHTML = verified.length
+        ? verified.map(renderCreatorCard).join('')
+        : '<p class="text-xs text-gray-400 dark:text-white/30 text-center py-4">No hay creadores verificados aún</p>';
+
+      document.getElementById('all-creators').innerHTML = rest.length
+        ? rest.map(renderCreatorCard).join('')
+        : '';
+
+      document.getElementById('no-results').classList.toggle('hidden', creators.length > 0);
+    }
+
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      if (!q) { renderList(allCreators); return; }
+      const filtered = allCreators.filter(c =>
+        (c.username || '').toLowerCase().includes(q) ||
+        (c.display_name || '').toLowerCase().includes(q) ||
+        (c.bio || '').toLowerCase().includes(q)
+      );
+      renderList(filtered);
+    });
+
+    window.onload = () => {
+      loadCreators();
+      renderBottomNav('explore');
+      updateNavAuth();
+      loadNotificationBell();
+    };
+  </script>
+</body>
+</html>
