@@ -515,6 +515,8 @@
     .tab-active { color: #1a0a3e; border-bottom: 2px solid #33f0b0; background: rgba(51,240,176,0.05); }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    @keyframes slide-up { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .animate-slide-up { animation: slide-up 0.35s ease-out; }
   </style>
 
   <script>
@@ -805,7 +807,7 @@
       }
       if (!document.getElementById('accept-terms').checked) return showToast('Debes aceptar los Términos y Política de Privacidad', 'error');
       if (!document.getElementById('accept-conduct').checked) return showToast('Debes aceptar las normas de conducta', 'error');
-      const { data, error } = await sb.auth.signUp({ email, password });
+      const { data, error } = await sb.auth.signUp({ email, password, options: { emailRedirectTo: 'https://fullnessmindset.github.io/creo/redirect.html' } });
       if (error) return showToast(error.message, 'error');
       const language = document.getElementById('reg-language')?.value || 'es';
       await sb.from('profiles').insert([{ id: data.user.id, username: 'user_' + Math.floor(Math.random() * 100000), verification_status: 'approved', accepted_terms: true, accepted_conduct: true, language }]);
@@ -1362,7 +1364,131 @@
       window.addEventListener('load', () => { showTab('verify'); showToast('Verificación de identidad completada. Envía tu solicitud.', 'success'); });
     }
 
-    window.onload = () => { checkUser(); renderBottomNav('dashboard'); loadNotificationBell(); addMessagesNavItem(); };
+    // ===== ONBOARDING GUIDE =====
+    const onboardingSteps = [
+      {
+        title: '¡Bienvenido a CREO!',
+        message: 'Tu cuenta ha sido confirmada. Te guiaremos paso a paso para configurar tu perfil de creador.',
+        icon: '🎉',
+        target: null,
+        action: null
+      },
+      {
+        title: 'Completa tu Perfil',
+        message: 'Agrega tu nombre, foto de perfil y biografía. Esto es lo primero que verán las personas que te apoyan.',
+        icon: '👤',
+        target: 'panel-profile',
+        action: () => showTab('profile')
+      },
+      {
+        title: 'Comparte tu Historia',
+        message: 'Cuéntale al mundo quién eres. Sube un video de hasta 5 minutos y fotos que cuenten tu historia. No es obligatorio, pero los creadores con historia reciben hasta 3x más apoyo.',
+        icon: '📖',
+        target: 'panel-story',
+        action: () => showTab('story'),
+        highlight: true
+      },
+      {
+        title: 'Crea tu Primera Meta',
+        message: 'Las metas son objetivos financieros. Publica qué necesitas, cuánto cuesta y deja que la comunidad te ayude a lograrlo.',
+        icon: '🎯',
+        target: 'panel-metas',
+        action: () => showTab('metas')
+      },
+      {
+        title: 'Conecta Stripe',
+        message: 'Para recibir pagos necesitas conectar tu cuenta de Stripe. Es gratis y toma solo 5 minutos.',
+        icon: '💳',
+        target: 'panel-stripe',
+        action: () => showTab('stripe')
+      },
+      {
+        title: '¡Listo para empezar!',
+        message: 'Tu perfil público estará disponible en tu enlace personal. Compártelo en redes sociales para que te descubran.',
+        icon: '🚀',
+        target: null,
+        action: null
+      }
+    ];
+
+    let onboardingStep = 0;
+
+    function showOnboarding() {
+      const isWelcome = new URLSearchParams(window.location.search).get('welcome') === '1';
+      const seen = localStorage.getItem('creo-onboarding-done');
+      if (!isWelcome && seen) return;
+      if (!currentUser) return;
+      onboardingStep = 0;
+      renderOnboardingStep();
+    }
+
+    function renderOnboardingStep() {
+      let overlay = document.getElementById('onboarding-overlay');
+      if (overlay) overlay.remove();
+
+      if (onboardingStep >= onboardingSteps.length) {
+        localStorage.setItem('creo-onboarding-done', '1');
+        window.history.replaceState({}, '', window.location.pathname);
+        return;
+      }
+
+      const step = onboardingSteps[onboardingStep];
+      if (step.action) step.action();
+
+      overlay = document.createElement('div');
+      overlay.id = 'onboarding-overlay';
+      overlay.className = 'fixed inset-0 z-[90] flex items-end sm:items-center justify-center p-4';
+      overlay.innerHTML = `
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="skipOnboarding()"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 space-y-4 animate-slide-up">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">${step.icon}</span>
+            <div>
+              <h3 class="font-bold text-gray-900 text-lg">${step.title}</h3>
+              <p class="text-[10px] text-gray-400">Paso ${onboardingStep + 1} de ${onboardingSteps.length}</p>
+            </div>
+          </div>
+          <p class="text-sm text-gray-600 leading-relaxed">${step.message}</p>
+          ${step.highlight ? '<div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700 flex items-start gap-2"><span>💡</span><span>Los creadores que comparten su historia reciben significativamente más apoyo. ¡Te lo recomendamos!</span></div>' : ''}
+          <div class="flex items-center justify-between pt-2">
+            <button onclick="skipOnboarding()" class="text-xs text-gray-400 hover:text-gray-600 transition">Saltar guía</button>
+            <div class="flex gap-2">
+              ${onboardingStep > 0 ? '<button onclick="prevOnboardingStep()" class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition">Atrás</button>' : ''}
+              <button onclick="nextOnboardingStep()" class="px-5 py-2 text-sm font-semibold text-white bg-creo-purple rounded-xl hover:bg-creo-light transition">
+                ${onboardingStep === onboardingSteps.length - 1 ? '¡Empezar!' : 'Siguiente'}
+              </button>
+            </div>
+          </div>
+          <div class="flex justify-center gap-1.5">
+            ${onboardingSteps.map((_, i) => `<div class="w-2 h-2 rounded-full ${i === onboardingStep ? 'bg-creo-purple' : i < onboardingStep ? 'bg-creo-mint' : 'bg-gray-200'}"></div>`).join('')}
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+    }
+
+    function nextOnboardingStep() {
+      onboardingStep++;
+      renderOnboardingStep();
+    }
+
+    function prevOnboardingStep() {
+      if (onboardingStep > 0) { onboardingStep--; renderOnboardingStep(); }
+    }
+
+    function skipOnboarding() {
+      localStorage.setItem('creo-onboarding-done', '1');
+      const overlay = document.getElementById('onboarding-overlay');
+      if (overlay) overlay.remove();
+      window.history.replaceState({}, '', window.location.pathname);
+      showTab('profile');
+    }
+
+    window.onload = () => {
+      checkUser().then(() => { showOnboarding(); });
+      renderBottomNav('dashboard');
+      loadNotificationBell();
+      addMessagesNavItem();
+    };
   </script>
 </body>
 </html>
