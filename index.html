@@ -20,6 +20,12 @@
       theme: { extend: { colors: { creo: { purple: '#1a0a3e', light: '#2d1b69', mint: '#33f0b0', mintDark: '#28c48e' } } } }
     }
   </script>
+  <style>
+    .glass { background: rgba(255,255,255,0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.3); }
+    .glass-dark { background: rgba(26,10,62,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.15); }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    .float-anim { animation: float 3s ease-in-out infinite; }
+  </style>
 </head>
 <body class="bg-gray-50 text-gray-900 min-h-screen transition-colors duration-300">
   <script src="shared.js"></script>
@@ -34,7 +40,7 @@
     </div>
 
     <!-- AUTH SECTION -->
-    <div id="auth-section" class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 space-y-4 transition-colors">
+    <div id="auth-section" class="p-6 rounded-xl shadow-xl space-y-4 transition-colors" style="background:rgba(255,255,255,0.7);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.3);">
       <h3 class="text-lg font-bold text-center text-gray-900">Iniciar Sesión o Registrarse</h3>
       <input id="email" type="email" placeholder="Email" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple">
       <input id="password" type="password" placeholder="Contraseña" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple">
@@ -60,33 +66,33 @@
 
     <!-- DASHBOARD -->
     <div id="dashboard-section" class="hidden space-y-6">
-      <div class="bg-white p-4 rounded-xl shadow border border-gray-200 flex items-center justify-between">
+      <div class="glass p-4 rounded-xl shadow-xl flex items-center justify-between">
         <p id="user-welcome" class="font-medium text-gray-900 text-sm"></p>
         <button onclick="signOut()" class="text-xs text-gray-400 hover:text-red-500 transition">Salir</button>
       </div>
 
       <!-- STATS -->
       <div id="creator-stats" class="hidden grid grid-cols-4 gap-2">
-        <div class="bg-white rounded-xl border border-gray-200 p-3 text-center">
+        <div class="glass rounded-xl p-3 text-center">
           <p id="stat-posts" class="text-lg font-black text-creo-purple">0</p>
           <p class="text-[10px] text-gray-400">Posts</p>
         </div>
-        <div class="bg-white rounded-xl border border-gray-200 p-3 text-center">
+        <div class="glass rounded-xl p-3 text-center">
           <p id="stat-likes" class="text-lg font-black text-creo-purple">0</p>
           <p class="text-[10px] text-gray-400">Likes</p>
         </div>
-        <div class="bg-white rounded-xl border border-gray-200 p-3 text-center">
+        <div class="glass rounded-xl p-3 text-center">
           <p id="stat-metas" class="text-lg font-black text-creo-purple">0</p>
           <p class="text-[10px] text-gray-400">Metas</p>
         </div>
-        <div class="bg-white rounded-xl border border-gray-200 p-3 text-center">
+        <div class="glass rounded-xl p-3 text-center">
           <p id="stat-comments" class="text-lg font-black text-creo-purple">0</p>
           <p class="text-[10px] text-gray-400">Comments</p>
         </div>
       </div>
 
       <!-- TABS -->
-      <div class="flex bg-white rounded-xl border border-gray-200 overflow-hidden text-[11px]">
+      <div class="flex glass rounded-xl overflow-hidden text-[11px]">
         <button onclick="showTab('profile')" id="tab-profile" class="flex-1 py-3 font-semibold text-center transition tab-active">Perfil</button>
         <button onclick="showTab('verify')" id="tab-verify" class="flex-1 py-3 font-semibold text-center transition text-gray-400">Verificación</button>
         <button onclick="showTab('metas')" id="tab-metas" class="flex-1 py-3 font-semibold text-center transition text-gray-400">Mis Metas</button>
@@ -255,7 +261,7 @@
           <p class="text-xs text-amber-700 mt-1">Ve a la pestaña "Verificación" para iniciar el proceso.</p>
         </div>
 
-        <div id="meta-form-container" class="bg-white p-6 rounded-xl shadow border border-gray-200 space-y-4">
+        <div id="meta-form-container" class="glass p-6 rounded-xl shadow-xl space-y-4">
           <h3 class="font-bold text-gray-900">Crear Nueva Meta</h3>
 
           <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
@@ -271,6 +277,13 @@
             <input type="file" id="meta-images-file" accept="image/*" multiple onchange="uploadMetaImages()" class="block w-full text-xs text-gray-500 file:mr-2 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-creo-purple/10 file:text-creo-purple cursor-pointer">
             <p class="text-[10px] text-gray-400 mt-1">Sube imágenes del producto, screenshots de precios, o evidencia visual</p>
             <div id="meta-images-preview" class="flex flex-wrap gap-2 mt-2"></div>
+          </div>
+
+          <!-- Video URL -->
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">Video de la meta (opcional)</label>
+            <input id="meta-video-url" type="url" placeholder="https://youtube.com/watch?v=... o enlace de TikTok" class="w-full border border-gray-300 bg-gray-50 p-2 rounded-lg text-sm text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple">
+            <p class="text-[10px] text-gray-400 mt-1">YouTube, TikTok o enlace directo a video</p>
           </div>
 
           <!-- Product Links -->
@@ -736,23 +749,26 @@
       const start_date = document.getElementById('meta-start').value;
       const end_date = document.getElementById('meta-end').value;
       const productLink = document.getElementById('meta-product-link').value.trim();
+      const videoUrl = document.getElementById('meta-video-url').value.trim();
 
       if (!title || !description || !goal || goal < 10 || !start_date || !end_date) {
         btn.innerText = 'Crear Meta'; btn.disabled = false;
         return showToast('Completa título, descripción, meta ($10 min), y fechas', 'error');
       }
-      if (metaImageUrls.length === 0) {
+      if (metaImageUrls.length === 0 && !videoUrl) {
         btn.innerText = 'Crear Meta'; btn.disabled = false;
-        return showToast('Sube al menos una imagen de tu meta', 'error');
+        return showToast('Sube al menos una imagen o video de tu meta', 'error');
       }
 
+      const allMedia = [...metaImageUrls];
+      if (videoUrl) allMedia.push(videoUrl);
       const product_links = productLink ? [{ url: productLink }] : [];
 
       const { error } = await sb.from('metas').insert([{
         creator_id: currentUser.id, title, description,
         goal_amount_cents: Math.round(goal * 100),
         start_date, end_date,
-        images: metaImageUrls,
+        images: allMedia,
         product_links,
         requirement_text: description,
       }]);
@@ -762,6 +778,7 @@
       document.getElementById('meta-desc').value = '';
       document.getElementById('meta-goal').value = '';
       document.getElementById('meta-product-link').value = '';
+      document.getElementById('meta-video-url').value = '';
       document.getElementById('meta-images-preview').innerHTML = '';
       metaImageUrls = [];
       showToast('Meta creada', 'success');
