@@ -311,6 +311,15 @@
           <button onclick="createMeta()" id="create-meta-btn" class="w-full bg-creo-purple hover:bg-creo-light text-white py-3 rounded-xl font-semibold transition">Crear Meta</button>
         </div>
 
+        <!-- Incoming Meta Invites -->
+        <div id="meta-invites-section" class="hidden space-y-3">
+          <h3 class="font-bold text-gray-900 flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-creo-mint/20 flex items-center justify-center text-sm">🤝</span>
+            Invitaciones a Metas
+          </h3>
+          <div id="meta-invites-list" class="space-y-2"></div>
+        </div>
+
         <div id="metas-list" class="space-y-3"></div>
       </div>
 
@@ -476,6 +485,7 @@
 
           updateVerificationUI(data);
           loadMetas();
+          loadMetaInvites();
           loadPosts();
           loadCreatorStats(user.id);
         }
@@ -668,7 +678,7 @@
       if (!email || !password) return showToast('Ingresa email y contraseña', 'error');
       const { data, error } = await sb.auth.signUp({ email, password });
       if (error) return showToast(error.message, 'error');
-      await sb.from('profiles').insert([{ id: data.user.id, username: 'user_' + Math.floor(Math.random() * 100000) }]);
+      await sb.from('profiles').insert([{ id: data.user.id, username: 'user_' + Math.floor(Math.random() * 100000), verification_status: 'approved' }]);
       showToast('Cuenta creada. Revisa tu email para confirmar.', 'success');
       checkUser();
     }
@@ -770,16 +780,19 @@
       if (videoUrl) allMedia.push(videoUrl);
       const product_links = productLink ? [{ url: productLink }] : [];
 
-      const { error } = await sb.from('metas').insert([{
+      const { data: metaData, error } = await sb.from('metas').insert([{
         creator_id: currentUser.id, title, description,
         goal_amount_cents: Math.round(goal * 100),
         start_date, end_date,
         images: allMedia,
         product_links,
         requirement_text: description,
-      }]);
+      }]).select().single();
       btn.innerText = 'Crear Meta'; btn.disabled = false;
       if (error) return showToast(error.message, 'error');
+      if (metaData) {
+        await sb.from('meta_collaborators').insert([{ meta_id: metaData.id, user_id: currentUser.id, role: 'owner' }]);
+      }
       document.getElementById('meta-title').value = '';
       document.getElementById('meta-desc').value = '';
       document.getElementById('meta-goal').value = '';
@@ -793,6 +806,55 @@
 
     async function toggleMeta(id, active) { await sb.from('metas').update({ is_active: active }).eq('id', id); loadMetas(); }
     async function deleteMeta(id) { if (!confirm('¿Eliminar?')) return; await sb.from('metas').delete().eq('id', id); loadMetas(); }
+
+    // META INVITES
+    async function loadMetaInvites() {
+      if (!currentUser) return;
+      const { data } = await sb.from('meta_invites').select('*, metas(title, description), inviter:inviter_id(username, display_name, avatar_url)').eq('invitee_id', currentUser.id).eq('status', 'pending').order('created_at', { ascending: false });
+      const section = document.getElementById('meta-invites-section');
+      const list = document.getElementById('meta-invites-list');
+      if (!data || data.length === 0) { section.classList.add('hidden'); return; }
+      section.classList.remove('hidden');
+      list.innerHTML = data.map(inv => {
+        const inviter = inv.inviter || {};
+        const meta = inv.metas || {};
+        const name = inviter.display_name || inviter.username || 'Alguien';
+        const avatar = inviter.avatar_url
+          ? `<img src="${esc(inviter.avatar_url)}" class="w-10 h-10 rounded-full object-cover border-2 border-creo-mint">`
+          : `<div class="w-10 h-10 rounded-full bg-creo-mint/20 flex items-center justify-center border-2 border-creo-mint"><span class="text-creo-mint font-bold text-sm">${esc(name[0].toUpperCase())}</span></div>`;
+        return `<div class="bg-white p-4 rounded-xl border border-creo-mint/30 shadow-sm space-y-3">
+          <div class="flex items-center gap-3">
+            ${avatar}
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-gray-900">${esc(name)} te invitó a colaborar</p>
+              <p class="text-xs text-gray-500 truncate">Meta: ${esc(meta.title || 'Sin título')}</p>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="acceptInvite('${inv.id}')" class="flex-1 bg-creo-mint hover:bg-creo-mintDark text-creo-purple font-bold py-2 rounded-lg transition text-sm flex items-center justify-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              Creamos
+            </button>
+            <button onclick="declineInvite('${inv.id}')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold py-2 rounded-lg transition text-sm">Declinar</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    async function acceptInvite(inviteId) {
+      const { data, error } = await sb.rpc('accept_meta_invite', { p_invite_id: inviteId });
+      if (error) { showToast(error.message || 'Error', 'error'); return; }
+      showToast('¡Te uniste a la meta! Ahora es una meta conjunta.', 'success');
+      loadMetaInvites();
+      loadMetas();
+    }
+
+    async function declineInvite(inviteId) {
+      const { data, error } = await sb.rpc('decline_meta_invite', { p_invite_id: inviteId });
+      if (error) { showToast(error.message || 'Error', 'error'); return; }
+      showToast('Invitación declinada', 'info');
+      loadMetaInvites();
+    }
 
     // POSTS
     let postMode = 'url';

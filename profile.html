@@ -155,6 +155,76 @@
     </div>
   </div>
 
+  <!-- Meta Post Modal (social media style) -->
+  <div id="meta-post-modal" class="fixed inset-0 z-[150] hidden">
+    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeMetaPost()"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+      <div class="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl glass shadow-2xl">
+        <!-- Close -->
+        <button onclick="closeMetaPost()" class="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/40 flex items-center justify-center text-white hover:bg-black/60 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+        <!-- Media -->
+        <div id="meta-post-media" class="w-full bg-gray-900 rounded-t-2xl overflow-hidden"></div>
+        <!-- Actions -->
+        <div class="p-4 space-y-3">
+          <div class="flex items-center gap-4">
+            <button id="meta-like-btn" onclick="toggleMetaLike()" class="flex items-center gap-1.5 text-gray-600 hover:text-red-500 transition">
+              <svg id="meta-like-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+              <span id="meta-like-count" class="text-sm font-semibold"></span>
+            </button>
+            <button onclick="document.getElementById('meta-comment-input').focus()" class="flex items-center gap-1.5 text-gray-600 hover:text-creo-purple transition">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+              <span id="meta-comment-count" class="text-sm font-semibold"></span>
+            </button>
+            <button onclick="shareMetaPost()" class="flex items-center gap-1.5 text-gray-600 hover:text-blue-500 transition ml-auto">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+            </button>
+          </div>
+          <!-- Meta info -->
+          <div>
+            <h3 id="meta-post-title" class="font-bold text-gray-900"></h3>
+            <p id="meta-post-desc" class="text-sm text-gray-500 mt-1"></p>
+          </div>
+          <!-- Comments list -->
+          <div id="meta-comments-list" class="space-y-3 max-h-48 overflow-y-auto"></div>
+          <!-- Comment input -->
+          <div class="flex gap-2">
+            <input id="meta-comment-input" type="text" maxlength="500" placeholder="Escribe un comentario..." class="flex-1 bg-gray-100 border border-gray-200 rounded-full px-4 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-creo-mint">
+            <button onclick="submitMetaComment()" class="bg-creo-mint text-creo-purple font-bold px-4 py-2 rounded-full text-sm hover:bg-creo-mintDark transition">Enviar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Creamos Invite Modal -->
+  <div id="creamos-modal" class="fixed inset-0 z-[160] hidden">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeCreamos()"></div>
+    <div class="absolute inset-0 flex items-end sm:items-center justify-center p-4">
+      <div class="w-full max-w-md rounded-2xl glass shadow-2xl p-6 space-y-4 animate-slide-up">
+        <div class="text-center">
+          <div class="w-14 h-14 rounded-full bg-creo-mint/20 flex items-center justify-center mx-auto mb-3">
+            <img src="assets/logo-icon.png" class="w-8 h-8 rounded-full" alt="">
+          </div>
+          <h3 class="text-lg font-bold text-gray-900">Creamos</h3>
+          <p class="text-xs text-gray-500 mt-1">Invita a otro creador a unirse a esta meta</p>
+        </div>
+        <input id="creamos-username" type="text" placeholder="Username del creador (ej: mi_amigo)" class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-creo-mint">
+        <button onclick="sendCreamosInvite()" id="creamos-send-btn" class="w-full bg-creo-purple hover:bg-creo-light text-white font-bold py-3 px-4 rounded-xl transition flex items-center justify-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <span>Enviar Invitación</span>
+        </button>
+        <button onclick="closeCreamos()" class="w-full text-gray-400 text-sm hover:text-gray-600 transition py-2">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .animate-slide-up { animation: slide-up 0.3s ease-out; }
+  </style>
+
   <footer class="max-w-lg mx-auto px-4 pb-24 text-center text-xs text-gray-400 leading-relaxed">
     <span class="font-semibold text-creo-purple tracking-wider">CREO</span> — Los pagos son voluntarios, no reembolsables y no deducibles de impuestos. Los creadores son responsables de sus propios impuestos.
   </footer>
@@ -244,12 +314,31 @@
       });
     }
 
+    let metasCache = {};
+    let metaLikesSet = new Set();
+
     async function loadCreatorMetas(creatorId) {
       const { data } = await sb.from('metas').select('*').eq('creator_id', creatorId).eq('is_active', true).order('created_at', { ascending: false });
       const container = document.getElementById('metas-container');
       const noMetas = document.getElementById('no-metas');
 
       if (!data || data.length === 0) { noMetas.classList.remove('hidden'); return; }
+
+      // Cache metas for the post modal
+      data.forEach(m => { metasCache[m.id] = m; });
+
+      // Load collaborators for all metas
+      const metaIds = data.map(m => m.id);
+      const { data: collabs } = await sb.from('meta_collaborators').select('*, profiles:user_id(username, display_name, avatar_url)').in('meta_id', metaIds);
+      const collabMap = {};
+      (collabs || []).forEach(c => { (collabMap[c.meta_id] = collabMap[c.meta_id] || []).push(c); });
+
+      // Load user's meta likes
+      const { data: { user: authUser } } = await sb.auth.getUser();
+      if (authUser) {
+        const { data: myLikes } = await sb.from('meta_likes').select('meta_id').eq('user_id', authUser.id).in('meta_id', metaIds);
+        (myLikes || []).forEach(l => metaLikesSet.add(l.meta_id));
+      }
 
       const today = new Date().toISOString().split('T')[0];
       const canPay = creatorProfile?.verification_status === 'approved' && creatorProfile?.stripe_connect_id;
@@ -274,11 +363,12 @@
               ${images.map((img, i) => {
                 const isVideo = /\.(mp4|webm|mov)$/i.test(img) || /youtube|tiktok|youtu\.be/i.test(img);
                 if (isVideo) {
-                  return `<div class="relative aspect-video bg-gray-900 rounded-lg overflow-hidden">
-                    <video src="${img}" class="w-full h-full object-cover" controls></video>
+                  return `<div class="relative aspect-video bg-gray-900 rounded-lg overflow-hidden cursor-pointer" onclick="openMetaPost('${m.id}', ${i})">
+                    <video src="${img}" class="w-full h-full object-cover" preload="metadata"></video>
+                    <div class="absolute inset-0 flex items-center justify-center bg-black/20"><svg class="w-12 h-12 text-white/80" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
                   </div>`;
                 }
-                return `<img src="${img}" class="w-full ${images.length === 1 ? 'aspect-video' : 'aspect-square'} object-cover ${i === 0 && images.length === 1 ? 'rounded-xl' : 'rounded-lg'} cursor-pointer" onclick="window.open('${img}','_blank')">`;
+                return `<img src="${img}" class="w-full ${images.length === 1 ? 'aspect-video' : 'aspect-square'} object-cover ${i === 0 && images.length === 1 ? 'rounded-xl' : 'rounded-lg'} cursor-pointer hover:opacity-90 transition" onclick="openMetaPost('${m.id}', ${i})">`;
               }).join('')}
             </div>
             <!-- Progress overlay on media -->
@@ -328,6 +418,36 @@
           </div>
           ${mediaSection}
           ${linkSection}
+          <!-- Collaborators -->
+          ${(() => {
+            const metacollabs = collabMap[m.id] || [];
+            if (metacollabs.length === 0 && !m.is_joint) return '';
+            const avatars = metacollabs.map(c => {
+              const p = c.profiles || {};
+              const name = p.display_name || p.username || '?';
+              return p.avatar_url
+                ? `<img src="${esc(p.avatar_url)}" title="${esc(name)}" class="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm -ml-2 first:ml-0">`
+                : `<div title="${esc(name)}" class="w-8 h-8 rounded-full bg-creo-mint/20 flex items-center justify-center border-2 border-white shadow-sm -ml-2 first:ml-0"><span class="text-creo-mint text-xs font-bold">${esc(name[0].toUpperCase())}</span></div>`;
+            }).join('');
+            return `<div class="flex items-center gap-2">
+              <div class="flex items-center pl-2">${avatars}</div>
+              <span class="text-xs text-gray-400">${metacollabs.length} colaborador${metacollabs.length !== 1 ? 'es' : ''}</span>
+            </div>`;
+          })()}
+          <!-- Social actions row -->
+          <div class="flex items-center gap-3 pt-1 border-t border-gray-100">
+            <button onclick="toggleMetaLikeInline('${m.id}')" class="flex items-center gap-1 text-sm ${metaLikesSet.has(m.id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'} transition">
+              <svg class="w-4 h-4" fill="${metaLikesSet.has(m.id) ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+              <span id="meta-lc-${m.id}">${m.like_count > 0 ? m.like_count : ''}</span>
+            </button>
+            <button onclick="openMetaPost('${m.id}', -1)" class="flex items-center gap-1 text-sm text-gray-400 hover:text-creo-purple transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+              <span>${m.comment_count > 0 ? m.comment_count : ''}</span>
+            </button>
+            <button onclick="shareMetaById('${m.id}')" class="text-sm text-gray-400 hover:text-blue-500 transition ml-auto">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+            </button>
+          </div>
           ${!expired && !completed && canPay ? `
             <div class="flex gap-2">
               <div class="relative flex-1">
@@ -340,6 +460,11 @@
               </button>
             </div>
           ` : ''}
+          <!-- Creamos invite button (only for meta owner or collaborators) -->
+          <button onclick="openCreamos('${m.id}')" class="w-full py-2 rounded-lg glass-mint text-creo-purple text-sm font-semibold hover:shadow-md transition flex items-center justify-center gap-2 creamos-btn" data-meta-id="${m.id}" style="display:none">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            Creamos
+          </button>
         </div>`;
       }).join('');
     }
@@ -395,10 +520,221 @@
       } catch (e) { document.getElementById('creo-loading').classList.add('hidden'); showToast('Error de conexión', 'error'); btn.innerHTML = '<img src="assets/logo-icon.png" class="w-5 h-5 rounded-full" alt=""><span>Suscribirme Mensualmente</span>'; btn.disabled = false; }
     }
 
-    window.onload = () => {
-      fetchProfile();
+    // Show Creamos buttons for meta owner
+    async function showCreamosForOwner() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user || !creatorProfile) return;
+      if (user.id === creatorProfile.id) {
+        document.querySelectorAll('.creamos-btn').forEach(b => b.style.display = '');
+      } else {
+        const { data: myCollabs } = await sb.from('meta_collaborators').select('meta_id').eq('user_id', user.id);
+        if (myCollabs) {
+          const myMetaIds = new Set(myCollabs.map(c => c.meta_id));
+          document.querySelectorAll('.creamos-btn').forEach(b => {
+            if (myMetaIds.has(b.dataset.metaId)) b.style.display = '';
+          });
+        }
+      }
+    }
+
+    // Meta post modal
+    let activeMetaId = null;
+
+    function openMetaPost(metaId, mediaIndex) {
+      activeMetaId = metaId;
+      const m = metasCache[metaId];
+      if (!m) return;
+      const modal = document.getElementById('meta-post-modal');
+      modal.classList.remove('hidden');
+
+      const images = m.images || [];
+      const mediaEl = document.getElementById('meta-post-media');
+      if (mediaIndex >= 0 && images[mediaIndex]) {
+        const img = images[mediaIndex];
+        const isVideo = /\.(mp4|webm|mov)$/i.test(img) || /youtube|tiktok|youtu\.be/i.test(img);
+        if (isVideo) {
+          mediaEl.innerHTML = `<video src="${esc(img)}" class="w-full max-h-[50vh] object-contain" controls autoplay></video>`;
+        } else {
+          mediaEl.innerHTML = `<img src="${esc(img)}" class="w-full max-h-[50vh] object-contain">`;
+        }
+      } else if (images.length > 0) {
+        mediaEl.innerHTML = `<img src="${esc(images[0])}" class="w-full max-h-[50vh] object-contain">`;
+      } else {
+        mediaEl.innerHTML = '';
+      }
+
+      document.getElementById('meta-post-title').textContent = m.title;
+      document.getElementById('meta-post-desc').textContent = m.description || '';
+
+      const isLiked = metaLikesSet.has(metaId);
+      document.getElementById('meta-like-icon').setAttribute('fill', isLiked ? '#ef4444' : 'none');
+      document.getElementById('meta-like-icon').setAttribute('stroke', isLiked ? '#ef4444' : 'currentColor');
+      document.getElementById('meta-like-count').textContent = m.like_count > 0 ? m.like_count : '';
+      document.getElementById('meta-comment-count').textContent = m.comment_count > 0 ? m.comment_count : '';
+
+      loadMetaComments(metaId);
+    }
+
+    function closeMetaPost() {
+      document.getElementById('meta-post-modal').classList.add('hidden');
+      activeMetaId = null;
+    }
+
+    async function toggleMetaLike() {
+      if (!activeMetaId) return;
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { showToast('Inicia sesión para dar like', 'error'); return; }
+      const { data, error } = await sb.rpc('toggle_meta_like', { p_meta_id: activeMetaId });
+      if (error) { showToast('Error', 'error'); return; }
+      if (data.liked) {
+        metaLikesSet.add(activeMetaId);
+        document.getElementById('meta-like-icon').setAttribute('fill', '#ef4444');
+        document.getElementById('meta-like-icon').setAttribute('stroke', '#ef4444');
+        if (creatorProfile) createNotification(creatorProfile.id, 'meta_like', 'A alguien le gustó tu meta', metasCache[activeMetaId]?.title);
+      } else {
+        metaLikesSet.delete(activeMetaId);
+        document.getElementById('meta-like-icon').setAttribute('fill', 'none');
+        document.getElementById('meta-like-icon').setAttribute('stroke', 'currentColor');
+      }
+      document.getElementById('meta-like-count').textContent = data.count > 0 ? data.count : '';
+      metasCache[activeMetaId].like_count = data.count;
+      const inlineCount = document.getElementById('meta-lc-' + activeMetaId);
+      if (inlineCount) inlineCount.textContent = data.count > 0 ? data.count : '';
+    }
+
+    async function toggleMetaLikeInline(metaId) {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { showToast('Inicia sesión para dar like', 'error'); return; }
+      const { data, error } = await sb.rpc('toggle_meta_like', { p_meta_id: metaId });
+      if (error) { showToast('Error', 'error'); return; }
+      if (data.liked) {
+        metaLikesSet.add(metaId);
+        if (creatorProfile) createNotification(creatorProfile.id, 'meta_like', 'A alguien le gustó tu meta', metasCache[metaId]?.title);
+      } else {
+        metaLikesSet.delete(metaId);
+      }
+      metasCache[metaId].like_count = data.count;
+      loadCreatorMetas(creatorProfile.id);
+    }
+
+    async function loadMetaComments(metaId) {
+      const { data } = await sb.from('meta_comments').select('*, profiles:user_id(username, display_name, avatar_url)').eq('meta_id', metaId).order('created_at', { ascending: true });
+      const list = document.getElementById('meta-comments-list');
+      if (!data || data.length === 0) {
+        list.innerHTML = '<p class="text-center text-gray-400 text-xs py-4">Sin comentarios aún</p>';
+        return;
+      }
+      list.innerHTML = data.map(c => {
+        const p = c.profiles || {};
+        const name = p.display_name || p.username || 'Usuario';
+        const avatar = p.avatar_url
+          ? `<img src="${esc(p.avatar_url)}" class="w-7 h-7 rounded-full object-cover flex-shrink-0">`
+          : `<div class="w-7 h-7 rounded-full bg-creo-mint/20 flex items-center justify-center flex-shrink-0"><span class="text-creo-mint text-[10px] font-bold">${esc(name[0].toUpperCase())}</span></div>`;
+        return `<div class="flex gap-2">
+          ${avatar}
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-xs text-creo-purple">${esc(name)}</span>
+              <span class="text-gray-400 text-[10px]">${timeAgo(c.created_at)}</span>
+            </div>
+            <p class="text-sm text-gray-700">${esc(c.body)}</p>
+          </div>
+        </div>`;
+      }).join('');
+      list.scrollTop = list.scrollHeight;
+    }
+
+    async function submitMetaComment() {
+      if (!activeMetaId) return;
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { showToast('Inicia sesión para comentar', 'error'); return; }
+      const input = document.getElementById('meta-comment-input');
+      const body = input.value.trim();
+      if (!body) return;
+      input.value = '';
+      const { data, error } = await sb.rpc('add_meta_comment', { p_meta_id: activeMetaId, p_body: body });
+      if (error) { showToast(error.message || 'Error', 'error'); return; }
+      metasCache[activeMetaId].comment_count = data.count;
+      document.getElementById('meta-comment-count').textContent = data.count > 0 ? data.count : '';
+      if (creatorProfile) createNotification(creatorProfile.id, 'meta_comment', 'Nuevo comentario en tu meta', body);
+      loadMetaComments(activeMetaId);
+    }
+
+    function shareMetaPost() {
+      if (!activeMetaId || !creatorProfile) return;
+      const url = 'https://fullnessmindset.github.io/creo/profile.html?u=' + creatorProfile.username;
+      if (navigator.share) {
+        navigator.share({ title: 'CREO — ' + (metasCache[activeMetaId]?.title || 'Meta'), url });
+      } else {
+        navigator.clipboard.writeText(url);
+        showToast('Enlace copiado', 'success');
+      }
+      createNotification(creatorProfile.id, 'share', 'Alguien compartió tu meta', metasCache[activeMetaId]?.title);
+    }
+
+    function shareMetaById(metaId) {
+      if (!creatorProfile) return;
+      const url = 'https://fullnessmindset.github.io/creo/profile.html?u=' + creatorProfile.username;
+      if (navigator.share) {
+        navigator.share({ title: 'CREO — ' + (metasCache[metaId]?.title || 'Meta'), url });
+      } else {
+        navigator.clipboard.writeText(url);
+        showToast('Enlace copiado', 'success');
+      }
+      createNotification(creatorProfile.id, 'share', 'Alguien compartió tu meta', metasCache[metaId]?.title);
+    }
+
+    function timeAgo(dateStr) {
+      const diff = Date.now() - new Date(dateStr).getTime();
+      const mins = Math.floor(diff / 60000);
+      if (mins < 1) return 'ahora';
+      if (mins < 60) return mins + 'm';
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return hrs + 'h';
+      const days = Math.floor(hrs / 24);
+      if (days < 30) return days + 'd';
+      return Math.floor(days / 30) + 'mes';
+    }
+
+    // Creamos invite system
+    let creamosMetaId = null;
+
+    function openCreamos(metaId) {
+      creamosMetaId = metaId;
+      document.getElementById('creamos-username').value = '';
+      document.getElementById('creamos-modal').classList.remove('hidden');
+    }
+
+    function closeCreamos() {
+      document.getElementById('creamos-modal').classList.add('hidden');
+      creamosMetaId = null;
+    }
+
+    async function sendCreamosInvite() {
+      if (!creamosMetaId) return;
+      const usernameInput = document.getElementById('creamos-username').value.trim();
+      if (!usernameInput) return showToast('Ingresa un username', 'error');
+      const btn = document.getElementById('creamos-send-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<span>Enviando...</span>';
+      const { data, error } = await sb.rpc('send_meta_invite', { p_meta_id: creamosMetaId, p_invitee_username: usernameInput });
+      btn.disabled = false;
+      btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg><span>Enviar Invitación</span>';
+      if (error) { showToast(error.message || 'Error al invitar', 'error'); return; }
+      showToast('Invitación enviada a @' + usernameInput, 'success');
+      closeCreamos();
+    }
+
+    document.getElementById('meta-comment-input')?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') submitMetaComment();
+    });
+
+    window.onload = async () => {
+      await fetchProfile();
       renderBottomNav('profile');
       updateNavAuth();
+      loadNotificationBell();
+      showCreamosForOwner();
       const status = urlParams.get('status');
       if (status === 'completed') showToast('¡Gracias por tu apoyo!', 'success');
       if (status === 'meta_completed') showToast('¡Gracias por contribuir a la meta!', 'success');
