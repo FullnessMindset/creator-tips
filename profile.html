@@ -389,6 +389,29 @@
         document.getElementById('profile-header-card').classList.add('-mt-8');
       }
 
+      // Apply custom profile colors
+      const colors = data.profile_colors || {};
+      if (colors.primary || colors.accent) {
+        const root = document.documentElement;
+        if (colors.primary) root.style.setProperty('--creo-profile-primary', colors.primary);
+        if (colors.accent) root.style.setProperty('--creo-profile-accent', colors.accent);
+        document.querySelectorAll('.bg-creo-purple').forEach(el => { el.style.backgroundColor = colors.primary || ''; });
+        document.querySelectorAll('.text-creo-purple').forEach(el => { el.style.color = colors.primary || ''; });
+        document.querySelectorAll('.glass-mint').forEach(el => { if (colors.accent) el.style.borderColor = colors.accent + '4D'; });
+      }
+
+      // Apply background media
+      if (data.bg_media_url) {
+        const bgContainer = document.createElement('div');
+        bgContainer.className = 'fixed inset-0 -z-10 overflow-hidden';
+        if (/\.(mp4|webm|mov)$/i.test(data.bg_media_url)) {
+          bgContainer.innerHTML = `<video src="${data.bg_media_url}" class="w-full h-full object-cover opacity-20" autoplay muted loop playsinline></video>`;
+        } else {
+          bgContainer.innerHTML = `<img src="${data.bg_media_url}" class="w-full h-full object-cover opacity-20">`;
+        }
+        document.body.prepend(bgContainer);
+      }
+
       // Verified badge: Stripe-verified users OR admin
       if (data.verification_status === 'approved' || isAdmin(data.email || '')) {
         document.getElementById('verified-badge').classList.remove('hidden');
@@ -414,7 +437,8 @@
         }
       }
 
-      loadCreatorMetas(data.id);
+      await loadCreatorMetas(data.id);
+      showCreamosForOwner();
     }
 
     function disablePayments() {
@@ -1332,7 +1356,6 @@
       updateNavAuth();
       loadNotificationBell();
       addMessagesNavItem();
-      showCreamosForOwner();
       const status = urlParams.get('status');
       if (status === 'completed') showToast('¡Gracias por tu apoyo!', 'success');
       if (status === 'meta_completed') showToast('¡Gracias por contribuir a la meta!', 'success');

@@ -45,6 +45,15 @@
       <input id="email" type="email" placeholder="Email" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple">
       <input id="password" type="password" placeholder="Contraseña" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple">
       <div id="register-terms" class="hidden space-y-3 text-xs text-gray-600 bg-gray-50 rounded-xl p-4">
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">🌐 Idioma / Language</label>
+          <select id="reg-language" class="w-full border border-gray-300 bg-white p-2 rounded-lg text-sm text-gray-900 outline-none">
+            <option value="es">🇪🇸 Español</option>
+            <option value="en">🇺🇸 English</option>
+            <option value="pt">🇧🇷 Português</option>
+            <option value="fr">🇫🇷 Français</option>
+          </select>
+        </div>
         <label class="flex items-start gap-2 cursor-pointer">
           <input type="checkbox" id="accept-terms" class="mt-0.5 accent-creo-purple">
           <span>Acepto los <a href="#" class="text-creo-purple underline">Términos de Servicio</a> y la <a href="#" class="text-creo-purple underline">Política de Privacidad</a> de CREO.</span>
@@ -184,6 +193,25 @@
             <input id="social-linkedin" type="url" placeholder="LinkedIn URL" class="border border-gray-300 bg-gray-50 p-2 rounded-lg text-sm text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple">
           </div>
 
+          <h4 class="font-semibold text-sm text-gray-700 pt-2">🎨 Personalización del Perfil</h4>
+          <p class="text-[10px] text-gray-400 -mt-3">Elige los colores de tu perfil público</p>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[10px] text-gray-500 mb-1">Color Principal</label>
+              <input id="color-primary" type="color" value="#1a0a3e" class="w-full h-10 rounded-lg border border-gray-300 cursor-pointer">
+            </div>
+            <div>
+              <label class="block text-[10px] text-gray-500 mb-1">Color Acento</label>
+              <input id="color-accent" type="color" value="#33f0b0" class="w-full h-10 rounded-lg border border-gray-300 cursor-pointer">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">Fondo de Perfil (imagen o video corto en loop)</label>
+            <input type="file" id="bg-media-file" accept="image/*,video/mp4,video/webm" onchange="uploadBgMedia()" class="block w-full text-xs text-gray-500 file:mr-2 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-creo-purple/10 file:text-creo-purple cursor-pointer">
+            <p class="text-[10px] text-gray-400 mt-1">JPG, PNG o MP4/WebM (max 10MB). El video se reproducirá en loop.</p>
+            <div id="bg-media-preview" class="mt-2 rounded-lg overflow-hidden hidden"></div>
+          </div>
+
           <button onclick="saveProfile()" id="save-profile-btn" class="w-full bg-creo-purple hover:bg-creo-light text-white py-3 rounded-xl font-semibold transition">Guardar Perfil</button>
         </div>
 
@@ -309,11 +337,11 @@
             <div id="meta-images-preview" class="flex flex-wrap gap-2 mt-2"></div>
           </div>
 
-          <!-- Video URL -->
+          <!-- Video Upload -->
           <div>
             <label class="block text-xs font-medium text-gray-500 mb-1">Video de la meta (opcional)</label>
-            <input id="meta-video-url" type="url" placeholder="https://youtube.com/watch?v=... o enlace de TikTok" class="w-full border border-gray-300 bg-gray-50 p-2 rounded-lg text-sm text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple">
-            <p class="text-[10px] text-gray-400 mt-1">YouTube, TikTok o enlace directo a video</p>
+            <input type="file" id="meta-video-file" accept="video/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-creo-purple/10 file:text-creo-purple cursor-pointer">
+            <p class="text-[10px] text-gray-400 mt-1">Sube un video explicando tu meta (Máx 50MB)</p>
           </div>
 
           <!-- Product Links -->
@@ -436,15 +464,17 @@
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-gray-500 mb-1">📹 Video Principal (URL)</label>
-            <input id="story-main-video" type="url" placeholder="https://tu-video.com/mi-historia.mp4" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple text-sm">
-            <p class="text-[10px] text-gray-400 mt-1">Explícale al mundo tu historia en no más de 5 minutos. Comparte cómo has llegado hasta aquí y luego di tu meta.</p>
+            <label class="block text-xs font-medium text-gray-500 mb-1">📹 Video Principal</label>
+            <input type="file" id="story-main-video-file" accept="video/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-creo-purple/10 file:text-creo-purple cursor-pointer">
+            <p class="text-[10px] text-gray-400 mt-1">Explícale al mundo tu historia en no más de 5 minutos. Comparte cómo has llegado hasta aquí y luego di tu meta. (Máx 50MB)</p>
+            <div id="story-video-preview" class="hidden mt-2"><video class="w-full rounded-lg" controls></video></div>
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-gray-500 mb-1">📎 Imágenes y Audios Adicionales (URLs, una por línea)</label>
-            <textarea id="story-media" placeholder="Carta escrita a mano, foto de tu equipo antiguo, audio grabado...&#10;https://ejemplo.com/mi-carta.jpg&#10;https://ejemplo.com/audio-mensaje.mp3" rows="3" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple text-sm font-mono text-xs"></textarea>
-            <p class="text-[10px] text-gray-400 mt-1">Sube fotos de cartas escritas a mano, fotos de equipos antiguos, o graba un audio con tu historia.</p>
+            <label class="block text-xs font-medium text-gray-500 mb-1">📎 Imágenes y Audios Adicionales</label>
+            <input type="file" id="story-media-files" accept="image/*,audio/*,video/*" multiple class="block w-full text-xs text-gray-500 file:mr-2 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-creo-purple/10 file:text-creo-purple cursor-pointer">
+            <p class="text-[10px] text-gray-400 mt-1">Sube fotos de cartas escritas a mano, fotos de equipos antiguos, o graba un audio con tu historia. (Máx 10MB c/u)</p>
+            <div id="story-media-preview" class="flex flex-wrap gap-2 mt-2"></div>
           </div>
 
           <button onclick="createStory()" id="create-story-btn" class="w-full bg-creo-purple hover:bg-creo-light text-white py-3 rounded-xl font-semibold transition">Publicar Historia</button>
@@ -460,7 +490,8 @@
           <input id="biz-title" type="text" placeholder="Título del enlace" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple text-sm">
           <input id="biz-url" type="url" placeholder="https://tu-sitio.com" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple text-sm">
           <input id="biz-desc" type="text" placeholder="Descripción corta (opcional)" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple text-sm">
-          <input id="biz-image" type="url" placeholder="URL de imagen (opcional)" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple text-sm">
+          <label class="block text-xs font-medium text-gray-500 mb-1">Imagen (opcional)</label>
+          <input type="file" id="biz-image-file" accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-creo-purple/10 file:text-creo-purple cursor-pointer">
           <button onclick="createBusinessLink()" id="create-biz-btn" class="w-full bg-creo-purple hover:bg-creo-light text-white py-3 rounded-xl font-semibold transition">Agregar Enlace</button>
         </div>
         <div id="my-biz-list" class="space-y-3"></div>
@@ -512,10 +543,6 @@
     async function checkUser() {
       const { data: { user } } = await sb.auth.getUser();
       if (user) {
-        if (isAdmin(user.email) && !sessionStorage.getItem('browse_as_user')) {
-          window.location.href = 'admin.html';
-          return;
-        }
         currentUser = user;
         document.getElementById('auth-section').classList.add('hidden');
         document.getElementById('dashboard-section').classList.remove('hidden');
@@ -542,6 +569,18 @@
           document.getElementById('contact-email').value = data.contact_email || '';
           document.getElementById('contact-phone').value = data.contact_phone || '';
           document.getElementById('contact-type').value = data.contact_type || 'phone';
+          const colors = data.profile_colors || {};
+          document.getElementById('color-primary').value = colors.primary || '#1a0a3e';
+          document.getElementById('color-accent').value = colors.accent || '#33f0b0';
+          if (data.bg_media_url) {
+            const preview = document.getElementById('bg-media-preview');
+            preview.classList.remove('hidden');
+            if (/\.(mp4|webm|mov)$/i.test(data.bg_media_url)) {
+              preview.innerHTML = `<video src="${data.bg_media_url}" class="w-full h-24 object-cover rounded-lg" autoplay muted loop playsinline></video>`;
+            } else {
+              preview.innerHTML = `<img src="${data.bg_media_url}" class="w-full h-24 object-cover rounded-lg">`;
+            }
+          }
           document.getElementById('profile-link').innerText = 'https://fullnessmindset.github.io/creo/profile.html?u=' + (data.username || '');
           document.getElementById('v-email').value = user.email;
           document.getElementById('v-fullname').value = data.full_name || '';
@@ -768,7 +807,8 @@
       if (!document.getElementById('accept-conduct').checked) return showToast('Debes aceptar las normas de conducta', 'error');
       const { data, error } = await sb.auth.signUp({ email, password });
       if (error) return showToast(error.message, 'error');
-      await sb.from('profiles').insert([{ id: data.user.id, username: 'user_' + Math.floor(Math.random() * 100000), verification_status: 'approved', accepted_terms: true, accepted_conduct: true }]);
+      const language = document.getElementById('reg-language')?.value || 'es';
+      await sb.from('profiles').insert([{ id: data.user.id, username: 'user_' + Math.floor(Math.random() * 100000), verification_status: 'approved', accepted_terms: true, accepted_conduct: true, language }]);
       showToast('Cuenta creada. Revisa tu email para confirmar.', 'success');
       checkUser();
     }
@@ -779,10 +819,6 @@
       if (!email || !password) return showToast('Ingresa email y contraseña', 'error');
       const { data, error } = await sb.auth.signInWithPassword({ email, password });
       if (error) return showToast(error.message, 'error');
-      if (isAdmin(data.user.email) && !sessionStorage.getItem('browse_as_user')) {
-        window.location.href = 'admin.html';
-        return;
-      }
       checkUser();
     }
 
@@ -815,12 +851,33 @@
       const contact_email = document.getElementById('contact-email').value.trim() || null;
       const contact_phone = document.getElementById('contact-phone').value.trim() || null;
       const contact_type = document.getElementById('contact-type').value;
-      const { error } = await sb.from('profiles').update({ username, display_name: display_name || username, bio, social_links, contact_email, contact_phone, contact_type }).eq('id', currentUser.id);
+      const profile_colors = {
+        primary: document.getElementById('color-primary').value,
+        accent: document.getElementById('color-accent').value
+      };
+      const { error } = await sb.from('profiles').update({ username, display_name: display_name || username, bio, social_links, contact_email, contact_phone, contact_type, profile_colors }).eq('id', currentUser.id);
       btn.innerText = 'Guardar Perfil'; btn.disabled = false;
       if (error) return showToast(error.message, 'error');
       document.getElementById('profile-link').innerText = 'https://fullnessmindset.github.io/creo/profile.html?u=' + username;
       currentProfile.social_links = social_links;
       showToast('Perfil guardado', 'success');
+    }
+
+    async function uploadBgMedia() {
+      const input = document.getElementById('bg-media-file');
+      const file = input.files[0];
+      if (!file) return;
+      const url = await uploadToStorage(file, 'backgrounds', 10);
+      if (!url) return;
+      await sb.from('profiles').update({ bg_media_url: url }).eq('id', currentUser.id);
+      const preview = document.getElementById('bg-media-preview');
+      preview.classList.remove('hidden');
+      if (file.type.startsWith('video/')) {
+        preview.innerHTML = `<video src="${url}" class="w-full h-24 object-cover rounded-lg" autoplay muted loop playsinline></video>`;
+      } else {
+        preview.innerHTML = `<img src="${url}" class="w-full h-24 object-cover rounded-lg">`;
+      }
+      showToast('Fondo actualizado', 'success');
     }
 
     // METAS
@@ -858,19 +915,22 @@
       const start_date = document.getElementById('meta-start').value;
       const end_date = document.getElementById('meta-end').value;
       const productLink = document.getElementById('meta-product-link').value.trim();
-      const videoUrl = document.getElementById('meta-video-url').value.trim();
+      const metaVideoFile = document.getElementById('meta-video-file').files[0];
 
       if (!title || !description || !goal || goal < 10 || !start_date || !end_date) {
         btn.innerText = 'Crear Meta'; btn.disabled = false;
         return showToast('Completa título, descripción, meta ($10 min), y fechas', 'error');
       }
-      if (metaImageUrls.length === 0 && !videoUrl) {
+      if (metaImageUrls.length === 0 && !metaVideoFile) {
         btn.innerText = 'Crear Meta'; btn.disabled = false;
         return showToast('Sube al menos una imagen o video de tu meta', 'error');
       }
 
       const allMedia = [...metaImageUrls];
-      if (videoUrl) allMedia.push(videoUrl);
+      if (metaVideoFile) {
+        const videoUrl = await uploadToStorage(metaVideoFile, 'videos', 50);
+        if (videoUrl) allMedia.push(videoUrl);
+      }
       const product_links = productLink ? [{ url: productLink }] : [];
 
       const { data: metaData, error } = await sb.from('metas').insert([{
@@ -890,7 +950,7 @@
       document.getElementById('meta-desc').value = '';
       document.getElementById('meta-goal').value = '';
       document.getElementById('meta-product-link').value = '';
-      document.getElementById('meta-video-url').value = '';
+      document.getElementById('meta-video-file').value = '';
       document.getElementById('meta-images-preview').innerHTML = '';
       metaImageUrls = [];
       showToast('Meta creada', 'success');
@@ -1209,24 +1269,36 @@
       btn.innerText = 'Publicando...'; btn.disabled = true;
       const title = document.getElementById('story-title').value.trim();
       const content = document.getElementById('story-content').value.trim();
-      const mainVideo = document.getElementById('story-main-video').value.trim();
-      const mediaText = document.getElementById('story-media').value.trim();
-      const media_urls = mediaText ? mediaText.split('\n').map(u => u.trim()).filter(u => u) : [];
-      if (!content && !mainVideo && media_urls.length === 0) { btn.innerText = 'Publicar Historia'; btn.disabled = false; return showToast('Agrega al menos una descripción, video o media', 'error'); }
+      const mainVideoFile = document.getElementById('story-main-video-file').files[0];
+      const mediaFiles = document.getElementById('story-media-files').files;
+      if (!content && !mainVideoFile && mediaFiles.length === 0) { btn.innerText = 'Publicar Historia'; btn.disabled = false; return showToast('Agrega al menos una descripción, video o media', 'error'); }
+      let mainVideoUrl = null;
+      if (mainVideoFile) {
+        mainVideoUrl = await uploadToStorage(mainVideoFile, 'videos', 50);
+        if (!mainVideoUrl) { btn.innerText = 'Publicar Historia'; btn.disabled = false; return; }
+      }
+      const media_urls = [];
+      for (const file of mediaFiles) {
+        const bucket = file.type.startsWith('audio/') ? 'documents' : file.type.startsWith('video/') ? 'videos' : 'meta-images';
+        const url = await uploadToStorage(file, bucket, 10);
+        if (url) media_urls.push(url);
+      }
       const { error } = await sb.from('creator_stories').insert({
         creator_id: currentUser.id,
         title: title || null,
         description: content || null,
         content: content || null,
-        main_video_url: mainVideo || null,
+        main_video_url: mainVideoUrl,
         media_urls: media_urls.length ? media_urls : null
       });
       btn.innerText = 'Publicar Historia'; btn.disabled = false;
       if (error) return showToast(error.message, 'error');
       document.getElementById('story-title').value = '';
       document.getElementById('story-content').value = '';
-      document.getElementById('story-main-video').value = '';
-      document.getElementById('story-media').value = '';
+      document.getElementById('story-main-video-file').value = '';
+      document.getElementById('story-media-files').value = '';
+      document.getElementById('story-video-preview').classList.add('hidden');
+      document.getElementById('story-media-preview').innerHTML = '';
       showToast('Historia publicada', 'success');
       loadMyStories();
     }
@@ -1260,19 +1332,22 @@
       const title = document.getElementById('biz-title').value.trim();
       const url = document.getElementById('biz-url').value.trim();
       const description = document.getElementById('biz-desc').value.trim();
-      const image_url = document.getElementById('biz-image').value.trim();
+      const imageFile = document.getElementById('biz-image-file').files[0];
       if (!title || !url) return showToast('Título y URL son requeridos', 'error');
-      // Check limit
       const { count } = await sb.from('business_links').select('*', { count: 'exact', head: true }).eq('creator_id', currentUser.id);
       if (count >= 10) return showToast('Máximo 10 enlaces permitidos', 'error');
       btn.innerText = 'Agregando...'; btn.disabled = true;
-      const { error } = await sb.from('business_links').insert({ creator_id: currentUser.id, title, url, description: description || null, image_url: image_url || null, sort_order: (count || 0) + 1 });
+      let image_url = null;
+      if (imageFile) {
+        image_url = await uploadToStorage(imageFile, 'meta-images', 5);
+      }
+      const { error } = await sb.from('business_links').insert({ creator_id: currentUser.id, title, url, description: description || null, image_url, sort_order: (count || 0) + 1 });
       btn.innerText = 'Agregar Enlace'; btn.disabled = false;
       if (error) return showToast(error.message, 'error');
       document.getElementById('biz-title').value = '';
       document.getElementById('biz-url').value = '';
       document.getElementById('biz-desc').value = '';
-      document.getElementById('biz-image').value = '';
+      document.getElementById('biz-image-file').value = '';
       showToast('Enlace agregado', 'success');
       loadMyBusinessLinks();
     }

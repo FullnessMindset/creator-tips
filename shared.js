@@ -6,10 +6,48 @@ const ADMIN_EMAIL = 'fullnessmindset@gmail.com';
 
 function isAdmin(email) { return email === ADMIN_EMAIL; }
 
-// Theme — light only
-function initTheme() { document.documentElement.classList.remove('dark'); }
-function toggleTheme() {}
-function updateThemeIcons() {}
+// Theme — light/dark
+function initTheme() {
+  const saved = localStorage.getItem('creo-theme') || 'light';
+  applyTheme(saved);
+}
+function applyTheme(t) {
+  if (t === 'dark') {
+    document.documentElement.classList.add('dark');
+    document.body.classList.add('bg-gray-900', 'text-white');
+    document.body.classList.remove('bg-gray-50', 'text-gray-900');
+  } else {
+    document.documentElement.classList.remove('dark');
+    document.body.classList.add('bg-gray-50', 'text-gray-900');
+    document.body.classList.remove('bg-gray-900', 'text-white');
+  }
+  localStorage.setItem('creo-theme', t);
+  updateThemeIcons();
+}
+function toggleTheme() {
+  const current = localStorage.getItem('creo-theme') || 'light';
+  applyTheme(current === 'light' ? 'dark' : 'light');
+}
+function updateThemeIcons() {
+  const isDark = document.documentElement.classList.contains('dark');
+  document.querySelectorAll('.theme-icon-sun').forEach(e => e.classList.toggle('hidden', isDark));
+  document.querySelectorAll('.theme-icon-moon').forEach(e => e.classList.toggle('hidden', !isDark));
+}
+
+// Generic file upload helper — returns public URL or null
+async function uploadToStorage(file, bucket, maxMB) {
+  if (!file) return null;
+  if (file.size > (maxMB || 10) * 1024 * 1024) { showToast('Archivo max ' + (maxMB || 10) + 'MB', 'error'); return null; }
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) { showToast('Inicia sesión', 'error'); return null; }
+  const ext = file.name.split('.').pop();
+  const path = user.id + '/' + Date.now() + '.' + ext;
+  showToast('Subiendo...', 'info');
+  const { error } = await sb.storage.from(bucket).upload(path, file, { upsert: true });
+  if (error) { showToast('Error: ' + error.message, 'error'); return null; }
+  const { data: urlData } = sb.storage.from(bucket).getPublicUrl(path);
+  return urlData.publicUrl;
+}
 
 // HTML escape
 function esc(str) {
@@ -99,6 +137,14 @@ function renderBottomNav(activePage) {
   nav.appendChild(inner);
   document.body.appendChild(nav);
   document.body.style.paddingBottom = '4rem';
+  // Theme toggle button — top left
+  const themeBtn = document.createElement('button');
+  themeBtn.id = 'theme-toggle-btn';
+  themeBtn.className = 'fixed top-3 left-4 z-[60] p-2 rounded-full glass hover:shadow-md transition';
+  themeBtn.onclick = toggleTheme;
+  themeBtn.innerHTML = '<svg class="w-5 h-5 text-gray-500 theme-icon-sun" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg><svg class="w-5 h-5 text-yellow-400 theme-icon-moon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>';
+  document.body.appendChild(themeBtn);
+  updateThemeIcons();
 }
 
 async function updateNavAuth() {
@@ -112,14 +158,24 @@ async function updateNavAuth() {
       const perfil = document.querySelector('#bottom-nav a:nth-child(4)');
       if (perfil) perfil.href = 'profile.html?u=' + data.username;
     }
-    if (isAdmin(user.email) && sessionStorage.getItem('browse_as_user')) {
+    if (isAdmin(user.email)) {
       const nav = document.querySelector('#bottom-nav .max-w-lg');
       if (nav) {
+        const isAdminMode = sessionStorage.getItem('admin_mode') === 'true';
         const btn = document.createElement('a');
         btn.href = '#';
-        btn.className = 'flex flex-col items-center gap-0.5 py-1 px-2 rounded-lg transition-colors text-creo-mintDark hover:text-creo-purple';
+        btn.className = 'flex flex-col items-center gap-0.5 py-1 px-2 rounded-lg transition-colors ' + (isAdminMode ? 'text-creo-mint' : 'text-gray-400 hover:text-creo-purple');
         btn.innerHTML = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg><span class="text-[10px] font-medium">Admin</span>';
-        btn.onclick = (e) => { e.preventDefault(); sessionStorage.removeItem('browse_as_user'); window.location.href = 'admin.html'; };
+        btn.onclick = (e) => {
+          e.preventDefault();
+          if (isAdminMode) {
+            sessionStorage.removeItem('admin_mode');
+            window.location.href = 'index.html';
+          } else {
+            sessionStorage.setItem('admin_mode', 'true');
+            window.location.href = 'admin.html';
+          }
+        };
         nav.appendChild(btn);
       }
     }
