@@ -81,7 +81,7 @@
         <button onclick="closeComments()" class="text-gray-400 hover:text-gray-700 p-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
       </div>
       <div id="comments-list" class="flex-1 overflow-y-auto px-4 py-3 space-y-3"></div>
-      <div id="comments-input-area" class="border-t border-gray-200 px-4 py-3 hidden">
+      <div id="comments-input-area" class="border-t border-gray-200 px-4 py-3">
         <div id="reply-indicator" class="hidden flex items-center justify-between mb-2 px-1">
           <span class="text-xs text-creo-mintDark font-semibold" id="reply-to-label">Respondiendo a...</span>
           <button onclick="cancelReply()" class="text-gray-400 hover:text-gray-700 text-xs">Cancelar</button>
@@ -174,7 +174,7 @@
       activeCommentsPostId = postId;
       const drawer = document.getElementById('comments-drawer');
       drawer.classList.remove('hidden');
-      document.getElementById('comments-input-area').classList.toggle('hidden', !currentUser);
+      if (!currentUser) { const { data: { user } } = await sb.auth.getUser(); currentUser = user; }
       cancelReply();
       document.getElementById('comments-list').innerHTML = '<div class="text-center py-6"><div class="inline-block w-5 h-5 border-2 border-creo-mintDark border-t-transparent rounded-full animate-spin"></div></div>';
 
@@ -267,6 +267,11 @@
     }
 
     async function submitComment() {
+      if (!currentUser) {
+        const { data: { user } } = await sb.auth.getUser();
+        currentUser = user;
+      }
+      if (!currentUser) { showToast('Inicia sesión para comentar', 'error'); return; }
       const input = document.getElementById('comment-input');
       const body = input.value.trim();
       if (!body) return;
