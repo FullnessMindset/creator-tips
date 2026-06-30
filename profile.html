@@ -318,7 +318,15 @@
     let metaLikesSet = new Set();
 
     async function loadCreatorMetas(creatorId) {
-      const { data } = await sb.from('metas').select('*').eq('creator_id', creatorId).eq('is_active', true).order('created_at', { ascending: false });
+      const { data: ownedMetas } = await sb.from('metas').select('*').eq('creator_id', creatorId).eq('is_active', true).order('created_at', { ascending: false });
+      const { data: collabEntries } = await sb.from('meta_collaborators').select('meta_id').eq('user_id', creatorId);
+      const collabMetaIds = (collabEntries || []).map(c => c.meta_id).filter(id => !(ownedMetas || []).some(m => m.id === id));
+      let jointMetas = [];
+      if (collabMetaIds.length > 0) {
+        const { data: jm } = await sb.from('metas').select('*').in('id', collabMetaIds).eq('is_active', true);
+        jointMetas = jm || [];
+      }
+      const data = [...(ownedMetas || []), ...jointMetas];
       const container = document.getElementById('metas-container');
       const noMetas = document.getElementById('no-metas');
 
