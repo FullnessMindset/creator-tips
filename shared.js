@@ -189,4 +189,83 @@ async function createNotification(targetUserId, type, title, body) {
   await sb.from('notifications').insert([{ user_id: targetUserId, type, title, body }]);
 }
 
+// Emoji Picker
+const EMOJI_CATEGORIES = {
+  'Frecuentes': ['😀','😂','🥹','❤️','🔥','👏','🙌','💯','✨','🎉','👍','🙏','😍','🥰','😘','💪','🤝','💜','💚','🤩','😎','🫶','💕','🌟','⭐'],
+  'Caras': ['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','😊','😇','🥰','😍','🤩','😘','😗','😚','😙','🥲','😋','😛','😜','🤪','😝','🤑','🤗','🤭','🫢','🤫','🤔','🫡','🤐','🤨','😐','😑','😶','🫥','😏','😒','🙄','😬','🤥','😌','😔','😪','🤤','😴','😷','🤒','🤕','🤢','🤮','🥵','🥶','🥴','😵','🤯','🤠','🥳','🥸','😎','🤓','🧐','😕','🫤','😟','🙁','😮','😯','😲','😳','🥺','🥹','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓','😩','😫','🥱','😤','😡','😠','🤬','😈','👿','💀'],
+  'Gestos': ['👋','🤚','🖐️','✋','🖖','🫱','🫲','🫳','🫴','👌','🤌','🤏','✌️','🤞','🫰','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','🫵','👍','👎','✊','👊','🤛','🤜','👏','🙌','🫶','👐','🤲','🤝','🙏','💪'],
+  'Corazones': ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❤️‍🩹','❣️','💕','💞','💓','💗','💖','💘','💝'],
+  'Animales': ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🦅','🦆','🦉','🦋','🐛','🐝','🐞','🦀','🐙','🐚','🐬','🐳','🐊','🦕','🦖','🦈'],
+  'Comida': ['🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🥑','🍕','🍔','🍟','🌭','🌮','🌯','🍿','🧁','🍰','🍩','🍪','🍫','🍬','☕','🍵','🧃','🍺','🍷','🥂','🍾'],
+  'Objetos': ['⚽','🏀','🏈','⚾','🎾','🏐','🎱','🏓','🎮','🕹️','🎯','🎪','🎨','🎬','🎤','🎧','🎵','🎶','🎹','🥁','🎷','🎺','🎸','💻','📱','📸','🔑','💡','📚','✏️','📌','💰','💎','🏆','🥇','🎖️','🏅','🎗️']
+};
+
+function createEmojiPicker(inputId, btnId) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.onclick = (e) => {
+    e.preventDefault(); e.stopPropagation();
+    let existing = document.getElementById('emoji-picker-panel');
+    if (existing) { existing.remove(); return; }
+    const panel = document.createElement('div');
+    panel.id = 'emoji-picker-panel';
+    panel.className = 'fixed z-[200] bg-white border border-gray-200 rounded-2xl shadow-2xl p-3 w-80 max-h-80';
+    const rect = btn.getBoundingClientRect();
+    panel.style.bottom = (window.innerHeight - rect.top + 8) + 'px';
+    panel.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - 330)) + 'px';
+    let activeCategory = 'Frecuentes';
+    function renderPicker() {
+      const tabs = Object.keys(EMOJI_CATEGORIES).map(cat =>
+        `<button class="px-2 py-1 text-xs rounded-lg whitespace-nowrap ${cat === activeCategory ? 'bg-creo-purple text-white' : 'text-gray-500 hover:bg-gray-100'}" data-cat="${cat}">${cat}</button>`
+      ).join('');
+      const emojis = EMOJI_CATEGORIES[activeCategory].map(e =>
+        `<button class="w-9 h-9 text-xl hover:bg-gray-100 rounded-lg transition flex items-center justify-center emoji-pick" data-emoji="${e}">${e}</button>`
+      ).join('');
+      panel.innerHTML = `<div class="flex gap-1 overflow-x-auto pb-2 mb-2 border-b border-gray-100 emoji-tabs">${tabs}</div><div class="grid grid-cols-8 gap-0.5 max-h-48 overflow-y-auto">${emojis}</div>`;
+    }
+    renderPicker();
+    panel.addEventListener('click', (ev) => {
+      const catBtn = ev.target.closest('[data-cat]');
+      if (catBtn) { activeCategory = catBtn.dataset.cat; renderPicker(); return; }
+      const emojiBtn = ev.target.closest('[data-emoji]');
+      if (emojiBtn) {
+        const input = document.getElementById(inputId);
+        if (input) {
+          const start = input.selectionStart || input.value.length;
+          input.value = input.value.slice(0, start) + emojiBtn.dataset.emoji + input.value.slice(input.selectionEnd || start);
+          input.focus();
+          input.selectionStart = input.selectionEnd = start + emojiBtn.dataset.emoji.length;
+        }
+      }
+    });
+    document.body.appendChild(panel);
+    setTimeout(() => {
+      const closePicker = (ev) => {
+        if (!panel.contains(ev.target) && ev.target !== btn && !btn.contains(ev.target)) {
+          panel.remove(); document.removeEventListener('click', closePicker);
+        }
+      };
+      document.addEventListener('click', closePicker);
+    }, 10);
+  };
+}
+
+function emojiButton(btnId) {
+  return `<button type="button" id="${btnId}" class="p-1.5 text-gray-400 hover:text-yellow-500 transition rounded-lg hover:bg-gray-100" title="Emojis">😊</button>`;
+}
+
+// Messages nav item
+function addMessagesNavItem() {
+  const nav = document.querySelector('#bottom-nav .max-w-lg');
+  if (!nav) return;
+  const postLink = nav.querySelector('[href="index.html#post"]');
+  if (!postLink) return;
+  const msgLink = document.createElement('a');
+  msgLink.href = 'messages.html';
+  msgLink.setAttribute('data-auth-only', 'true');
+  msgLink.className = 'flex flex-col items-center gap-0.5 py-1 px-2 rounded-lg transition-colors text-gray-400 hover:text-gray-600';
+  msgLink.innerHTML = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg><span class="text-[10px] font-medium">Mensajes</span>';
+  postLink.parentNode.insertBefore(msgLink, postLink);
+}
+
 initTheme();

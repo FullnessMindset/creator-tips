@@ -44,6 +44,19 @@
       <h3 class="text-lg font-bold text-center text-gray-900">Iniciar Sesión o Registrarse</h3>
       <input id="email" type="email" placeholder="Email" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple">
       <input id="password" type="password" placeholder="Contraseña" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple">
+      <div id="register-terms" class="hidden space-y-3 text-xs text-gray-600 bg-gray-50 rounded-xl p-4">
+        <label class="flex items-start gap-2 cursor-pointer">
+          <input type="checkbox" id="accept-terms" class="mt-0.5 accent-creo-purple">
+          <span>Acepto los <a href="#" class="text-creo-purple underline">Términos de Servicio</a> y la <a href="#" class="text-creo-purple underline">Política de Privacidad</a> de CREO.</span>
+        </label>
+        <label class="flex items-start gap-2 cursor-pointer">
+          <input type="checkbox" id="accept-conduct" class="mt-0.5 accent-creo-purple">
+          <span>Nuestra plataforma es para difundir bondad y apoyar a creadores como tú. Nos reservamos el derecho de admisión.</span>
+        </label>
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-[11px] text-amber-800 leading-relaxed">
+          Contenido con insinuación sexual, uso de drogas, palabras soeces o incitación a la violencia serán advertidos y luego expulsados de la plataforma sin previo aviso. No discriminamos por raza, religión, sexo u orientación sexual. Simplemente respete a los demás colaboradores de la plataforma.
+        </div>
+      </div>
       <div class="flex space-x-2">
         <button onclick="signUp()" class="bg-creo-purple hover:bg-creo-light text-white px-4 py-3 rounded-lg w-1/2 font-semibold transition">Registrarse</button>
         <button onclick="signIn()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-lg w-1/2 font-semibold transition">Entrar</button>
@@ -92,12 +105,14 @@
       </div>
 
       <!-- TABS -->
-      <div class="flex glass rounded-xl overflow-hidden text-[11px]">
-        <button onclick="showTab('profile')" id="tab-profile" class="flex-1 py-3 font-semibold text-center transition tab-active">Perfil</button>
-        <button onclick="showTab('verify')" id="tab-verify" class="flex-1 py-3 font-semibold text-center transition text-gray-400">Verificación</button>
-        <button onclick="showTab('metas')" id="tab-metas" class="flex-1 py-3 font-semibold text-center transition text-gray-400">Mis Metas</button>
-        <button onclick="showTab('posts')" id="tab-posts" class="flex-1 py-3 font-semibold text-center transition text-gray-400">Mis Posts</button>
-        <button onclick="showTab('stripe')" id="tab-stripe" class="flex-1 py-3 font-semibold text-center transition text-gray-400">Stripe</button>
+      <div class="flex glass rounded-xl overflow-x-auto text-[11px] no-scrollbar">
+        <button onclick="showTab('profile')" id="tab-profile" class="flex-shrink-0 px-3 py-3 font-semibold text-center transition tab-active">Perfil</button>
+        <button onclick="showTab('verify')" id="tab-verify" class="flex-shrink-0 px-3 py-3 font-semibold text-center transition text-gray-400">Verificación</button>
+        <button onclick="showTab('metas')" id="tab-metas" class="flex-shrink-0 px-3 py-3 font-semibold text-center transition text-gray-400">Mis Metas</button>
+        <button onclick="showTab('posts')" id="tab-posts" class="flex-shrink-0 px-3 py-3 font-semibold text-center transition text-gray-400">Mis Posts</button>
+        <button onclick="showTab('story')" id="tab-story" class="flex-shrink-0 px-3 py-3 font-semibold text-center transition text-gray-400">Historia</button>
+        <button onclick="showTab('business')" id="tab-business" class="flex-shrink-0 px-3 py-3 font-semibold text-center transition text-gray-400">Negocio</button>
+        <button onclick="showTab('stripe')" id="tab-stripe" class="flex-shrink-0 px-3 py-3 font-semibold text-center transition text-gray-400">Stripe</button>
       </div>
 
       <!-- TAB: Profile -->
@@ -143,6 +158,19 @@
           <div>
             <label class="block text-xs font-medium text-gray-500 mb-1">Bio</label>
             <textarea id="bio" placeholder="Cuéntale al mundo quién eres..." rows="2" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple text-sm"></textarea>
+          </div>
+
+          <h4 class="font-semibold text-sm text-gray-700 pt-2">Información de Contacto</h4>
+          <p class="text-[10px] text-gray-400 -mt-3">Visible en tu perfil público (opcional)</p>
+          <div class="space-y-3">
+            <input id="contact-email" type="email" placeholder="Email de contacto" class="w-full border border-gray-300 bg-gray-50 p-2 rounded-lg text-sm text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple">
+            <div class="flex gap-2">
+              <input id="contact-phone" type="tel" placeholder="Teléfono o WhatsApp" class="flex-1 border border-gray-300 bg-gray-50 p-2 rounded-lg text-sm text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple">
+              <select id="contact-type" class="border border-gray-300 bg-gray-50 p-2 rounded-lg text-sm text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple">
+                <option value="phone">📞 Teléfono</option>
+                <option value="whatsapp">💬 WhatsApp</option>
+              </select>
+            </div>
           </div>
 
           <h4 class="font-semibold text-sm text-gray-700 pt-2">Redes Sociales <span class="text-red-500">*</span></h4>
@@ -391,6 +419,53 @@
         <div id="posts-list" class="space-y-3"></div>
       </div>
 
+      <!-- TAB: Story -->
+      <div id="panel-story" class="tab-panel hidden space-y-4">
+        <div class="bg-white p-6 rounded-xl shadow border border-gray-200 space-y-4">
+          <h3 class="font-bold text-gray-900">Mi Historia</h3>
+          <p class="text-xs text-gray-500">Deja que la gente te conozca más. Comparte cómo has llegado hasta aquí.</p>
+
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">Título</label>
+            <input id="story-title" type="text" placeholder="Ej: Mi camino como creador" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple text-sm">
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">Descripción</label>
+            <textarea id="story-content" placeholder="Cuéntale al mundo tu historia..." rows="4" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple text-sm"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">📹 Video Principal (URL)</label>
+            <input id="story-main-video" type="url" placeholder="https://tu-video.com/mi-historia.mp4" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple text-sm">
+            <p class="text-[10px] text-gray-400 mt-1">Explícale al mundo tu historia en no más de 5 minutos. Comparte cómo has llegado hasta aquí y luego di tu meta.</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">📎 Imágenes y Audios Adicionales (URLs, una por línea)</label>
+            <textarea id="story-media" placeholder="Carta escrita a mano, foto de tu equipo antiguo, audio grabado...&#10;https://ejemplo.com/mi-carta.jpg&#10;https://ejemplo.com/audio-mensaje.mp3" rows="3" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple text-sm font-mono text-xs"></textarea>
+            <p class="text-[10px] text-gray-400 mt-1">Sube fotos de cartas escritas a mano, fotos de equipos antiguos, o graba un audio con tu historia.</p>
+          </div>
+
+          <button onclick="createStory()" id="create-story-btn" class="w-full bg-creo-purple hover:bg-creo-light text-white py-3 rounded-xl font-semibold transition">Publicar Historia</button>
+        </div>
+        <div id="my-stories-list" class="space-y-3"></div>
+      </div>
+
+      <!-- TAB: Business -->
+      <div id="panel-business" class="tab-panel hidden space-y-4">
+        <div class="bg-white p-6 rounded-xl shadow border border-gray-200 space-y-4">
+          <h3 class="font-bold text-gray-900">Mi Negocio</h3>
+          <p class="text-xs text-gray-500">Agrega enlaces a tus productos, sitios web o servicios (máximo 10).</p>
+          <input id="biz-title" type="text" placeholder="Título del enlace" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple text-sm">
+          <input id="biz-url" type="url" placeholder="https://tu-sitio.com" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple text-sm">
+          <input id="biz-desc" type="text" placeholder="Descripción corta (opcional)" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple text-sm">
+          <input id="biz-image" type="url" placeholder="URL de imagen (opcional)" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple text-sm">
+          <button onclick="createBusinessLink()" id="create-biz-btn" class="w-full bg-creo-purple hover:bg-creo-light text-white py-3 rounded-xl font-semibold transition">Agregar Enlace</button>
+        </div>
+        <div id="my-biz-list" class="space-y-3"></div>
+      </div>
+
       <!-- TAB: Stripe -->
       <div id="panel-stripe" class="tab-panel hidden space-y-4">
         <div class="bg-amber-50 p-6 rounded-xl border border-amber-200 space-y-3">
@@ -407,6 +482,8 @@
 
   <style>
     .tab-active { color: #1a0a3e; border-bottom: 2px solid #33f0b0; background: rgba(51,240,176,0.05); }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 
   <script>
@@ -417,6 +494,8 @@
       const tabBtn = document.getElementById('tab-' + tab);
       tabBtn.classList.add('tab-active');
       tabBtn.classList.remove('text-gray-400');
+      if (tab === 'story') loadMyStories();
+      if (tab === 'business') loadMyBusinessLinks();
     }
 
     // Business type toggle
@@ -460,6 +539,9 @@
           document.getElementById('social-twitter').value = socials.twitter || '';
           document.getElementById('social-facebook').value = socials.facebook || '';
           document.getElementById('social-linkedin').value = socials.linkedin || '';
+          document.getElementById('contact-email').value = data.contact_email || '';
+          document.getElementById('contact-phone').value = data.contact_phone || '';
+          document.getElementById('contact-type').value = data.contact_type || 'phone';
           document.getElementById('profile-link').innerText = 'https://fullnessmindset.github.io/creo/profile.html?u=' + (data.username || '');
           document.getElementById('v-email').value = user.email;
           document.getElementById('v-fullname').value = data.full_name || '';
@@ -676,9 +758,17 @@
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       if (!email || !password) return showToast('Ingresa email y contraseña', 'error');
+      // Show terms if hidden
+      const termsSection = document.getElementById('register-terms');
+      if (termsSection.classList.contains('hidden')) {
+        termsSection.classList.remove('hidden');
+        return showToast('Acepta los términos para continuar', 'error');
+      }
+      if (!document.getElementById('accept-terms').checked) return showToast('Debes aceptar los Términos y Política de Privacidad', 'error');
+      if (!document.getElementById('accept-conduct').checked) return showToast('Debes aceptar las normas de conducta', 'error');
       const { data, error } = await sb.auth.signUp({ email, password });
       if (error) return showToast(error.message, 'error');
-      await sb.from('profiles').insert([{ id: data.user.id, username: 'user_' + Math.floor(Math.random() * 100000), verification_status: 'approved' }]);
+      await sb.from('profiles').insert([{ id: data.user.id, username: 'user_' + Math.floor(Math.random() * 100000), verification_status: 'approved', accepted_terms: true, accepted_conduct: true }]);
       showToast('Cuenta creada. Revisa tu email para confirmar.', 'success');
       checkUser();
     }
@@ -722,7 +812,10 @@
       const hasSocial = Object.values(social_links).some(v => v);
       if (username.length < 3) { btn.innerText = 'Guardar Perfil'; btn.disabled = false; return showToast('Username mínimo 3 caracteres', 'error'); }
       if (!hasSocial) { btn.innerText = 'Guardar Perfil'; btn.disabled = false; return showToast('Agrega al menos 1 red social', 'error'); }
-      const { error } = await sb.from('profiles').update({ username, display_name: display_name || username, bio, social_links }).eq('id', currentUser.id);
+      const contact_email = document.getElementById('contact-email').value.trim() || null;
+      const contact_phone = document.getElementById('contact-phone').value.trim() || null;
+      const contact_type = document.getElementById('contact-type').value;
+      const { error } = await sb.from('profiles').update({ username, display_name: display_name || username, bio, social_links, contact_email, contact_phone, contact_type }).eq('id', currentUser.id);
       btn.innerText = 'Guardar Perfil'; btn.disabled = false;
       if (error) return showToast(error.message, 'error');
       document.getElementById('profile-link').innerText = 'https://fullnessmindset.github.io/creo/profile.html?u=' + username;
@@ -1091,12 +1184,110 @@
       else { showToast('Error: ' + (data.error || 'Unknown'), 'error'); document.getElementById('stripe-btn').innerText = "Conectar Stripe"; }
     }
 
+    // ===== STORIES MANAGEMENT =====
+    async function loadMyStories() {
+      if (!currentUser) return;
+      const { data } = await sb.from('creator_stories').select('*').eq('creator_id', currentUser.id).order('created_at', { ascending: false });
+      const list = document.getElementById('my-stories-list');
+      if (!data || data.length === 0) { list.innerHTML = '<p class="text-center text-gray-400 text-sm py-4">No tienes historias aún.</p>'; return; }
+      list.innerHTML = data.map(s => {
+        const mediaArr = s.media_urls || [];
+        return `<div class="bg-white p-4 rounded-xl border border-gray-200 space-y-2">
+          <p class="text-sm text-gray-700">${esc(s.content || '')}</p>
+          ${mediaArr.length ? `<div class="flex gap-1 overflow-x-auto">${mediaArr.map(u => `<img src="${u}" class="w-14 h-14 rounded object-cover flex-shrink-0">`).join('')}</div>` : ''}
+          <div class="flex justify-between items-center text-xs text-gray-400">
+            <span>${timeAgo(s.created_at)} · ❤️ ${s.like_count || 0} · 💬 ${s.comment_count || 0}</span>
+            <button onclick="deleteStory('${s.id}')" class="text-red-500 hover:text-red-700 text-xs px-2 py-1 bg-red-50 rounded">Eliminar</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    async function createStory() {
+      if (!currentUser) return;
+      const btn = document.getElementById('create-story-btn');
+      btn.innerText = 'Publicando...'; btn.disabled = true;
+      const title = document.getElementById('story-title').value.trim();
+      const content = document.getElementById('story-content').value.trim();
+      const mainVideo = document.getElementById('story-main-video').value.trim();
+      const mediaText = document.getElementById('story-media').value.trim();
+      const media_urls = mediaText ? mediaText.split('\n').map(u => u.trim()).filter(u => u) : [];
+      if (!content && !mainVideo && media_urls.length === 0) { btn.innerText = 'Publicar Historia'; btn.disabled = false; return showToast('Agrega al menos una descripción, video o media', 'error'); }
+      const { error } = await sb.from('creator_stories').insert({
+        creator_id: currentUser.id,
+        title: title || null,
+        description: content || null,
+        content: content || null,
+        main_video_url: mainVideo || null,
+        media_urls: media_urls.length ? media_urls : null
+      });
+      btn.innerText = 'Publicar Historia'; btn.disabled = false;
+      if (error) return showToast(error.message, 'error');
+      document.getElementById('story-title').value = '';
+      document.getElementById('story-content').value = '';
+      document.getElementById('story-main-video').value = '';
+      document.getElementById('story-media').value = '';
+      showToast('Historia publicada', 'success');
+      loadMyStories();
+    }
+
+    async function deleteStory(id) {
+      if (!confirm('¿Eliminar esta historia?')) return;
+      await sb.from('creator_stories').delete().eq('id', id).eq('creator_id', currentUser.id);
+      loadMyStories();
+    }
+
+    // ===== BUSINESS LINKS MANAGEMENT =====
+    async function loadMyBusinessLinks() {
+      if (!currentUser) return;
+      const { data } = await sb.from('business_links').select('*').eq('creator_id', currentUser.id).order('sort_order', { ascending: true });
+      const list = document.getElementById('my-biz-list');
+      if (!data || data.length === 0) { list.innerHTML = '<p class="text-center text-gray-400 text-sm py-4">No tienes enlaces de negocio aún.</p>'; return; }
+      list.innerHTML = data.map((l, i) => `<div class="bg-white p-4 rounded-xl border border-gray-200 flex gap-3 items-center">
+        ${l.image_url ? `<img src="${esc(l.image_url)}" class="w-12 h-12 rounded-lg object-cover flex-shrink-0">` : `<div class="w-12 h-12 rounded-lg bg-creo-purple/10 flex items-center justify-center flex-shrink-0"><svg class="w-5 h-5 text-creo-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101"/></svg></div>`}
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-sm text-gray-900 truncate">${esc(l.title)}</p>
+          <p class="text-[10px] text-gray-400 truncate">${esc(l.url)}</p>
+          ${l.description ? `<p class="text-xs text-gray-500 truncate">${esc(l.description)}</p>` : ''}
+        </div>
+        <button onclick="deleteBusinessLink('${l.id}')" class="text-red-500 hover:text-red-700 text-xs px-2 py-1 bg-red-50 rounded flex-shrink-0">✕</button>
+      </div>`).join('');
+    }
+
+    async function createBusinessLink() {
+      if (!currentUser) return;
+      const btn = document.getElementById('create-biz-btn');
+      const title = document.getElementById('biz-title').value.trim();
+      const url = document.getElementById('biz-url').value.trim();
+      const description = document.getElementById('biz-desc').value.trim();
+      const image_url = document.getElementById('biz-image').value.trim();
+      if (!title || !url) return showToast('Título y URL son requeridos', 'error');
+      // Check limit
+      const { count } = await sb.from('business_links').select('*', { count: 'exact', head: true }).eq('creator_id', currentUser.id);
+      if (count >= 10) return showToast('Máximo 10 enlaces permitidos', 'error');
+      btn.innerText = 'Agregando...'; btn.disabled = true;
+      const { error } = await sb.from('business_links').insert({ creator_id: currentUser.id, title, url, description: description || null, image_url: image_url || null, sort_order: (count || 0) + 1 });
+      btn.innerText = 'Agregar Enlace'; btn.disabled = false;
+      if (error) return showToast(error.message, 'error');
+      document.getElementById('biz-title').value = '';
+      document.getElementById('biz-url').value = '';
+      document.getElementById('biz-desc').value = '';
+      document.getElementById('biz-image').value = '';
+      showToast('Enlace agregado', 'success');
+      loadMyBusinessLinks();
+    }
+
+    async function deleteBusinessLink(id) {
+      await sb.from('business_links').delete().eq('id', id).eq('creator_id', currentUser.id);
+      loadMyBusinessLinks();
+    }
+
     if (window.location.hash === '#post') window.addEventListener('load', () => showTab('posts'));
     if (new URLSearchParams(window.location.search).get('verification') === 'complete') {
       window.addEventListener('load', () => { showTab('verify'); showToast('Verificación de identidad completada. Envía tu solicitud.', 'success'); });
     }
 
-    window.onload = () => { checkUser(); renderBottomNav('dashboard'); loadNotificationBell(); };
+    window.onload = () => { checkUser(); renderBottomNav('dashboard'); loadNotificationBell(); addMessagesNavItem(); };
   </script>
 </body>
 </html>
