@@ -324,4 +324,43 @@ function addMessagesNavItem() {
   postLink.parentNode.insertBefore(msgLink, postLink);
 }
 
+// Cookie Consent Banner
+function initCookieConsent() {
+  if (localStorage.getItem('creo-cookies-accepted')) return;
+  const banner = document.createElement('div');
+  banner.id = 'cookie-consent';
+  banner.className = 'fixed bottom-16 left-0 right-0 z-[80] px-4 pb-2';
+  banner.innerHTML = `
+    <div class="max-w-lg mx-auto bg-white border border-gray-200 rounded-2xl shadow-2xl p-4 space-y-3">
+      <div class="flex items-start gap-3">
+        <span class="text-2xl flex-shrink-0">🍪</span>
+        <div>
+          <p class="text-sm font-semibold text-gray-900">Cookies y Privacidad</p>
+          <p class="text-xs text-gray-500 mt-1">CREO utiliza cookies esenciales para autenticación y almacenamiento local para tus preferencias (tema, idioma). No usamos cookies de seguimiento ni publicidad. Al continuar, aceptas nuestro uso de cookies.</p>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="acceptCookies()" class="flex-1 bg-creo-purple text-white text-sm font-semibold py-2.5 rounded-xl hover:bg-creo-light transition">Aceptar</button>
+        <a href="privacidad.html" class="flex-1 text-center border border-gray-300 text-gray-600 text-sm font-semibold py-2.5 rounded-xl hover:bg-gray-50 transition">Más info</a>
+      </div>
+      <div class="flex justify-center gap-4 text-[10px] text-gray-400">
+        <a href="terminos.html" class="hover:text-creo-purple underline">Términos</a>
+        <a href="privacidad.html" class="hover:text-creo-purple underline">Privacidad</a>
+      </div>
+    </div>`;
+  document.body.appendChild(banner);
+}
+
+function acceptCookies() {
+  localStorage.setItem('creo-cookies-accepted', Date.now());
+  const banner = document.getElementById('cookie-consent');
+  if (banner) {
+    banner.style.transition = 'opacity 0.3s, transform 0.3s';
+    banner.style.opacity = '0';
+    banner.style.transform = 'translateY(20px)';
+    setTimeout(() => banner.remove(), 300);
+  }
+}
+
 initTheme();
+initCookieConsent();

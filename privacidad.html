@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CREO — Política de Privacidad</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a0a3e">
+  <link rel="icon" href="assets/logo-icon.png" type="image/png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { creo: { purple: '#1a0a3e', light: '#2d1b69', mint: '#33f0b0', mintDark: '#28c48e' } } } }
+    }
+  </script>
+  <style>
+    .glass { background: rgba(255,255,255,0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.3); }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen transition-colors duration-300">
+  <script src="shared.js"></script>
+
+  <div class="max-w-3xl mx-auto px-4 pt-6 pb-24">
+    <div class="text-center mb-8">
+      <a href="index.html" class="inline-block">
+        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center mx-auto shadow"><img src="assets/logo-icon.png" alt="CREO" class="w-9 h-9 rounded-full object-contain"></div>
+      </a>
+      <h1 class="text-2xl font-bold text-creo-purple mt-3">Política de Privacidad</h1>
+      <p class="text-xs text-gray-400 mt-1">Última actualización: 30 de junio de 2026</p>
+    </div>
+
+    <div class="glass rounded-2xl p-6 md:p-8 space-y-6 text-sm text-gray-700 leading-relaxed">
+
+      <section>
+        <h2 class="text-lg font-bold text-gray-900 mb-2">1. Introducción</h2>
+        <p><strong>Fullness Mindset LLC</strong>, una empresa registrada en Puerto Rico, Estados Unidos, operadora de la plataforma <strong>CREO</strong>, se compromete a proteger la privacidad de sus usuarios. Esta Política de Privacidad explica cómo recopilamos, utilizamos, almacenamos y protegemos su información personal.</p>
+        <p class="mt-2">CREO es un proyecto de Fullness Mindset LLC fundado por Osvaldo D. Melendez, diseñado para ayudar a creadores y emprendedores a recaudar capital de manera legal y transparente.</p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-gray-900 mb-2">2. Información que Recopilamos</h2>
+
+        <h3 class="font-semibold text-gray-800 mt-3 mb-1">2.1 Información proporcionada por usted:</h3>
+        <ul class="list-disc pl-5 space-y-1">
+          <li><strong>Datos de registro:</strong> correo electrónico, contraseña (encriptada), nombre de usuario, nombre para mostrar.</li>
+          <li><strong>Datos de perfil:</strong> biografía, foto de perfil, imagen de portada, enlaces a redes sociales, idioma preferido.</li>
+          <li><strong>Información de contacto:</strong> email de contacto, teléfono, WhatsApp (opcional).</li>
+          <li><strong>Contenido:</strong> historias, publicaciones, videos, imágenes, audios, mensajes directos, comentarios.</li>
+          <li><strong>Datos financieros:</strong> procesados exclusivamente por Stripe; CREO no almacena números de tarjetas, cuentas bancarias ni datos financieros sensibles.</li>
+        </ul>
+
+        <h3 class="font-semibold text-gray-800 mt-3 mb-1">2.2 Información recopilada automáticamente:</h3>
+        <ul class="list-disc pl-5 space-y-1">
+          <li><strong>Datos de uso:</strong> páginas visitadas, funciones utilizadas, interacciones dentro de la plataforma.</li>
+          <li><strong>Datos del dispositivo:</strong> tipo de navegador, sistema operativo, resolución de pantalla.</li>
+          <li><strong>Preferencias:</strong> tema (claro/oscuro), idioma seleccionado, colores de perfil personalizados.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-gray-900 mb-2">3. Cómo Utilizamos su Información</h2>
+        <p>Utilizamos la información recopilada para:</p>
+        <ul class="list-disc pl-5 space-y-1 mt-2">
+          <li>Proporcionar, mantener y mejorar el Servicio.</li>
+          <li>Procesar transacciones y enviar notificaciones relacionadas.</li>
+          <li>Verificar la identidad de los Creadores (a través de Stripe Connect).</li>
+          <li>Comunicarnos con usted sobre actualizaciones, soporte y seguridad.</li>
+          <li>Prevenir fraudes, abusos y actividades ilegales.</li>
+          <li>Personalizar su experiencia (tema, idioma, colores de perfil).</li>
+          <li>Cumplir con obligaciones legales y regulatorias.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-gray-900 mb-2">4. Servicios de Terceros</h2>
+        <p>CREO utiliza los siguientes servicios de terceros que pueden recopilar información:</p>
+
+        <div class="mt-3 space-y-3">
+          <div class="bg-gray-50 p-3 rounded-lg">
+            <p class="font-semibold text-gray-800">Supabase</p>
+            <p class="text-xs">Autenticación, base de datos y almacenamiento de archivos. Los datos se almacenan en servidores seguros con encriptación en reposo y en tránsito.</p>
+            <a href="https://supabase.com/privacy" class="text-xs text-creo-purple underline" target="_blank" rel="noopener">Política de privacidad de Supabase</a>
+          </div>
+          <div class="bg-gray-50 p-3 rounded-lg">
+            <p class="font-semibold text-gray-800">Stripe</p>
+            <p class="text-xs">Procesamiento de pagos y verificación de identidad (KYC). Stripe maneja directamente todos los datos financieros sensibles.</p>
+            <a href="https://stripe.com/privacy" class="text-xs text-creo-purple underline" target="_blank" rel="noopener">Política de privacidad de Stripe</a>
+          </div>
+          <div class="bg-gray-50 p-3 rounded-lg">
+            <p class="font-semibold text-gray-800">GIPHY</p>
+            <p class="text-xs">Búsqueda e inserción de GIFs en mensajes. La búsqueda de GIFs envía consultas a la API de GIPHY.</p>
+            <a href="https://giphy.com/privacy" class="text-xs text-creo-purple underline" target="_blank" rel="noopener">Política de privacidad de GIPHY</a>
+          </div>
+          <div class="bg-gray-50 p-3 rounded-lg">
+            <p class="font-semibold text-gray-800">GitHub Pages</p>
+            <p class="text-xs">Alojamiento del sitio web estático. GitHub puede recopilar datos básicos de acceso (dirección IP, navegador).</p>
+            <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" class="text-xs text-creo-purple underline" target="_blank" rel="noopener">Política de privacidad de GitHub</a>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-gray-900 mb-2">5. Almacenamiento y Seguridad</h2>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>Las contraseñas se almacenan encriptadas mediante algoritmos de hash seguros (bcrypt) a través de Supabase Auth.</li>
+          <li>Las conexiones se realizan mediante HTTPS/TLS.</li>
+          <li>Los archivos subidos (imágenes, videos, audios) se almacenan en Supabase Storage con políticas de acceso definidas (RLS).</li>
+          <li>Los datos financieros son procesados y almacenados exclusivamente por Stripe, certificado como PCI DSS Nivel 1.</li>
+          <li>Implementamos políticas de seguridad a nivel de fila (Row Level Security) en todas las tablas de la base de datos.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-gray-900 mb-2">6. Cookies y Almacenamiento Local</h2>
+        <p>CREO utiliza:</p>
+        <ul class="list-disc pl-5 space-y-1 mt-2">
+          <li><strong>Cookies de sesión (esenciales):</strong> Mantenidas por Supabase para la autenticación del usuario. Son necesarias para el funcionamiento del servicio.</li>
+          <li><strong>LocalStorage:</strong> Para guardar preferencias del usuario (tema claro/oscuro, consentimiento de cookies). Estos datos permanecen en su dispositivo y no se envían a nuestros servidores.</li>
+          <li><strong>SessionStorage:</strong> Para datos temporales de la sesión activa (modo administrador). Se eliminan al cerrar el navegador.</li>
+        </ul>
+        <p class="mt-2">CREO <strong>no utiliza</strong> cookies de seguimiento, cookies publicitarias ni cookies de terceros con fines de marketing.</p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-gray-900 mb-2">7. Sus Derechos (GDPR / CCPA)</h2>
+        <p>Usted tiene derecho a:</p>
+        <ul class="list-disc pl-5 space-y-1 mt-2">
+          <li><strong>Acceso:</strong> Solicitar una copia de los datos personales que tenemos sobre usted.</li>
+          <li><strong>Rectificación:</strong> Corregir datos inexactos o incompletos desde su panel de control.</li>
+          <li><strong>Eliminación:</strong> Solicitar la eliminación de su cuenta y datos asociados.</li>
+          <li><strong>Portabilidad:</strong> Solicitar la exportación de sus datos en un formato legible por máquina.</li>
+          <li><strong>Oposición:</strong> Oponerse al procesamiento de sus datos para ciertos fines.</li>
+          <li><strong>Restricción:</strong> Solicitar la limitación del procesamiento de sus datos.</li>
+        </ul>
+        <p class="mt-2">Para ejercer cualquiera de estos derechos, contacte a: <a href="mailto:osvaldo@fullnessmindset.com" class="text-creo-purple underline">osvaldo@fullnessmindset.com</a></p>
+        <p class="mt-1">Responderemos a su solicitud dentro de un plazo de 30 días.</p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-gray-900 mb-2">8. Menores de Edad</h2>
+        <p>CREO no está dirigido a menores de 18 años. No recopilamos intencionalmente información de menores. Si descubrimos que hemos recopilado datos de un menor, los eliminaremos inmediatamente. Si usted es padre o tutor y cree que su hijo nos ha proporcionado información personal, contacte a <a href="mailto:osvaldo@fullnessmindset.com" class="text-creo-purple underline">osvaldo@fullnessmindset.com</a>.</p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-gray-900 mb-2">9. Retención de Datos</h2>
+        <ul class="list-disc pl-5 space-y-1">
+          <li><strong>Datos de cuenta:</strong> Se conservan mientras su cuenta esté activa. Al eliminar su cuenta, los datos se borran dentro de 30 días.</li>
+          <li><strong>Contenido publicado:</strong> Se elimina junto con la cuenta, excepto cuando sea necesario retenerlo por obligaciones legales.</li>
+          <li><strong>Registros de transacciones:</strong> Se conservan según los requisitos legales y fiscales aplicables (generalmente 7 años).</li>
+          <li><strong>Mensajes directos:</strong> Se eliminan cuando ambas partes eliminan sus cuentas.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-gray-900 mb-2">10. Transferencias Internacionales</h2>
+        <p>Sus datos pueden ser procesados en servidores ubicados fuera de su país de residencia, incluyendo Estados Unidos. Al utilizar CREO, usted consiente la transferencia de sus datos a estos servidores, los cuales cumplen con estándares de seguridad adecuados.</p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-gray-900 mb-2">11. Cambios a esta Política</h2>
+        <p>Nos reservamos el derecho de actualizar esta Política de Privacidad en cualquier momento. Notificaremos cambios significativos a través de la plataforma o por correo electrónico. El uso continuado del Servicio después de los cambios constituye su aceptación.</p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-gray-900 mb-2">12. Contacto</h2>
+        <p>Para consultas sobre privacidad o protección de datos:</p>
+        <div class="bg-gray-100 p-4 rounded-lg mt-2 space-y-1 text-xs">
+          <p><strong>Fullness Mindset LLC</strong></p>
+          <p>Responsable de Protección de Datos: Osvaldo D. Melendez</p>
+          <p>Email: <a href="mailto:osvaldo@fullnessmindset.com" class="text-creo-purple underline">osvaldo@fullnessmindset.com</a></p>
+          <p>Puerto Rico, Estados Unidos</p>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script>
+    initTheme();
+    renderBottomNav('');
+    updateNavAuth();
+  </script>
+</body>
+</html>
