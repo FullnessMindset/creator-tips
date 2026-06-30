@@ -210,8 +210,25 @@ async function toggleNotifPanel() {
     panel.innerHTML = '<p class="text-center text-gray-400 text-sm py-8">Sin notificaciones</p>';
   } else {
     const icons = { like: '❤️', comment: '💬', payment: '💰', approval: '✅', rejection: '❌', invite: '🤝', share: '🔗', meta_like: '❤️', meta_comment: '💬' };
+    const actionLabels = { comment: 'Responder', meta_comment: 'Responder', invite: 'Ver invitación', like: 'Ver perfil', meta_like: 'Ver meta', payment: 'Ver detalles', share: 'Ver perfil' };
     panel.innerHTML = `<div class="p-3 border-b border-gray-200 flex justify-between items-center"><span class="font-bold text-sm">Notificaciones</span><button onclick="markAllRead()" class="text-xs text-creo-mint hover:underline">Marcar leídas</button></div>` +
-      data.map(n => `<div class="px-3 py-2.5 border-b border-gray-100 ${n.is_read ? 'opacity-60' : ''} hover:bg-gray-50 transition"><div class="flex gap-2"><span>${icons[n.type] || '🔔'}</span><div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-900">${esc(n.title)}</p>${n.body ? `<p class="text-xs text-gray-500 truncate">${esc(n.body)}</p>` : ''}<p class="text-[10px] text-gray-400 mt-0.5">${new Date(n.created_at).toLocaleDateString()}</p></div></div></div>`).join('');
+      data.map(n => {
+        const link = n.link || getNotifDefaultLink(n);
+        const actionLabel = actionLabels[n.type] || 'Ver';
+        return `<div class="px-3 py-2.5 border-b border-gray-100 ${n.is_read ? 'opacity-60' : ''} hover:bg-gray-50 transition cursor-pointer" onclick="${link ? `window.location.href='${link}'` : ''}">
+          <div class="flex gap-2">
+            <span>${icons[n.type] || '🔔'}</span>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-900">${esc(n.title)}</p>
+              ${n.body ? `<p class="text-xs text-gray-500 truncate">${esc(n.body)}</p>` : ''}
+              <div class="flex items-center justify-between mt-1">
+                <p class="text-[10px] text-gray-400">${new Date(n.created_at).toLocaleDateString()}</p>
+                ${link ? `<span class="text-[10px] text-creo-purple font-semibold">${actionLabel} →</span>` : ''}
+              </div>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
   }
   document.body.appendChild(panel);
   document.addEventListener('click', closeNotifOnClickOutside);
@@ -238,11 +255,20 @@ async function markAllRead() {
   showToast('Notificaciones marcadas como leídas', 'success');
 }
 
-async function createNotification(targetUserId, type, title, body) {
+async function createNotification(targetUserId, type, title, body, link) {
   if (!targetUserId) return;
   const { data: { user } } = await sb.auth.getUser();
   if (user && user.id === targetUserId) return;
-  await sb.from('notifications').insert([{ user_id: targetUserId, type, title, body }]);
+  await sb.from('notifications').insert([{ user_id: targetUserId, type, title, body, link: link || null }]);
+}
+
+function getNotifDefaultLink(n) {
+  if (n.type === 'invite') return 'index.html#metas';
+  if (n.type === 'comment' || n.type === 'meta_comment') return n.link || 'index.html';
+  if (n.type === 'payment') return 'index.html#stripe';
+  if (n.type === 'approval') return 'index.html#verify';
+  if (n.type === 'rejection') return 'index.html#verify';
+  return null;
 }
 
 // Emoji Picker

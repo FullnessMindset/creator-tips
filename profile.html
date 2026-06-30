@@ -203,6 +203,7 @@
     <!-- Payment Type Selector — Glassmorphism -->
     <div id="payment-tabs" class="flex glass rounded-xl overflow-hidden">
       <button onclick="showPayment('tip')" id="pay-tab-tip" class="flex-1 py-3 text-xs font-semibold text-center transition pay-tab-active">Yo Creo en Ti</button>
+      <button onclick="showPayment('meta-support')" id="pay-tab-meta-support" class="flex-1 py-3 text-xs font-semibold text-center transition text-gray-400 hidden">🎯 Desde Meta</button>
       <button onclick="showPayment('sub')" id="pay-tab-sub" class="flex-1 py-3 text-xs font-semibold text-center transition text-gray-400">Apoyo Full</button>
     </div>
 
@@ -229,6 +230,32 @@
         <img src="assets/logo-icon.png" class="w-5 h-5 rounded-full" alt="">
         <span>Apoyar Creador</span>
       </button>
+    </div>
+
+    <!-- PAYMENT: Apoyar desde Meta -->
+    <div id="pay-meta-support" class="pay-panel hidden">
+      <div class="glass p-6 rounded-2xl shadow-xl space-y-4">
+        <div class="text-center">
+          <h3 class="text-lg font-bold text-gray-900">🎯 Apoyar desde mi Meta</h3>
+          <p class="text-xs text-gray-500 mt-1">Comparte fondos de tu meta activa con este creador</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Selecciona tu Meta</label>
+          <select id="meta-support-select" class="w-full border border-gray-200 bg-white/50 p-3 rounded-xl text-gray-900 text-sm outline-none focus:ring-2 focus:ring-creo-purple"></select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Cantidad a enviar (USD)</label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
+            <input type="number" id="meta-support-amount" min="1" value="5" step="1" class="w-full pl-8 pr-4 py-3 border border-gray-200 bg-white/50 rounded-xl text-gray-900 text-lg font-bold outline-none focus:ring-2 focus:ring-creo-purple">
+          </div>
+        </div>
+        <button onclick="processMetaSupport()" id="meta-support-btn" class="w-full bg-creo-purple hover:bg-creo-light text-white font-bold py-3 px-4 rounded-xl transition flex items-center justify-center gap-2">
+          <span>🎯</span>
+          <span>Enviar desde mi Meta</span>
+        </button>
+        <p class="text-xs text-gray-400 text-center">Los fondos se transfieren directamente de tu meta al creador</p>
+      </div>
     </div>
 
     <!-- PAYMENT: Apoyo Full -->
@@ -673,6 +700,55 @@
       } catch (e) { document.getElementById('creo-loading').classList.add('hidden'); showToast('Error de conexión', 'error'); btn.innerHTML = '<img src="assets/logo-icon.png" class="w-5 h-5 rounded-full" alt=""><span>Suscribirme Mensualmente</span>'; btn.disabled = false; }
     }
 
+    // Meta-to-creator support
+    async function checkMetaSupportEligibility() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user || !creatorProfile || user.id === creatorProfile.id) return;
+      const { data: myMetas } = await sb.from('metas').select('id, title, raised_cents').eq('creator_id', user.id).eq('is_active', true);
+      const funded = (myMetas || []).filter(m => m.raised_cents > 0);
+      if (funded.length === 0) return;
+      document.getElementById('pay-tab-meta-support').classList.remove('hidden');
+      const sel = document.getElementById('meta-support-select');
+      sel.innerHTML = funded.map(m =>
+        `<option value="${m.id}" data-max="${m.raised_cents}">$${(m.raised_cents / 100).toFixed(2)} disponible — ${esc(m.title)}</option>`
+      ).join('');
+      // If arrived from feed with from_meta param, auto-show
+      const fromMeta = urlParams.get('from_meta');
+      if (fromMeta) {
+        showPayment('meta-support');
+        sel.value = fromMeta;
+        const metaAmount = urlParams.get('meta_amount');
+        if (metaAmount) document.getElementById('meta-support-amount').value = metaAmount;
+      }
+    }
+
+    async function processMetaSupport() {
+      const metaId = document.getElementById('meta-support-select').value;
+      const amount = parseFloat(document.getElementById('meta-support-amount').value);
+      if (!metaId) return showToast('Selecciona una meta', 'error');
+      if (isNaN(amount) || amount < 1) return showToast('Monto mínimo: $1', 'error');
+      const option = document.querySelector(`#meta-support-select option[value="${metaId}"]`);
+      const maxCents = parseInt(option?.dataset?.max || '0');
+      if (amount * 100 > maxCents) return showToast(`Solo tienes $${(maxCents / 100).toFixed(2)} disponibles en esa meta`, 'error');
+      const btn = document.getElementById('meta-support-btn');
+      btn.innerHTML = '<span>Enviando...</span>'; btn.disabled = true;
+      const amountCents = Math.round(amount * 100);
+      // Deduct from sender's meta
+      const { error: deductErr } = await sb.rpc('increment_meta_raised', { p_meta_id: metaId, p_amount: -amountCents });
+      if (deductErr) { btn.innerHTML = '<span>🎯</span><span>Enviar desde mi Meta</span>'; btn.disabled = false; return showToast('Error: ' + deductErr.message, 'error'); }
+      // Find an active meta of the recipient to credit, or create a tip record
+      const { data: recipientMetas } = await sb.from('metas').select('id').eq('creator_id', creatorProfile.id).eq('is_active', true).limit(1);
+      if (recipientMetas && recipientMetas.length > 0) {
+        await sb.rpc('increment_meta_raised', { p_meta_id: recipientMetas[0].id, p_amount: amountCents });
+      }
+      const { data: { user } } = await sb.auth.getUser();
+      const { data: senderProfile } = await sb.from('profiles').select('display_name, username').eq('id', user.id).single();
+      const senderName = senderProfile?.display_name || senderProfile?.username || 'Un creador';
+      createNotification(creatorProfile.id, 'payment', `${senderName} te apoyó con $${amount.toFixed(2)} desde su meta`, null, 'profile.html?u=' + creatorProfile.username);
+      btn.innerHTML = '<span>🎯</span><span>Enviar desde mi Meta</span>'; btn.disabled = false;
+      showToast(`¡Enviaste $${amount.toFixed(2)} a ${creatorProfile.display_name || creatorProfile.username}!`, 'success');
+    }
+
     // Show Creamos buttons for meta owner
     async function showCreamosForOwner() {
       const { data: { user } } = await sb.auth.getUser();
@@ -809,7 +885,7 @@
       if (error) { showToast(error.message || 'Error', 'error'); return; }
       metasCache[activeMetaId].comment_count = data.count;
       document.getElementById('meta-comment-count').textContent = data.count > 0 ? data.count : '';
-      if (creatorProfile) createNotification(creatorProfile.id, 'meta_comment', 'Nuevo comentario en tu meta', body);
+      if (creatorProfile) createNotification(creatorProfile.id, 'meta_comment', 'Nuevo comentario en tu meta', body, 'profile.html?u=' + creatorProfile.username);
       loadMetaComments(activeMetaId);
     }
 
@@ -1037,7 +1113,7 @@
       const { error } = await sb.from('messages').insert(msg);
       if (error) { showToast('Error al enviar mensaje', 'error'); return; }
       loadDMHistory();
-      createNotification(creatorProfile.id, 'comment', 'Nuevo mensaje privado', body || 'Audio');
+      createNotification(creatorProfile.id, 'comment', 'Nuevo mensaje privado', body || 'Audio', 'messages.html');
     }
 
     // GIF picker (GIPHY)
@@ -1317,7 +1393,7 @@
       if (error) { showToast(error.message || 'Error', 'error'); return; }
       const countEl = document.getElementById('story-comment-count-' + storyId);
       if (countEl && data?.count != null) countEl.textContent = data.count > 0 ? data.count : '';
-      if (creatorProfile) createNotification(creatorProfile.id, 'comment', 'Nuevo comentario en tu historia', body);
+      if (creatorProfile) createNotification(creatorProfile.id, 'comment', 'Nuevo comentario en tu historia', body, 'profile.html?u=' + creatorProfile.username);
       loadStoryComments(storyId);
     }
 
@@ -1362,6 +1438,7 @@
       updateNavAuth();
       loadNotificationBell();
       addMessagesNavItem();
+      checkMetaSupportEligibility();
       const status = urlParams.get('status');
       if (status === 'completed') showToast('¡Gracias por tu apoyo!', 'success');
       if (status === 'meta_completed') showToast('¡Gracias por contribuir a la meta!', 'success');

@@ -120,12 +120,22 @@
     document.getElementById('search-input').addEventListener('input', (e) => {
       const q = e.target.value.toLowerCase().trim();
       if (!q) { renderList(allCreators); return; }
-      const filtered = allCreators.filter(c =>
-        (c.username || '').toLowerCase().includes(q) ||
-        (c.display_name || '').toLowerCase().includes(q) ||
-        (c.bio || '').toLowerCase().includes(q)
-      );
-      renderList(filtered);
+      const scored = allCreators.map(c => {
+        const name = (c.display_name || '').toLowerCase();
+        const user = (c.username || '').toLowerCase();
+        const bio = (c.bio || '').toLowerCase();
+        let score = 0;
+        if (name === q || user === q) score = 100;
+        else if (name.startsWith(q) || user.startsWith(q)) score = 80;
+        else if (name.includes(q) || user.includes(q)) score = 60;
+        else if (bio.includes(q)) score = 30;
+        return { ...c, score };
+      }).filter(c => c.score > 0).sort((a, b) => b.score - a.score);
+      renderList(scored);
+    });
+
+    document.getElementById('search-input').addEventListener('focus', () => {
+      if (!document.getElementById('search-input').value.trim()) renderList(allCreators);
     });
 
     window.onload = () => {
