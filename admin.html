@@ -10,7 +10,8 @@
       theme: {
         extend: {
           colors: {
-            creo: { purple: '#1a0a3e', light: '#2d1b69', mint: '#33f0b0', mintDark: '#28c48e' }
+            creo: { purple: '#1a0a3e', light: '#2d1b69', mint: '#33f0b0', mintDark: '#28c48e' },
+            stripe: { purple: '#635bff', dark: '#0a2540' }
           }
         }
       }
@@ -21,9 +22,14 @@
     .stat-card:hover { transform: translateY(-2px); }
     .fade-in { animation: fadeIn 0.3s ease-in; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .loader { border: 3px solid #e5e7eb; border-top: 3px solid #1a0a3e; border-radius: 50%; width: 20px; height: 20px; animation: spin 0.8s linear infinite; display: inline-block; }
-
+    .loader { border: 3px solid #e5e7eb; border-top: 3px solid #635bff; border-radius: 50%; width: 20px; height: 20px; animation: spin 0.8s linear infinite; display: inline-block; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    .stripe-shimmer {
+      background: linear-gradient(90deg, #635bff 0%, #7a73ff 50%, #635bff 100%);
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite;
+    }
   </style>
 </head>
 <body class="bg-white text-gray-900 min-h-screen transition-colors duration-300">
@@ -39,38 +45,77 @@
         <h1 class="text-3xl font-bold tracking-[0.3em] text-creo-purple">CREO</h1>
         <div>
           <p class="text-xs tracking-[0.15em] text-gray-500 uppercase">Crea. Yo Creo En Ti</p>
-          <p class="text-xs font-semibold tracking-wider text-creo-purple mt-0.5 uppercase">Plataforma de Apoyo Economico para Creadores</p>
+          <p class="text-xs font-semibold tracking-wider text-creo-purple mt-0.5 uppercase">Admin Dashboard</p>
         </div>
       </div>
 
       <div class="p-8 rounded-2xl shadow-xl space-y-5" style="background:rgba(255,255,255,0.7);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.3);">
         <div class="text-center space-y-1">
-          <h2 class="text-xl font-bold text-gray-900">Admin Access</h2>
-          <p class="text-gray-500 text-sm">Inicia sesión con tu cuenta de administrador</p>
+          <div class="flex items-center justify-center gap-2 mb-2">
+            <svg class="w-6 h-6 text-stripe-purple" viewBox="0 0 24 24" fill="currentColor"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/></svg>
+            <h2 class="text-xl font-bold text-gray-900">Acceso Seguro</h2>
+          </div>
+          <p class="text-gray-500 text-sm">Verificado por Stripe · Solo administradores</p>
         </div>
-        <div>
-          <label class="text-xs text-gray-500 uppercase tracking-wider">Email</label>
-          <input id="admin-email" type="email" class="w-full bg-gray-50 border border-gray-300 p-3 rounded-lg text-sm mt-1 text-gray-900 focus:ring-2 focus:ring-creo-purple focus:border-transparent outline-none" placeholder="admin@email.com">
-        </div>
-        <div>
-          <label class="text-xs text-gray-500 uppercase tracking-wider">Contraseña</label>
-          <input id="admin-password" type="password" class="w-full bg-gray-50 border border-gray-300 p-3 rounded-lg text-sm mt-1 text-gray-900 focus:ring-2 focus:ring-creo-purple focus:border-transparent outline-none" placeholder="••••••••">
-        </div>
-        <button onclick="adminLogin()" id="login-btn" class="w-full bg-creo-purple hover:bg-creo-light text-white py-3 rounded-lg font-semibold transition flex items-center justify-center space-x-2">
-          <span>Entrar</span>
-        </button>
-        <div class="relative flex items-center my-1">
-          <div class="flex-1 border-t border-gray-200"></div>
-          <span class="px-3 text-xs text-gray-400">o</span>
-          <div class="flex-1 border-t border-gray-200"></div>
-        </div>
-        <button onclick="googleLogin()" class="w-full flex items-center justify-center space-x-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-lg font-semibold transition">
-          <svg class="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-          <span>Continuar con Google</span>
-        </button>
-        <p id="auth-error" class="text-red-500 text-xs text-center hidden"></p>
-      </div>
 
+        <!-- Magic Link Login (Primary) -->
+        <div id="login-form" class="space-y-4">
+          <div>
+            <label class="text-xs text-gray-500 uppercase tracking-wider">Email del Administrador</label>
+            <input id="admin-email" type="email" class="w-full bg-gray-50 border border-gray-300 p-3 rounded-lg text-sm mt-1 text-gray-900 focus:ring-2 focus:ring-stripe-purple focus:border-transparent outline-none" placeholder="admin@email.com">
+          </div>
+
+          <button onclick="sendMagicLink()" id="magic-link-btn" class="w-full stripe-shimmer text-white py-3 rounded-lg font-semibold transition flex items-center justify-center space-x-2 hover:opacity-90">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/></svg>
+            <span>Login con Stripe</span>
+          </button>
+
+          <div class="relative flex items-center my-1">
+            <div class="flex-1 border-t border-gray-200"></div>
+            <span class="px-3 text-xs text-gray-400">o</span>
+            <div class="flex-1 border-t border-gray-200"></div>
+          </div>
+
+          <button onclick="googleLogin()" class="w-full flex items-center justify-center space-x-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-lg font-semibold transition">
+            <svg class="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            <span>Continuar con Google</span>
+          </button>
+        </div>
+
+        <!-- Magic Link Sent State -->
+        <div id="link-sent" class="hidden text-center space-y-4 py-4">
+          <div class="w-16 h-16 rounded-full bg-stripe-purple/10 flex items-center justify-center mx-auto">
+            <svg class="w-8 h-8 text-stripe-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          </div>
+          <h3 class="text-lg font-bold text-gray-900">Revisa tu Email</h3>
+          <p class="text-sm text-gray-500">Enviamos un enlace seguro a <strong id="sent-email" class="text-stripe-purple"></strong></p>
+          <p class="text-xs text-gray-400">Haz click en el enlace para verificar tu identidad y acceder al panel de administrador.</p>
+          <div class="bg-stripe-purple/5 border border-stripe-purple/20 rounded-lg p-3 text-xs text-gray-600">
+            <div class="flex items-center gap-2 mb-1">
+              <svg class="w-4 h-4 text-stripe-purple flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/></svg>
+              <strong class="text-stripe-purple">Protegido por Stripe</strong>
+            </div>
+            Tu sesión será verificada contra la cuenta de Stripe del plataforma antes de conceder acceso.
+          </div>
+          <button onclick="resetLoginForm()" class="text-xs text-gray-400 hover:text-gray-600 transition mt-2">← Volver a intentar</button>
+        </div>
+
+        <!-- Verifying State -->
+        <div id="verifying-state" class="hidden text-center space-y-4 py-4">
+          <div class="w-16 h-16 rounded-full bg-stripe-purple/10 flex items-center justify-center mx-auto">
+            <div class="loader"></div>
+          </div>
+          <h3 class="text-lg font-bold text-gray-900">Verificando con Stripe...</h3>
+          <p class="text-sm text-gray-500">Confirmando tu identidad y acceso a la plataforma</p>
+        </div>
+
+        <p id="auth-error" class="text-red-500 text-xs text-center hidden"></p>
+
+        <div class="flex items-center justify-center gap-2 pt-2">
+          <svg class="w-3.5 h-3.5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+          <span class="text-[10px] text-gray-400">Autenticación verificada por Stripe + Supabase</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -82,6 +127,10 @@
         <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0"><img src="assets/logo-icon.png" alt="CREO" class="w-6 h-6 rounded-full object-contain"></div>
         <h1 class="text-lg font-bold tracking-wider text-creo-purple">CREO</h1>
         <span class="text-xs text-gray-400 hidden sm:inline">Admin</span>
+        <div class="flex items-center gap-1.5 bg-stripe-purple/10 px-2 py-1 rounded-full">
+          <svg class="w-3 h-3 text-stripe-purple" viewBox="0 0 24 24" fill="currentColor"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/></svg>
+          <span class="text-[10px] font-semibold text-stripe-purple">Verified</span>
+        </div>
       </div>
       <div class="flex items-center space-x-4">
         <span id="account-name" class="text-gray-500 text-sm hidden sm:inline"></span>
@@ -228,16 +277,19 @@
       <!-- Quick Links Panel -->
       <div id="panel-links" class="hidden fade-in">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <a href="https://dashboard.stripe.com/connect/accounts/overview" target="_blank" class="bg-white border border-gray-200 rounded-xl p-5 hover:border-creo-purple transition group">
-            <h3 class="font-semibold text-gray-900 group-hover:text-creo-purple transition">Stripe Connect Dashboard</h3>
+          <a href="https://dashboard.stripe.com/connect/accounts/overview" target="_blank" class="bg-white border border-gray-200 rounded-xl p-5 hover:border-stripe-purple transition group">
+            <div class="flex items-center gap-2 mb-1">
+              <svg class="w-4 h-4 text-stripe-purple" viewBox="0 0 24 24" fill="currentColor"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/></svg>
+              <h3 class="font-semibold text-gray-900 group-hover:text-stripe-purple transition">Stripe Connect Dashboard</h3>
+            </div>
             <p class="text-gray-500 text-sm mt-1">Manage connected accounts, view payouts, and monitor activity.</p>
           </a>
-          <a href="https://dashboard.stripe.com/payments" target="_blank" class="bg-white border border-gray-200 rounded-xl p-5 hover:border-creo-purple transition group">
-            <h3 class="font-semibold text-gray-900 group-hover:text-creo-purple transition">Stripe Payments</h3>
+          <a href="https://dashboard.stripe.com/payments" target="_blank" class="bg-white border border-gray-200 rounded-xl p-5 hover:border-stripe-purple transition group">
+            <h3 class="font-semibold text-gray-900 group-hover:text-stripe-purple transition">Stripe Payments</h3>
             <p class="text-gray-500 text-sm mt-1">View all payments, refunds, and disputes.</p>
           </a>
-          <a href="https://dashboard.stripe.com/identity/verification-sessions" target="_blank" class="bg-white border border-gray-200 rounded-xl p-5 hover:border-creo-purple transition group">
-            <h3 class="font-semibold text-gray-900 group-hover:text-creo-purple transition">Stripe Identity Verifications</h3>
+          <a href="https://dashboard.stripe.com/identity/verification-sessions" target="_blank" class="bg-white border border-gray-200 rounded-xl p-5 hover:border-stripe-purple transition group">
+            <h3 class="font-semibold text-gray-900 group-hover:text-stripe-purple transition">Stripe Identity Verifications</h3>
             <p class="text-gray-500 text-sm mt-1">Review identity verification sessions and results.</p>
           </a>
           <a href="https://supabase.com/dashboard/project/qddxoyjtoxtdcezwuvcq" target="_blank" class="bg-white border border-gray-200 rounded-xl p-5 hover:border-creo-purple transition group">
@@ -314,56 +366,80 @@
     let reviewingProfile = null;
     let verificationFilter = 'submitted';
 
+    // --- AUTH METHODS ---
+
+    async function sendMagicLink() {
+      const email = document.getElementById('admin-email').value.trim();
+      if (!email) { showError('Ingresa tu email de administrador'); return; }
+      if (!isAdmin(email)) { showError('Este email no tiene permisos de administrador'); return; }
+
+      const btn = document.getElementById('magic-link-btn');
+      btn.innerHTML = '<span class="loader"></span><span class="ml-2">Enviando...</span>';
+      btn.disabled = true;
+
+      const { error } = await sb.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: 'https://fullnessmindset.github.io/creo/redirect.html?admin=1' }
+      });
+
+      if (error) {
+        showError(error.message);
+        btn.innerHTML = '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/></svg><span>Login con Stripe</span>';
+        btn.disabled = false;
+        return;
+      }
+
+      document.getElementById('login-form').classList.add('hidden');
+      document.getElementById('link-sent').classList.remove('hidden');
+      document.getElementById('sent-email').textContent = email;
+    }
+
+    function resetLoginForm() {
+      document.getElementById('login-form').classList.remove('hidden');
+      document.getElementById('link-sent').classList.add('hidden');
+      const btn = document.getElementById('magic-link-btn');
+      btn.innerHTML = '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/></svg><span>Login con Stripe</span>';
+      btn.disabled = false;
+    }
+
     async function googleLogin() {
       await sb.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: 'https://fullnessmindset.github.io/creo/redirect.html' }
+        options: { redirectTo: 'https://fullnessmindset.github.io/creo/redirect.html?admin=1' }
       });
     }
 
-    async function adminLogin() {
-      const email = document.getElementById('admin-email').value.trim();
-      const password = document.getElementById('admin-password').value.trim();
-      if (!email || !password) { showError('Ingresa email y contraseña'); return; }
+    async function verifyAndEnter() {
+      document.getElementById('login-form').classList.add('hidden');
+      document.getElementById('link-sent').classList.add('hidden');
+      document.getElementById('verifying-state').classList.remove('hidden');
 
-      const btn = document.getElementById('login-btn');
-      btn.innerHTML = '<span class="loader"></span><span class="ml-2">Conectando...</span>';
-      btn.disabled = true;
-
-      try {
-        const { data, error } = await sb.auth.signInWithPassword({ email, password });
-        if (error) { showError(error.message); btn.innerHTML = '<span>Entrar</span>'; btn.disabled = false; return; }
-        if (!isAdmin(data.user.email)) {
-          showError('No tienes permisos de administrador');
-          await sb.auth.signOut();
-          btn.innerHTML = '<span>Entrar</span>'; btn.disabled = false;
-          return;
-        }
-        authToken = data.session.access_token;
-        await enterDashboard();
-      } catch (e) {
-        showError('Error: ' + e.message);
-        btn.innerHTML = '<span>Entrar</span>'; btn.disabled = false;
-      }
-    }
-
-    async function enterDashboard() {
       try {
         const res = await apiCall('login');
-        if (res.error) { showError(res.error); return; }
+        if (res.error) {
+          showError('Verificación de Stripe fallida: ' + res.error);
+          document.getElementById('verifying-state').classList.add('hidden');
+          document.getElementById('login-form').classList.remove('hidden');
+          return;
+        }
         document.getElementById('account-name').textContent = res.account.name || res.account.id;
         document.getElementById('auth-gate').classList.add('hidden');
         document.getElementById('dashboard').classList.remove('hidden');
         loadDashboard();
       } catch (e) {
-        showError('Error conectando: ' + e.message);
+        showError('Error de verificación: ' + e.message);
+        document.getElementById('verifying-state').classList.add('hidden');
+        document.getElementById('login-form').classList.remove('hidden');
       }
     }
 
     function showError(msg) {
       const el = document.getElementById('auth-error');
       el.textContent = msg; el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 5000);
     }
+
+    // --- API ---
 
     async function apiCall(action, body = null) {
       if (!authToken) {
@@ -375,6 +451,8 @@
       const res = await fetch(SUPABASE_URL + '/functions/v1/admin-api?action=' + action, opts);
       return res.json();
     }
+
+    // --- DASHBOARD ---
 
     async function loadDashboard() {
       const data = await apiCall('dashboard');
@@ -472,7 +550,7 @@
       const content = document.getElementById('review-content');
 
       let identityInfo = 'Not started';
-      if (p.stripe_identity_id && stripeKey) {
+      if (p.stripe_identity_id) {
         try {
           const res = await apiCall('identity-status', { session_id: p.stripe_identity_id });
           if (res.status) {
@@ -485,7 +563,24 @@
       }
       if (p.identity_verified) identityInfo = '<span class="text-green-600 font-bold">VERIFIED</span>';
 
-      const { data: docs } = await sbAdmin.from('verification_documents').select('*').eq('creator_id', p.id);
+      let docsHtml = '';
+      try {
+        const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const { data: docs } = await supabaseAdmin.from('verification_documents').select('*').eq('creator_id', p.id);
+        if (docs && docs.length > 0) {
+          docsHtml = `
+            <div class="space-y-3">
+              <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Uploaded Documents (${docs.length})</h5>
+              <div class="space-y-2">
+                ${docs.map(d => `<a href="${esc(d.file_url)}" target="_blank" class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition text-sm">
+                  <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                  <div class="flex-1 min-w-0"><p class="text-gray-900 truncate">${esc(d.file_name || 'Document')}</p><p class="text-xs text-gray-400">${esc(d.document_type)} · ${new Date(d.uploaded_at).toLocaleDateString()}</p></div>
+                  <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                </a>`).join('')}
+              </div>
+            </div>`;
+        }
+      } catch (_) {}
 
       content.innerHTML = `
         <div class="flex items-center space-x-4">
@@ -533,17 +628,7 @@
 
         ${p.bio ? `<div class="space-y-3"><h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Bio</h5><p class="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">${esc(p.bio)}</p></div>` : ''}
 
-        ${docs && docs.length > 0 ? `
-          <div class="space-y-3">
-            <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Uploaded Documents (${docs.length})</h5>
-            <div class="space-y-2">
-              ${docs.map(d => `<a href="${esc(d.file_url)}" target="_blank" class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition text-sm">
-                <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                <div class="flex-1 min-w-0"><p class="text-gray-900 truncate">${esc(d.file_name || 'Document')}</p><p class="text-xs text-gray-400">${esc(d.document_type)} · ${new Date(d.uploaded_at).toLocaleDateString()}</p></div>
-                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-              </a>`).join('')}
-            </div>
-          </div>` : ''}
+        ${docsHtml}
 
         <a href="${PROFILE_BASE}${esc(p.username)}" target="_blank" class="block text-center text-xs text-creo-purple hover:underline">View Public Profile →</a>
       `;
@@ -560,14 +645,18 @@
 
     async function approveCreator() {
       if (!reviewingProfile) return;
-      const { error } = await sbAdmin.from('profiles').update({
-        verification_status: 'approved',
-        approved_at: new Date().toISOString(),
-        rejection_reason: null,
-      }).eq('id', reviewingProfile.id);
+      const res = await apiCall('update-profile', {
+        profile_id: reviewingProfile.id,
+        updates: {
+          verification_status: 'approved',
+          approved_at: new Date().toISOString(),
+          rejection_reason: null,
+        }
+      });
+      if (res.error) return alert('Error: ' + res.error);
 
-      if (error) return alert('Error: ' + error.message);
-      reviewingProfile.verification_status = 'approved';
+      await createNotification(reviewingProfile.id, 'approval', '¡Tu cuenta ha sido verificada!', 'Ya puedes recibir pagos y aparecer como creador verificado.', 'index.html');
+
       closeReviewModal();
       loadDashboard();
     }
@@ -577,14 +666,18 @@
       const reason = document.getElementById('reject-reason').value.trim();
       if (!reason) return alert('Please provide a rejection reason.');
 
-      const { error } = await sbAdmin.from('profiles').update({
-        verification_status: 'rejected',
-        rejection_reason: reason,
-        approved_at: null,
-      }).eq('id', reviewingProfile.id);
+      const res = await apiCall('update-profile', {
+        profile_id: reviewingProfile.id,
+        updates: {
+          verification_status: 'rejected',
+          rejection_reason: reason,
+          approved_at: null,
+        }
+      });
+      if (res.error) return alert('Error: ' + res.error);
 
-      if (error) return alert('Error: ' + error.message);
-      reviewingProfile.verification_status = 'rejected';
+      await createNotification(reviewingProfile.id, 'rejection', 'Verificación rechazada', reason, 'index.html#verify');
+
       closeReviewModal();
       loadDashboard();
     }
@@ -671,10 +764,10 @@
     }
 
     function showTab(tab) {
-      document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('bg-creo-purple', '', 'text-white', ''); b.classList.add('text-gray-500', ''); });
+      document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('bg-creo-purple', 'text-white'); b.classList.add('text-gray-500'); });
       const active = document.getElementById('tab-' + tab);
-      active.classList.add('bg-creo-purple', '', 'text-white', '');
-      active.classList.remove('text-gray-500', '');
+      active.classList.add('bg-creo-purple', 'text-white');
+      active.classList.remove('text-gray-500');
       ['verification', 'creators', 'transactions', 'accounts', 'links'].forEach(p => {
         document.getElementById('panel-' + p).classList.toggle('hidden', p !== tab);
       });
@@ -722,7 +815,7 @@
 
     function closeModal() { document.getElementById('edit-modal').classList.add('hidden'); }
     function refresh() { loadDashboard(); }
-    async function logout() { sessionStorage.removeItem('browse_as_user'); authToken = null; await sb.auth.signOut(); location.reload(); }
+    async function logout() { sessionStorage.removeItem('browse_as_user'); sessionStorage.removeItem('admin_mode'); authToken = null; await sb.auth.signOut(); location.reload(); }
 
     // Auto-login if already authenticated as admin
     (async () => {
@@ -730,7 +823,7 @@
       if (user && isAdmin(user.email)) {
         const { data: { session } } = await sb.auth.getSession();
         authToken = session?.access_token;
-        await enterDashboard();
+        await verifyAndEnter();
       }
     })();
   </script>

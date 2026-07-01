@@ -40,7 +40,7 @@
     </div>
 
     <!-- AUTH SECTION -->
-    <div id="auth-section" class="p-6 rounded-xl shadow-xl space-y-4 transition-colors" style="background:rgba(255,255,255,0.7);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.3);">
+    <div id="auth-section" class="glass p-6 rounded-xl shadow-xl space-y-4 transition-colors">
       <h3 class="text-lg font-bold text-center text-gray-900">Iniciar Sesión o Registrarse</h3>
       <input id="email" type="email" placeholder="Email" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple">
       <input id="password" type="password" placeholder="Contraseña" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple">
@@ -64,6 +64,11 @@
         </label>
         <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-[11px] text-amber-800 leading-relaxed">
           Contenido con insinuación sexual, uso de drogas, palabras soeces o incitación a la violencia serán advertidos y luego expulsados de la plataforma sin previo aviso. No discriminamos por raza, religión, sexo u orientación sexual. Simplemente respete a los demás colaboradores de la plataforma.
+        </div>
+        <div class="bg-creo-purple/5 border border-creo-purple/20 rounded-lg p-3 text-[11px] text-gray-600 leading-relaxed">
+          🏢 <strong>¿Eres una Empresa o Institución y deseas apoyar creadores?</strong><br>
+          <a href="registro-empresa.html" class="text-creo-purple underline font-semibold">Regístrate como empresa aquí →</a>
+          <span class="text-gray-400 ml-1">Accede a un portal exclusivo de Brand Deals.</span>
         </div>
       </div>
       <div class="flex space-x-2">
@@ -977,15 +982,18 @@
         const avatar = inviter.avatar_url
           ? `<img src="${esc(inviter.avatar_url)}" class="w-10 h-10 rounded-full object-cover border-2 border-creo-mint">`
           : `<div class="w-10 h-10 rounded-full bg-creo-mint/20 flex items-center justify-center border-2 border-creo-mint"><span class="text-creo-mint font-bold text-sm">${esc(name[0].toUpperCase())}</span></div>`;
+        const inviterUsername = inviter.username || '';
         return `<div class="bg-white p-4 rounded-xl border border-creo-mint/30 shadow-sm space-y-3">
           <div class="flex items-center gap-3">
             ${avatar}
             <div class="flex-1 min-w-0">
               <p class="text-sm font-semibold text-gray-900">${esc(name)} te invitó a colaborar</p>
               <p class="text-xs text-gray-500 truncate">Meta: ${esc(meta.title || 'Sin título')}</p>
+              ${meta.description ? `<p class="text-xs text-gray-400 mt-1 line-clamp-2">${esc(meta.description)}</p>` : ''}
             </div>
           </div>
           <div class="flex gap-2">
+            ${inviterUsername ? `<a href="profile.html?u=${esc(inviterUsername)}" class="flex-1 bg-creo-purple/10 hover:bg-creo-purple/20 text-creo-purple font-semibold py-2 rounded-lg transition text-sm text-center">Ver Perfil</a>` : ''}
             <button onclick="acceptInvite('${inv.id}')" class="flex-1 bg-creo-mint hover:bg-creo-mintDark text-creo-purple font-bold py-2 rounded-lg transition text-sm flex items-center justify-center gap-1">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
               Creamos
