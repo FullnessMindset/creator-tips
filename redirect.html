@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CREO — Connecting Account...</title>
+  <title>CREO — Verificando...</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -17,14 +17,13 @@
 </head>
 <body class="bg-white text-gray-900 flex items-center justify-center min-h-screen text-center transition-colors duration-300">
   <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200 max-w-sm transition-colors">
-    <!-- Logo -->
     <div class="mb-4">
       <div class="w-16 h-16 rounded-full bg-white flex items-center justify-center mx-auto"><img src="assets/logo-icon.png" alt="CREO" class="w-12 h-12 rounded-full object-contain"></div>
     </div>
-    <h1 class="text-xl font-bold text-gray-900 mb-2">Syncing with Stripe</h1>
-    <p class="text-gray-500 text-sm">Please hold on while we finalize your verification...</p>
+    <h1 id="title" class="text-xl font-bold text-gray-900 mb-2">Verificando tu cuenta...</h1>
+    <p id="desc" class="text-gray-500 text-sm">Por favor espera mientras confirmamos tu identidad</p>
     <p id="status-msg" class="mt-4 text-sm font-medium"></p>
-    <div class="mt-4 flex justify-center">
+    <div id="spinner" class="mt-4 flex justify-center">
       <div class="relative w-6 h-6">
         <div class="absolute inset-0 rounded-full bg-creo-mint opacity-30 pulse-ring"></div>
         <div class="absolute inset-1 rounded-full bg-creo-mint"></div>
@@ -36,47 +35,127 @@
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const status = urlParams.get('status');
-    const isAdminLogin = urlParams.get('admin') === '1';
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const hasAuthToken = hashParams.get('access_token');
 
-    const type = hashParams.get('type');
-    const isEmailConfirm = type === 'signup' || type === 'email' || type === 'recovery';
+    function setStatus(title, desc, color) {
+      document.getElementById('title').textContent = title;
+      document.getElementById('desc').textContent = desc;
+      if (color) {
+        document.getElementById('status-msg').textContent = desc;
+        document.getElementById('status-msg').className = 'mt-4 text-sm font-medium ' + color;
+      }
+    }
 
-    if (hasAuthToken) {
-      const label = isEmailConfirm ? 'Email confirmado' : 'Iniciando sesión...';
-      const desc = isEmailConfirm ? '¡Tu cuenta ha sido verificada! Redirigiendo...' : 'Verificando tu cuenta...';
-      document.querySelector('h1').textContent = label;
-      document.querySelector('p').textContent = desc;
-      (async () => {
-        const { data: { user } } = await sb.auth.getUser();
-        if (user) {
-          let { data: profile } = await sb.from('profiles').select('id').eq('id', user.id).single();
-          if (!profile) {
-            const displayName = user.user_metadata?.full_name || user.email.split('@')[0];
-            const username = 'user_' + Math.floor(Math.random() * 100000);
-            await sb.from('profiles').insert([{ id: user.id, username, display_name: displayName, avatar_url: user.user_metadata?.avatar_url || null }]);
-          }
-          if (isAdminLogin && isAdmin(user.email)) {
-            sessionStorage.setItem('admin_mode', 'true');
-            window.location.href = 'admin.html';
-          } else {
-            window.location.href = 'index.html?welcome=1';
-          }
-        } else {
-          window.location.href = 'index.html';
-        }
-      })();
-    } else if (status === 'success') {
-      document.getElementById('status-msg').innerText = "Stripe Account Verified! Redirecting...";
-      document.getElementById('status-msg').classList.add('text-green-600');
+    async function handleAuthRedirect(user) {
+      if (!user) {
+        setStatus('Error', 'No se pudo verificar tu cuenta');
+        setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+        return;
+      }
+
+      let { data: profile } = await sb.from('profiles').select('id').eq('id', user.id).single();
+      if (!profile) {
+        const displayName = user.user_metadata?.full_name || user.email.split('@')[0];
+        const username = 'user_' + Math.floor(Math.random() * 100000);
+        await sb.from('profiles').insert([{ id: user.id, username, display_name: displayName, avatar_url: user.user_metadata?.avatar_url || null }]);
+      }
+
+      const isAdminLogin = localStorage.getItem('creo-admin-login') === '1';
+
+      if (isAdminLogin && isAdmin(user.email)) {
+        localStorage.removeItem('creo-admin-login');
+        sessionStorage.setItem('admin_mode', 'true');
+        setStatus('Acceso Admin Verificado', 'Redirigiendo al panel de administración...');
+        window.location.href = 'admin.html';
+      } else if (isAdmin(user.email) && urlParams.get('admin') === '1') {
+        sessionStorage.setItem('admin_mode', 'true');
+        setStatus('Acceso Admin Verificado', 'Redirigiendo al panel de administración...');
+        window.location.href = 'admin.html';
+      } else {
+        localStorage.removeItem('creo-admin-login');
+        setStatus('¡Cuenta verificada!', 'Redirigiendo a tu panel...');
+        window.location.href = 'index.html?welcome=1';
+      }
+    }
+
+    if (status === 'success') {
+      setStatus('Stripe Verificado', 'Cuenta de Stripe conectada. Redirigiendo...', 'text-green-600');
       setTimeout(() => { window.location.href = 'index.html'; }, 2500);
     } else if (status === 'refresh') {
-      document.getElementById('status-msg').innerText = "Onboarding incomplete. Redirecting to retry...";
-      document.getElementById('status-msg').classList.add('text-yellow-600');
+      setStatus('Incompleto', 'Onboarding incompleto. Redirigiendo para reintentar...', 'text-yellow-600');
       setTimeout(() => { window.location.href = 'index.html'; }, 2500);
     } else {
-      setTimeout(() => { window.location.href = 'index.html'; }, 2500);
+      // Handle auth callback — works for magic link (PKCE code), OAuth, and hash tokens
+      let handled = false;
+
+      // Method 1: Check for hash-based tokens (older Supabase flow)
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const hasHashToken = hashParams.get('access_token');
+
+      // Method 2: Check for PKCE code (Supabase v2 magic link flow)
+      const hasCode = urlParams.get('code');
+
+      if (hasHashToken || hasCode) {
+        setStatus('Verificando...', 'Confirmando tu identidad con Supabase...');
+
+        // Let Supabase client handle the token exchange
+        // For PKCE: exchangeCodeForSession will be called by the client
+        // For hash: the client detects tokens automatically
+        if (hasCode) {
+          try {
+            const { data, error } = await sb.auth.exchangeCodeForSession(hasCode);
+            if (error) {
+              setStatus('Error de autenticación', error.message);
+              setTimeout(() => { window.location.href = 'index.html'; }, 3000);
+            } else if (data.user) {
+              handled = true;
+              await handleAuthRedirect(data.user);
+            }
+          } catch (e) {
+            setStatus('Error', e.message);
+            setTimeout(() => { window.location.href = 'index.html'; }, 3000);
+          }
+        }
+
+        if (!handled && hasHashToken) {
+          try {
+            const { data: { user } } = await sb.auth.getUser();
+            if (user) {
+              handled = true;
+              await handleAuthRedirect(user);
+            }
+          } catch (e) {}
+        }
+      }
+
+      if (!handled) {
+        // Method 3: Listen for auth state change (catches all flows)
+        const { data: { subscription } } = sb.auth.onAuthStateChange(async (event, session) => {
+          if (handled) return;
+          if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
+            handled = true;
+            subscription.unsubscribe();
+            await handleAuthRedirect(session.user);
+          }
+        });
+
+        // Method 4: Check if already signed in
+        const { data: { session } } = await sb.auth.getSession();
+        if (!handled && session?.user) {
+          handled = true;
+          subscription.unsubscribe();
+          await handleAuthRedirect(session.user);
+        }
+
+        // Timeout fallback — if nothing triggers in 8 seconds, redirect to index
+        if (!handled) {
+          setTimeout(() => {
+            if (!handled) {
+              setStatus('Sesión no detectada', 'Redirigiendo...');
+              window.location.href = 'index.html';
+            }
+          }, 8000);
+        }
+      }
     }
   </script>
 </body>

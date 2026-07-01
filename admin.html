@@ -377,6 +377,7 @@
       btn.innerHTML = '<span class="loader"></span><span class="ml-2">Enviando...</span>';
       btn.disabled = true;
 
+      localStorage.setItem('creo-admin-login', '1');
       const { error } = await sb.auth.signInWithOtp({
         email,
         options: { emailRedirectTo: 'https://fullnessmindset.github.io/creo/redirect.html?admin=1' }
