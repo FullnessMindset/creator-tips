@@ -45,31 +45,36 @@
       }
     }
 
-    /* Landscape: horizontal scroll, videos fill width */
+    /* Landscape / Desktop: horizontal scroll */
     @media (orientation: landscape) {
+      body { overflow: hidden; padding-bottom: 0 !important; }
       #feed-scroll {
         scroll-snap-type: x mandatory;
         overflow-x: auto;
         overflow-y: hidden;
+        height: 100vh;
+        max-width: none;
+        padding: 0 2rem;
         display: flex;
         flex-direction: row;
-        gap: 1rem;
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
-        height: 100vh;
         align-items: center;
+        scrollbar-width: none;
       }
+      #feed-scroll::-webkit-scrollbar { display: none; }
       #feed-scroll #feed-content {
         display: flex;
         flex-direction: row;
-        gap: 1rem;
+        gap: 1.5rem;
         height: 100%;
         align-items: center;
       }
+      #feed-scroll #feed-content > * {
+        margin-top: 0 !important;
+      }
       .feed-card {
         scroll-snap-align: center;
-        min-width: 80vw;
-        max-width: 90vw;
+        min-width: 70vw;
+        max-width: 80vw;
         flex-shrink: 0;
       }
       .feed-card .feed-video-wrap {
@@ -78,10 +83,8 @@
       .feed-card video, .feed-card iframe {
         max-height: 70vh !important;
       }
-      /* Hide header & bottom nav in landscape */
       .landscape-hide { display: none !important; }
-      body { padding-bottom: 0 !important; }
-      #feed-loading, #feed-empty, #load-more { min-width: 80vw; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+      #feed-loading, #feed-empty, #load-more { min-width: 70vw; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
     }
 
     .animate-slide-up { animation: slide-up 0.3s ease-out; }
@@ -393,17 +396,22 @@
       if (e.key === 'Enter') submitComment();
     });
 
-    // Autoplay: play/pause videos as they scroll into view
+    // Autoplay: play/pause videos as they scroll into view, unmute the visible one
     const videoObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         const video = entry.target;
         if (entry.isIntersecting) {
-          video.play().catch(() => {});
+          video.muted = false;
+          video.play().catch(() => {
+            video.muted = true;
+            video.play().catch(() => {});
+          });
         } else {
           video.pause();
+          video.muted = true;
         }
       });
-    }, { threshold: 0.6 });
+    }, { threshold: 0.5 });
 
     async function loadFeed() {
       if (allLoaded) return;
@@ -551,69 +559,37 @@
       return Math.floor(days / 30) + 'mes';
     }
 
-    // Infinite scroll — works for both orientations
     function setupInfiniteScroll() {
       const feed = document.getElementById('feed-scroll');
       const isLandscape = window.matchMedia('(orientation: landscape)').matches;
+
       if (isLandscape) {
+        // Convert vertical wheel to horizontal scroll on desktop
+        feed.addEventListener('wheel', (e) => {
+          if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+            e.preventDefault();
+            feed.scrollBy({ left: e.deltaY, behavior: 'auto' });
+          }
+        }, { passive: false });
+
         feed.addEventListener('scroll', () => {
           if (allLoaded) return;
           if (feed.scrollLeft + feed.clientWidth >= feed.scrollWidth - 500) loadFeed();
         });
-      }
-      window.addEventListener('scroll', () => {
-        if (allLoaded) return;
-        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) loadFeed();
-      });
-    }
-
-    let creoTargetUsername = null;
-    let userActiveMetas = [];
-
-    async function openCreoChoice(username) {
-      creoTargetUsername = username;
-      const { data: { user } } = await sb.auth.getUser();
-      if (!user) {
-        window.location.href = 'profile.html?u=' + username;
-        return;
-      }
-      const { data: metas } = await sb.from('metas').select('id, title, raised_cents, goal_amount_cents').eq('creator_id', user.id).eq('is_active', true);
-      userActiveMetas = (metas || []).filter(m => m.raised_cents > 0);
-
-      const modal = document.getElementById('creo-choice-modal');
-      const metaOption = document.getElementById('creo-meta-option');
-      if (userActiveMetas.length > 0) {
-        metaOption.classList.remove('hidden');
-        const sel = document.getElementById('creo-meta-select');
-        sel.innerHTML = userActiveMetas.map(m =>
-          `<option value="${m.id}">$${(m.raised_cents / 100).toFixed(2)} — ${esc(m.title)}</option>`
-        ).join('');
       } else {
-        metaOption.classList.add('hidden');
+        window.addEventListener('scroll', () => {
+          if (allLoaded) return;
+          if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) loadFeed();
+        });
       }
-      modal.classList.remove('hidden');
     }
 
-    function closeCreoChoice() {
-      document.getElementById('creo-choice-modal').classList.add('hidden');
-    }
-
-    function creoWithCard() {
-      closeCreoChoice();
+    function openCreoChoice(username) {
       const overlay = document.getElementById('creo-loading');
+      overlay.querySelector('.creo-loading-text').textContent = 'Gracias por Creer';
+      overlay.querySelector('.creo-loading-sub').textContent = 'En unos segundos conocerás la Historia de este Creador...';
       overlay.classList.remove('hidden');
-      setTimeout(() => { window.location.href = 'profile.html?u=' + creoTargetUsername; }, 1200);
-    }
-
-    function creoWithMeta() {
-      closeCreoChoice();
-      const overlay = document.getElementById('creo-loading');
-      overlay.classList.remove('hidden');
-      const metaId = document.getElementById('creo-meta-select').value;
-      const amount = document.getElementById('creo-meta-amount').value;
-      setTimeout(() => {
-        window.location.href = 'profile.html?u=' + creoTargetUsername + '&from_meta=' + metaId + '&meta_amount=' + (amount || '5');
-      }, 1200);
+      setTimeout(() => { window.location.href = 'profile.html?u=' + username; }, 2500);
     }
 
     window.onload = async () => {
@@ -627,50 +603,11 @@
     };
   </script>
 
-  <!-- Creo Choice Modal -->
-  <div id="creo-choice-modal" class="fixed inset-0 z-[150] flex items-end sm:items-center justify-center hidden">
-    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeCreoChoice()"></div>
-    <div class="relative bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-sm p-6 space-y-4" style="animation: slide-up 0.3s ease-out">
-      <div class="text-center">
-        <img src="assets/logo-icon.png" class="w-12 h-12 rounded-full mx-auto mb-2" alt="CREO">
-        <h3 class="font-bold text-lg">Yo Creo en Ti</h3>
-        <p class="text-xs text-gray-500">¿Cómo quieres apoyar a este creador?</p>
-      </div>
-
-      <button onclick="creoWithCard()" class="w-full flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-creo-mint hover:bg-creo-mint/5 transition text-left">
-        <span class="text-2xl">💳</span>
-        <div>
-          <p class="font-semibold text-sm">Con mi tarjeta</p>
-          <p class="text-xs text-gray-500">Tip, meta o suscripción desde tu tarjeta</p>
-        </div>
-      </button>
-
-      <div id="creo-meta-option" class="hidden space-y-3">
-        <button onclick="document.getElementById('creo-meta-details').classList.toggle('hidden')" class="w-full flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-creo-purple hover:bg-creo-purple/5 transition text-left">
-          <span class="text-2xl">🎯</span>
-          <div>
-            <p class="font-semibold text-sm">Desde mi Meta</p>
-            <p class="text-xs text-gray-500">Envía fondos de tu meta activa a este creador</p>
-          </div>
-        </button>
-        <div id="creo-meta-details" class="hidden space-y-2 pl-2">
-          <select id="creo-meta-select" class="w-full border border-gray-300 bg-white p-2 rounded-lg text-sm text-gray-900"></select>
-          <div class="flex gap-2">
-            <input id="creo-meta-amount" type="number" min="1" value="5" placeholder="$" class="flex-1 border border-gray-300 bg-white p-2 rounded-lg text-sm text-gray-900">
-            <button onclick="creoWithMeta()" class="px-4 py-2 bg-creo-purple text-white text-sm font-semibold rounded-lg hover:bg-creo-light transition">Enviar</button>
-          </div>
-        </div>
-      </div>
-
-      <button onclick="closeCreoChoice()" class="w-full text-center text-sm text-gray-400 hover:text-gray-600 py-2">Cancelar</button>
-    </div>
-  </div>
-
   <!-- "Yo Creo en Ti" loading overlay -->
   <div id="creo-loading" class="fixed inset-0 z-[200] flex flex-col items-center justify-center hidden" style="background:rgba(26,10,62,0.85);backdrop-filter:blur(20px);">
     <img src="assets/logo-icon.png" class="w-20 h-20 rounded-full shadow-2xl mb-6 float-anim" alt="CREO">
-    <p class="text-white text-2xl font-bold tracking-wider">Yo Creo en Ti</p>
-    <p class="text-creo-mint text-sm mt-2">Cargando perfil del creador...</p>
+    <p class="creo-loading-text text-white text-2xl font-bold tracking-wider">Yo Creo en Ti</p>
+    <p class="creo-loading-sub text-creo-mint text-sm mt-2">Cargando perfil del creador...</p>
     <div class="mt-6 w-48 h-1.5 bg-white/20 rounded-full overflow-hidden">
       <div class="h-full bg-creo-mint rounded-full animate-pulse" style="width:70%"></div>
     </div>
