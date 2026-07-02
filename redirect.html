@@ -78,8 +78,25 @@
     }
 
     if (status === 'success') {
-      setStatus('Stripe Verificado', 'Cuenta de Stripe conectada. Redirigiendo...', 'text-green-600');
-      setTimeout(() => { window.location.href = 'index.html'; }, 2500);
+      const isUpgrade = localStorage.getItem('creo-cocreator-upgrade') === '1';
+      if (isUpgrade) {
+        setStatus('¡Ahora eres Creador!', 'Tu cuenta ha sido actualizada. Redirigiendo a tu perfil...', 'text-green-600');
+        localStorage.removeItem('creo-cocreator-upgrade');
+        (async () => {
+          const { data: { user } } = await sb.auth.getUser();
+          if (user) {
+            const { data: profile } = await sb.from('profiles').select('username').eq('id', user.id).single();
+            await sb.from('profiles').update({ account_type: 'creator', verification_status: 'approved' }).eq('id', user.id);
+            const username = profile?.username || '';
+            setTimeout(() => { window.location.href = 'profile.html?u=' + encodeURIComponent(username); }, 2500);
+          } else {
+            setTimeout(() => { window.location.href = 'index.html'; }, 2500);
+          }
+        })();
+      } else {
+        setStatus('Stripe Verificado', 'Cuenta de Stripe conectada. Redirigiendo...', 'text-green-600');
+        setTimeout(() => { window.location.href = 'index.html'; }, 2500);
+      }
     } else if (status === 'refresh') {
       setStatus('Incompleto', 'Onboarding incompleto. Redirigiendo para reintentar...', 'text-yellow-600');
       setTimeout(() => { window.location.href = 'index.html'; }, 2500);
