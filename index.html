@@ -208,25 +208,6 @@
             <input id="social-linkedin" type="url" placeholder="LinkedIn URL" class="border border-gray-300 bg-gray-50 p-2 rounded-lg text-sm text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple">
           </div>
 
-          <h4 class="font-semibold text-sm text-gray-700 pt-2">🎨 Personalización del Perfil</h4>
-          <p class="text-[10px] text-gray-400 -mt-3">Elige los colores de tu perfil público</p>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-[10px] text-gray-500 mb-1">Color Principal</label>
-              <input id="color-primary" type="color" value="#1a0a3e" class="w-full h-10 rounded-lg border border-gray-300 cursor-pointer">
-            </div>
-            <div>
-              <label class="block text-[10px] text-gray-500 mb-1">Color Acento</label>
-              <input id="color-accent" type="color" value="#33f0b0" class="w-full h-10 rounded-lg border border-gray-300 cursor-pointer">
-            </div>
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-gray-500 mb-1">Fondo de Perfil (imagen o video corto en loop)</label>
-            <input type="file" id="bg-media-file" accept="image/*,video/mp4,video/webm" onchange="uploadBgMedia()" class="block w-full text-xs text-gray-500 file:mr-2 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-creo-purple/10 file:text-creo-purple cursor-pointer">
-            <p class="text-[10px] text-gray-400 mt-1">JPG, PNG o MP4/WebM (max 10MB). El video se reproducirá en loop.</p>
-            <div id="bg-media-preview" class="mt-2 rounded-lg overflow-hidden hidden"></div>
-          </div>
-
           <button onclick="saveProfile()" id="save-profile-btn" class="w-full bg-creo-purple hover:bg-creo-light text-white py-3 rounded-xl font-semibold transition">Guardar Perfil</button>
         </div>
 
@@ -889,18 +870,6 @@
           document.getElementById('contact-email').value = data.contact_email || '';
           document.getElementById('contact-phone').value = data.contact_phone || '';
           document.getElementById('contact-type').value = data.contact_type || 'phone';
-          const colors = data.profile_colors || {};
-          document.getElementById('color-primary').value = colors.primary || '#1a0a3e';
-          document.getElementById('color-accent').value = colors.accent || '#33f0b0';
-          if (data.bg_media_url) {
-            const preview = document.getElementById('bg-media-preview');
-            preview.classList.remove('hidden');
-            if (/\.(mp4|webm|mov)$/i.test(data.bg_media_url)) {
-              preview.innerHTML = `<video src="${data.bg_media_url}" class="w-full h-24 object-cover rounded-lg" autoplay muted loop playsinline></video>`;
-            } else {
-              preview.innerHTML = `<img src="${data.bg_media_url}" class="w-full h-24 object-cover rounded-lg">`;
-            }
-          }
           document.getElementById('profile-link').innerText = 'https://fullnessmindset.github.io/creo/profile.html?u=' + (data.username || '');
           document.getElementById('v-email').value = user.email;
           document.getElementById('v-fullname').value = data.full_name || '';
@@ -1194,33 +1163,12 @@
       const contact_email = document.getElementById('contact-email').value.trim() || null;
       const contact_phone = document.getElementById('contact-phone').value.trim() || null;
       const contact_type = document.getElementById('contact-type').value;
-      const profile_colors = {
-        primary: document.getElementById('color-primary').value,
-        accent: document.getElementById('color-accent').value
-      };
-      const { error } = await sb.from('profiles').update({ username, display_name: display_name || username, bio, social_links, contact_email, contact_phone, contact_type, profile_colors }).eq('id', currentUser.id);
+      const { error } = await sb.from('profiles').update({ username, display_name: display_name || username, bio, social_links, contact_email, contact_phone, contact_type }).eq('id', currentUser.id);
       btn.innerText = 'Guardar Perfil'; btn.disabled = false;
       if (error) return showToast(error.message, 'error');
       document.getElementById('profile-link').innerText = 'https://fullnessmindset.github.io/creo/profile.html?u=' + username;
       currentProfile.social_links = social_links;
       showToast('Perfil guardado', 'success');
-    }
-
-    async function uploadBgMedia() {
-      const input = document.getElementById('bg-media-file');
-      const file = input.files[0];
-      if (!file) return;
-      const url = await uploadToStorage(file, 'backgrounds', 10);
-      if (!url) return;
-      await sb.from('profiles').update({ bg_media_url: url }).eq('id', currentUser.id);
-      const preview = document.getElementById('bg-media-preview');
-      preview.classList.remove('hidden');
-      if (file.type.startsWith('video/')) {
-        preview.innerHTML = `<video src="${url}" class="w-full h-24 object-cover rounded-lg" autoplay muted loop playsinline></video>`;
-      } else {
-        preview.innerHTML = `<img src="${url}" class="w-full h-24 object-cover rounded-lg">`;
-      }
-      showToast('Fondo actualizado', 'success');
     }
 
     async function uploadBrandBgMedia() {
