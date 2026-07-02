@@ -61,15 +61,8 @@
       #creator-posts-scroll > .post-card { min-width: 400px; max-width: 480px; }
     }
 
-    /* Branding editor */
-    .brand-color-swatch {
-      width: 32px; height: 32px; border-radius: 8px; border: 2px solid rgba(0,0,0,0.1);
-      cursor: pointer; position: relative; overflow: hidden;
-    }
-    .brand-color-swatch input[type="color"] {
-      position: absolute; inset: -4px; width: 140%; height: 140%; cursor: pointer; border: none;
-    }
-    .brand-warn { background: #fef3c7; color: #92400e; padding: 6px 10px; border-radius: 8px; font-size: 11px; margin-top: 4px; }
+    /* Branding transition */
+    .brand-transition { transition: background-color 0.3s, color 0.3s; }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900 min-h-screen transition-colors duration-300">
@@ -436,52 +429,6 @@
       Metas Alcanzadas
     </h2>
     <div id="completed-metas-list" class="space-y-3"></div>
-  </div>
-
-  <!-- Branding Editor (own profile only) -->
-  <div id="brand-editor" class="hidden max-w-lg mx-auto px-4 mb-6">
-    <div class="glass rounded-2xl p-5 shadow-xl space-y-4">
-      <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
-        <svg class="w-4 h-4 text-creo-mint" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
-        Mi Branding
-      </h3>
-      <p class="text-[11px] text-gray-400">Personaliza los colores de tu perfil. Los visitantes verán tu marca.</p>
-
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="text-[11px] font-medium text-gray-600 block mb-1">Color de texto</label>
-          <div class="brand-color-swatch" style="background:var(--brand-text-color, #1f2937)">
-            <input type="color" id="brand-text-color" value="#1f2937" oninput="updateBrandPreview()">
-          </div>
-          <div id="brand-warn-text" class="brand-warn hidden"></div>
-        </div>
-        <div>
-          <label class="text-[11px] font-medium text-gray-600 block mb-1">Fondo de secciones</label>
-          <div class="brand-color-swatch" style="background:var(--brand-section-bg, #ffffff)">
-            <input type="color" id="brand-section-bg" value="#ffffff" oninput="updateBrandPreview()">
-          </div>
-        </div>
-        <div>
-          <label class="text-[11px] font-medium text-gray-600 block mb-1">Fondo de página</label>
-          <div class="brand-color-swatch" style="background:var(--brand-bg-color, #f9fafb)">
-            <input type="color" id="brand-bg-color" value="#f9fafb" oninput="updateBrandPreview()">
-          </div>
-          <div id="brand-warn-bg" class="brand-warn hidden"></div>
-        </div>
-        <div>
-          <label class="text-[11px] font-medium text-gray-600 block mb-1">Color de botones</label>
-          <div class="brand-color-swatch" style="background:var(--brand-button-color, #1a0a3e)">
-            <input type="color" id="brand-button-color" value="#1a0a3e" oninput="updateBrandPreview()">
-          </div>
-          <div id="brand-warn-btn" class="brand-warn hidden"></div>
-        </div>
-      </div>
-
-      <button onclick="saveBranding()" class="w-full py-2.5 rounded-xl text-white text-sm font-semibold transition flex items-center justify-center gap-2" style="background:var(--brand-button-color, #1a0a3e)">
-        <img src="assets/logo-icon.png" class="w-4 h-4 rounded-full" alt="">
-        Guardar Branding
-      </button>
-    </div>
   </div>
 
   <footer class="max-w-lg mx-auto px-4 pb-24 text-center text-xs text-gray-400 leading-relaxed space-y-2">
@@ -1710,14 +1657,6 @@
       return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
     }
 
-    function getContrast(hex1, hex2) {
-      const l1 = getLuminance(hex1);
-      const l2 = getLuminance(hex2);
-      const lighter = Math.max(l1, l2);
-      const darker = Math.min(l1, l2);
-      return (lighter + 0.05) / (darker + 0.05);
-    }
-
     function suggestTextColor(bgHex) {
       const lum = getLuminance(bgHex);
       return lum > 0.5 ? '#1a1a2e' : '#f5f5f5';
@@ -1725,115 +1664,54 @@
 
     function applyBranding(colors) {
       if (!colors) return;
-      const root = document.documentElement.style;
-      if (colors.textColor) root.setProperty('--brand-text-color', colors.textColor);
-      if (colors.sectionBg) root.setProperty('--brand-section-bg', colors.sectionBg);
-      if (colors.buttonColor) root.setProperty('--brand-button-color', colors.buttonColor);
-      if (colors.bgColor) {
-        document.body.style.backgroundColor = colors.bgColor;
-        root.setProperty('--brand-bg-color', colors.bgColor);
-      }
+      const theme = colors.theme || 'light';
+      const accent = colors.accentColor || '#1a0a3e';
+      const isDark = theme === 'dark';
 
-      // Apply to section cards
-      if (colors.sectionBg) {
-        document.querySelectorAll('.glass, #profile-header-card').forEach(el => {
-          el.style.background = colors.sectionBg;
-        });
-      }
-      // Apply text colors
-      if (colors.textColor) {
-        document.querySelectorAll('.section-title, #profile-name, #profile-bio, .meta-media-card h3').forEach(el => {
-          el.style.color = colors.textColor;
-        });
-        document.getElementById('profile-username').style.color = colors.textColor;
-      }
-      // Apply button colors — keep CREO logo
-      if (colors.buttonColor) {
-        document.querySelectorAll('.bg-creo-purple, #tip-btn, #sub-btn, .creo-action-btn').forEach(el => {
-          if (el.tagName === 'BUTTON' || el.tagName === 'A') {
-            el.style.backgroundColor = colors.buttonColor;
-            const btnTextColor = suggestTextColor(colors.buttonColor);
-            el.style.color = btnTextColor;
-          }
-        });
-      }
-    }
+      const bgColor = isDark ? '#1a1a2e' : '#f9fafb';
+      const sectionBg = isDark ? '#2d2d44' : '#ffffff';
+      const textColor = isDark ? '#f5f5f5' : '#1f2937';
+      const altBtnColor = isDark ? '#ffffff' : '#1a1a2e';
+      const altBtnText = isDark ? '#1a1a2e' : '#ffffff';
+      const accentText = suggestTextColor(accent);
 
-    function checkContrastAndWarn(textColor, bgColor, warnElId) {
-      const warnEl = document.getElementById(warnElId);
-      if (!warnEl) return true;
-      if (!textColor || !bgColor) { warnEl.classList.add('hidden'); return true; }
-      const contrast = getContrast(textColor, bgColor);
-      if (contrast < 3) {
-        const suggested = suggestTextColor(bgColor);
-        warnEl.innerHTML = `Texto poco visible (contraste: ${contrast.toFixed(1)}). Color sugerido: <span class="font-bold cursor-pointer underline" onclick="document.getElementById('brand-text-color').value='${suggested}'; updateBrandPreview()">${suggested}</span>`;
-        warnEl.classList.remove('hidden');
-        return false;
-      }
-      warnEl.classList.add('hidden');
-      return true;
-    }
+      document.body.style.backgroundColor = bgColor;
+      document.body.classList.toggle('brand-dark', isDark);
 
-    async function showBrandEditor() {
-      const { data: { user } } = await sb.auth.getUser();
-      if (!user || !creatorProfile || user.id !== creatorProfile.id) return;
+      document.querySelectorAll('.glass, #profile-header-card').forEach(el => {
+        el.style.background = sectionBg;
+        if (isDark) el.style.borderColor = 'rgba(255,255,255,0.1)';
+        else el.style.borderColor = '';
+      });
 
-      const editor = document.getElementById('brand-editor');
-      editor.classList.remove('hidden');
-      const colors = creatorProfile.profile_colors || {};
-      document.getElementById('brand-text-color').value = colors.textColor || '#1f2937';
-      document.getElementById('brand-section-bg').value = colors.sectionBg || '#ffffff';
-      document.getElementById('brand-bg-color').value = colors.bgColor || '#f9fafb';
-      document.getElementById('brand-button-color').value = colors.buttonColor || '#1a0a3e';
-    }
+      document.querySelectorAll('.section-title, #profile-name, #profile-bio, .meta-media-card h3').forEach(el => {
+        el.style.color = textColor;
+      });
+      const usernameEl = document.getElementById('profile-username');
+      if (usernameEl) usernameEl.style.color = textColor;
 
-    function updateBrandPreview() {
-      const colors = {
-        textColor: document.getElementById('brand-text-color').value,
-        sectionBg: document.getElementById('brand-section-bg').value,
-        bgColor: document.getElementById('brand-bg-color').value,
-        buttonColor: document.getElementById('brand-button-color').value,
-      };
-      applyBranding(colors);
+      // Alternating buttons: odd=accent, even=altBtn
+      const allBtns = document.querySelectorAll('#tip-btn, #sub-btn, #follow-btn, #dm-btn, #share-btn');
+      let btnIndex = 0;
+      allBtns.forEach(el => {
+        if (el.offsetParent === null && el.classList.contains('hidden')) return;
+        if (btnIndex % 2 === 0) {
+          el.style.backgroundColor = accent;
+          el.style.color = accentText;
+          el.style.borderColor = accent;
+        } else {
+          el.style.backgroundColor = altBtnColor;
+          el.style.color = altBtnText;
+          el.style.borderColor = altBtnColor;
+        }
+        btnIndex++;
+      });
 
-      // Check text vs section bg contrast
-      checkContrastAndWarn(colors.textColor, colors.sectionBg, 'brand-warn-text');
-      // Check text vs page bg contrast
-      checkContrastAndWarn(colors.textColor, colors.bgColor, 'brand-warn-bg');
-      // Check button text readability
-      const btnText = suggestTextColor(colors.buttonColor);
-      const btnContrast = getContrast(btnText, colors.buttonColor);
-      const warnBtn = document.getElementById('brand-warn-btn');
-      if (btnContrast < 3) {
-        warnBtn.textContent = 'El color del botón puede dificultar la lectura del texto.';
-        warnBtn.classList.remove('hidden');
-      } else {
-        warnBtn.classList.add('hidden');
-      }
-    }
-
-    async function saveBranding() {
-      const colors = {
-        textColor: document.getElementById('brand-text-color').value,
-        sectionBg: document.getElementById('brand-section-bg').value,
-        bgColor: document.getElementById('brand-bg-color').value,
-        buttonColor: document.getElementById('brand-button-color').value,
-      };
-
-      // Block save if text is invisible
-      const sectionOk = checkContrastAndWarn(colors.textColor, colors.sectionBg, 'brand-warn-text');
-      if (!sectionOk) {
-        const suggested = suggestTextColor(colors.sectionBg);
-        colors.textColor = suggested;
-        document.getElementById('brand-text-color').value = suggested;
-        showToast('Color de texto ajustado para mejor visibilidad', 'info');
-      }
-
-      const { error } = await sb.from('profiles').update({ profile_colors: colors }).eq('id', creatorProfile.id);
-      if (error) { showToast('Error al guardar', 'error'); return; }
-      creatorProfile.profile_colors = colors;
-      applyBranding(colors);
-      showToast('Branding guardado', 'success');
+      // Footer and secondary text
+      document.querySelectorAll('.text-gray-400, .text-gray-500').forEach(el => {
+        if (isDark) el.style.color = '#a0a0b8';
+        else el.style.color = '';
+      });
     }
 
     window.onload = async () => {
@@ -1848,7 +1726,6 @@
         handleAccountType();
         loadCompletedMetas(creatorProfile.id);
         applyBranding(creatorProfile.profile_colors);
-        showBrandEditor();
       }
       renderBottomNav('profile');
       updateNavAuth();
