@@ -564,7 +564,7 @@
               <svg class="w-5 h-5 text-creo-mint" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
               Mi Branding
             </h3>
-            <p class="text-xs text-gray-500 mt-1">Personaliza cómo los visitantes ven tu perfil. Los colores se aplican automáticamente.</p>
+            <p class="text-xs text-gray-500 mt-1">Personaliza cómo los visitantes ven tu perfil.</p>
           </div>
 
           <!-- Theme toggle -->
@@ -582,26 +582,78 @@
             </div>
           </div>
 
-          <!-- Accent color -->
-          <div>
-            <label class="text-xs font-semibold text-gray-700 block mb-2">Color de acento (botones principales)</label>
-            <div class="flex items-center gap-3">
-              <div class="brand-swatch">
-                <input type="color" id="brand-accent-color" value="#1a0a3e" oninput="updateBrandingPreview()">
+          <!-- Colors grid -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-semibold text-gray-700 block mb-2">Color de texto</label>
+              <div class="flex items-center gap-2">
+                <div class="brand-swatch"><input type="color" id="brand-text-color" value="#1f2937" oninput="updateBrandingPreview()"></div>
+                <span class="text-[10px] text-gray-400 font-mono" id="brand-text-hex">#1f2937</span>
               </div>
-              <span id="brand-accent-hex" class="text-xs text-gray-400 font-mono">#1a0a3e</span>
-              <div id="brand-accent-warn" class="hidden text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1 ml-auto">Poco visible</div>
+              <div id="brand-warn-text" class="hidden text-[10px] text-amber-700 bg-amber-50 rounded px-2 py-1 mt-1"></div>
             </div>
+            <div>
+              <label class="text-xs font-semibold text-gray-700 block mb-2">Fondo de secciones</label>
+              <div class="flex items-center gap-2">
+                <div class="brand-swatch"><input type="color" id="brand-section-bg" value="#ffffff" oninput="updateBrandingPreview()"></div>
+                <span class="text-[10px] text-gray-400 font-mono" id="brand-section-hex">#ffffff</span>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-gray-700 block mb-2">Botones de pago</label>
+              <div class="flex items-center gap-2">
+                <div class="brand-swatch"><input type="color" id="brand-button-color" value="#1a0a3e" oninput="updateBrandingPreview()"></div>
+                <span class="text-[10px] text-gray-400 font-mono" id="brand-button-hex">#1a0a3e</span>
+              </div>
+              <div id="brand-warn-btn" class="hidden text-[10px] text-amber-700 bg-amber-50 rounded px-2 py-1 mt-1"></div>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-gray-700 block mb-2">Fondo de página</label>
+              <div class="flex items-center gap-2">
+                <div class="brand-swatch"><input type="color" id="brand-bg-color" value="#f9fafb" oninput="updateBrandingPreview()"></div>
+                <span class="text-[10px] text-gray-400 font-mono" id="brand-bg-hex">#f9fafb</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Font selector -->
+          <div>
+            <label class="text-xs font-semibold text-gray-700 block mb-2">Tipografía</label>
+            <select id="brand-font" onchange="updateBrandingPreview()" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl text-sm text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple">
+              <option value="Inter" style="font-family:Inter,sans-serif">Inter (Default)</option>
+              <option value="Poppins" style="font-family:Poppins,sans-serif">Poppins</option>
+              <option value="Montserrat" style="font-family:Montserrat,sans-serif">Montserrat</option>
+              <option value="Roboto" style="font-family:Roboto,sans-serif">Roboto</option>
+              <option value="Open Sans" style="font-family:'Open Sans',sans-serif">Open Sans</option>
+              <option value="Lato" style="font-family:Lato,sans-serif">Lato</option>
+              <option value="Playfair Display" style="font-family:'Playfair Display',serif">Playfair Display</option>
+              <option value="Merriweather" style="font-family:Merriweather,serif">Merriweather</option>
+              <option value="Raleway" style="font-family:Raleway,sans-serif">Raleway</option>
+              <option value="Oswald" style="font-family:Oswald,sans-serif">Oswald</option>
+            </select>
+            <p id="brand-font-preview" class="text-sm text-gray-600 mt-2 p-3 bg-gray-50 rounded-lg">Vista previa de la tipografía seleccionada</p>
+          </div>
+
+          <!-- Background image/video -->
+          <div>
+            <label class="text-xs font-semibold text-gray-700 block mb-2">Imagen o video de fondo (URL)</label>
+            <input type="url" id="brand-bg-media" placeholder="https://ejemplo.com/mi-fondo.jpg" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl text-sm text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple" oninput="updateBrandingPreview()">
+            <p class="text-[10px] text-gray-400 mt-1">Pega un enlace a una imagen o video. Formatos: .jpg, .png, .webp, .mp4, .webm</p>
           </div>
 
           <!-- Preview -->
           <div>
-            <label class="text-xs font-semibold text-gray-700 block mb-2">Vista previa de botones</label>
-            <div id="brand-btn-preview" class="flex flex-wrap gap-2 p-4 rounded-xl border border-gray-200">
-              <button class="brand-preview-btn px-4 py-2 rounded-full text-xs font-semibold">Seguir</button>
-              <button class="brand-preview-btn px-4 py-2 rounded-full text-xs font-semibold">Mensaje</button>
-              <button class="brand-preview-btn px-4 py-2 rounded-full text-xs font-semibold">Creo en Ti</button>
-              <button class="brand-preview-btn px-4 py-2 rounded-full text-xs font-semibold">Suscribir</button>
+            <label class="text-xs font-semibold text-gray-700 block mb-2">Vista previa</label>
+            <div id="brand-preview-card" class="relative p-5 rounded-2xl border border-gray-200 overflow-hidden" style="min-height:140px">
+              <div id="brand-preview-bg-media" class="absolute inset-0 z-0"></div>
+              <div class="relative z-10 space-y-3">
+                <p id="brand-preview-text" class="text-sm font-semibold">Así se verá tu perfil</p>
+                <p id="brand-preview-subtext" class="text-xs opacity-70">Los textos y secciones reflejan tus colores</p>
+                <div class="flex gap-2">
+                  <button id="brand-preview-pay-btn" class="px-4 py-2 rounded-full text-xs font-semibold">Creo en Ti</button>
+                  <button id="brand-preview-sub-btn" class="px-4 py-2 rounded-full text-xs font-semibold">Apoyo Full</button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -645,7 +697,7 @@
     }
 
     // ===== BRANDING PANEL =====
-    let brandState = { theme: 'light', accentColor: '#1a0a3e' };
+    let brandState = { theme: 'light', textColor: '#1f2937', sectionBg: '#ffffff', buttonColor: '#1a0a3e', bgColor: '#f9fafb', font: 'Inter', bgMedia: '' };
 
     function getLuminance(hex) {
       const r = parseInt(hex.slice(1,3), 16) / 255;
@@ -666,16 +718,35 @@
 
     function loadBrandingPanel() {
       if (!currentProfile) return;
-      const colors = currentProfile.profile_colors || {};
-      brandState.theme = colors.theme || 'light';
-      brandState.accentColor = colors.accentColor || '#1a0a3e';
-      document.getElementById('brand-accent-color').value = brandState.accentColor;
+      const c = currentProfile.profile_colors || {};
+      const isDark = (c.theme || 'light') === 'dark';
+      brandState.theme = c.theme || 'light';
+      brandState.textColor = c.textColor || (isDark ? '#f5f5f5' : '#1f2937');
+      brandState.sectionBg = c.sectionBg || (isDark ? '#2d2d44' : '#ffffff');
+      brandState.buttonColor = c.buttonColor || '#1a0a3e';
+      brandState.bgColor = c.bgColor || (isDark ? '#1a1a2e' : '#f9fafb');
+      brandState.font = c.font || 'Inter';
+      brandState.bgMedia = c.bgMedia || '';
+
+      document.getElementById('brand-text-color').value = brandState.textColor;
+      document.getElementById('brand-section-bg').value = brandState.sectionBg;
+      document.getElementById('brand-button-color').value = brandState.buttonColor;
+      document.getElementById('brand-bg-color').value = brandState.bgColor;
+      document.getElementById('brand-font').value = brandState.font;
+      document.getElementById('brand-bg-media').value = brandState.bgMedia;
       updateThemeButtons();
       updateBrandingPreview();
     }
 
     function setBrandTheme(theme) {
       brandState.theme = theme;
+      const isDark = theme === 'dark';
+      brandState.textColor = isDark ? '#f5f5f5' : '#1f2937';
+      brandState.sectionBg = isDark ? '#2d2d44' : '#ffffff';
+      brandState.bgColor = isDark ? '#1a1a2e' : '#f9fafb';
+      document.getElementById('brand-text-color').value = brandState.textColor;
+      document.getElementById('brand-section-bg').value = brandState.sectionBg;
+      document.getElementById('brand-bg-color').value = brandState.bgColor;
       updateThemeButtons();
       updateBrandingPreview();
     }
@@ -693,58 +764,84 @@
     }
 
     function updateBrandingPreview() {
-      const accent = document.getElementById('brand-accent-color').value;
-      brandState.accentColor = accent;
-      document.getElementById('brand-accent-hex').textContent = accent;
+      const textColor = document.getElementById('brand-text-color').value;
+      const sectionBg = document.getElementById('brand-section-bg').value;
+      const buttonColor = document.getElementById('brand-button-color').value;
+      const bgColor = document.getElementById('brand-bg-color').value;
+      const font = document.getElementById('brand-font').value;
+      const bgMedia = document.getElementById('brand-bg-media').value.trim();
 
-      const isDark = brandState.theme === 'dark';
-      const previewBg = isDark ? '#1a1a2e' : '#f9fafb';
-      const altBtnColor = isDark ? '#ffffff' : '#1a1a2e';
-      const altBtnText = isDark ? '#1a1a2e' : '#ffffff';
-      const accentText = suggestTextColor(accent);
+      brandState = { ...brandState, textColor, sectionBg, buttonColor, bgColor, font, bgMedia };
 
-      // Check accent contrast against preview bg
-      const warn = document.getElementById('brand-accent-warn');
-      const contrastVsBg = getContrast(accent, previewBg);
-      if (contrastVsBg < 2.5) {
-        warn.textContent = 'Este color se confunde con el fondo. Elige otro.';
-        warn.classList.remove('hidden');
-      } else {
-        warn.classList.add('hidden');
-      }
+      // Update hex displays
+      document.getElementById('brand-text-hex').textContent = textColor;
+      document.getElementById('brand-section-hex').textContent = sectionBg;
+      document.getElementById('brand-button-hex').textContent = buttonColor;
+      document.getElementById('brand-bg-hex').textContent = bgColor;
 
-      const preview = document.getElementById('brand-btn-preview');
-      preview.style.backgroundColor = previewBg;
-      preview.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : '';
+      // Contrast warnings — lock bad combos
+      const warnText = document.getElementById('brand-warn-text');
+      const textVsSection = getContrast(textColor, sectionBg);
+      if (textVsSection < 3) {
+        const fix = suggestTextColor(sectionBg);
+        warnText.innerHTML = 'Texto invisible. <span class="underline cursor-pointer font-bold" onclick="document.getElementById(\'brand-text-color\').value=\'' + fix + '\';updateBrandingPreview()">Usar ' + fix + '</span>';
+        warnText.classList.remove('hidden');
+      } else { warnText.classList.add('hidden'); }
 
-      const btns = preview.querySelectorAll('.brand-preview-btn');
-      btns.forEach((btn, i) => {
-        if (i % 2 === 0) {
-          btn.style.backgroundColor = accent;
-          btn.style.color = accentText;
-          btn.style.border = '2px solid ' + accent;
+      const warnBtn = document.getElementById('brand-warn-btn');
+      const btnTextColor = suggestTextColor(buttonColor);
+      const btnContrast = getContrast(btnTextColor, buttonColor);
+      if (btnContrast < 2.5) {
+        warnBtn.textContent = 'Color de botón poco visible';
+        warnBtn.classList.remove('hidden');
+      } else { warnBtn.classList.add('hidden'); }
+
+      // Font preview
+      const fontPreview = document.getElementById('brand-font-preview');
+      fontPreview.style.fontFamily = font + ', sans-serif';
+      fontPreview.textContent = 'Vista previa: ' + font;
+
+      // Preview card
+      const card = document.getElementById('brand-preview-card');
+      card.style.backgroundColor = bgColor;
+
+      // Background media in preview
+      const mediaCont = document.getElementById('brand-preview-bg-media');
+      if (bgMedia) {
+        const isVideo = /\.(mp4|webm|ogg)(\?|$)/i.test(bgMedia);
+        if (isVideo) {
+          mediaCont.innerHTML = '<video src="' + bgMedia + '" autoplay muted loop playsinline class="w-full h-full object-cover absolute inset-0" style="opacity:0.3"></video>';
         } else {
-          btn.style.backgroundColor = altBtnColor;
-          btn.style.color = altBtnText;
-          btn.style.border = '2px solid ' + altBtnColor;
+          mediaCont.innerHTML = '<img src="' + bgMedia + '" class="w-full h-full object-cover absolute inset-0" style="opacity:0.3">';
         }
-      });
+      } else { mediaCont.innerHTML = ''; }
+
+      const previewText = document.getElementById('brand-preview-text');
+      const previewSub = document.getElementById('brand-preview-subtext');
+      previewText.style.color = textColor;
+      previewText.style.fontFamily = font + ', sans-serif';
+      previewSub.style.color = textColor;
+
+      const payBtn = document.getElementById('brand-preview-pay-btn');
+      const subBtn = document.getElementById('brand-preview-sub-btn');
+      payBtn.style.backgroundColor = buttonColor;
+      payBtn.style.color = suggestTextColor(buttonColor);
+      subBtn.style.backgroundColor = buttonColor;
+      subBtn.style.color = suggestTextColor(buttonColor);
+      subBtn.style.opacity = '0.85';
     }
 
     async function saveBrandingFromPanel() {
       if (!currentProfile) return;
-      const accent = brandState.accentColor;
-      const isDark = brandState.theme === 'dark';
-      const previewBg = isDark ? '#1a1a2e' : '#f9fafb';
+      const { textColor, sectionBg, buttonColor, bgColor, font, bgMedia, theme } = brandState;
 
-      // Block save if accent is invisible against bg
-      const contrastVsBg = getContrast(accent, previewBg);
-      if (contrastVsBg < 2.5) {
-        showToast('Elige un color de acento con mejor contraste contra el fondo', 'error');
+      // Block save if text invisible on sections
+      if (getContrast(textColor, sectionBg) < 3) {
+        showToast('El texto no es visible sobre el fondo de secciones. Ajusta los colores.', 'error');
         return;
       }
 
-      const colors = { theme: brandState.theme, accentColor: accent };
+      const colors = { theme, textColor, sectionBg, buttonColor, bgColor, font, bgMedia };
       const { error } = await sb.from('profiles').update({ profile_colors: colors }).eq('id', currentProfile.id);
       if (error) { showToast('Error al guardar', 'error'); return; }
       currentProfile.profile_colors = colors;
