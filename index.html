@@ -65,10 +65,19 @@
         <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-[11px] text-amber-800 leading-relaxed">
           Contenido con insinuación sexual, uso de drogas, palabras soeces o incitación a la violencia serán advertidos y luego expulsados de la plataforma sin previo aviso. No discriminamos por raza, religión, sexo u orientación sexual. Simplemente respete a los demás colaboradores de la plataforma.
         </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">Tipo de cuenta</label>
+          <select id="reg-account-type" class="w-full border border-gray-300 bg-white p-2 rounded-lg text-sm text-gray-900 outline-none">
+            <option value="creator">Creador — Recauda fondos y comparte tu historia</option>
+            <option value="co-creator">Co-Creador — Apoya, promociona tu negocio (gratis, sin Stripe)</option>
+          </select>
+          <script>document.getElementById('reg-account-type').addEventListener('change', function() { document.getElementById('cocreator-info').classList.toggle('hidden', this.value !== 'co-creator'); });</script>
+          <p id="cocreator-info" class="hidden text-[10px] text-creo-mintDark mt-1">Los co-creadores pueden editar su perfil, compartir su historia y promover su negocio sin necesidad de verificación con Stripe.</p>
+        </div>
         <div class="bg-creo-purple/5 border border-creo-purple/20 rounded-lg p-3 text-[11px] text-gray-600 leading-relaxed">
-          🏢 <strong>¿Eres una Empresa o Institución y deseas apoyar creadores?</strong><br>
+          🏢 <strong>¿Eres una Empresa o Institución?</strong><br>
           <a href="registro-empresa.html" class="text-creo-purple underline font-semibold">Regístrate como empresa aquí →</a>
-          <span class="text-gray-400 ml-1">Accede a un portal exclusivo de Brand Deals.</span>
+          <span class="text-gray-400 ml-1">Portal exclusivo de Brand Deals.</span>
         </div>
       </div>
       <div class="flex space-x-2">
@@ -628,6 +637,18 @@
       const metaLocked = document.getElementById('meta-locked');
       const metaForm = document.getElementById('meta-form-container');
 
+      // Co-creators don't need verification — hide the whole section
+      if (profile.account_type === 'co-creator') {
+        statusCard.innerHTML = '<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-creo-mint/20 flex items-center justify-center"><svg class="w-6 h-6 text-creo-mint" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></div><div><p class="font-bold text-creo-mintDark">Co-Creador</p><p class="text-xs text-gray-500">Puedes editar tu perfil, compartir tu historia y promover tu negocio</p></div></div>';
+        const verifyForm = document.getElementById('verify-form');
+        if (verifyForm) verifyForm.classList.add('hidden');
+        banner.classList.add('hidden');
+        metaLocked.classList.remove('hidden');
+        metaLocked.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">Las metas de recaudación están disponibles solo para Creadores verificados.</p>';
+        metaForm.classList.add('hidden');
+        return;
+      }
+
       if (profile.identity_verified) {
         document.getElementById('identity-status').innerHTML = '<span class="text-green-600">✓ Identidad verificada</span>';
         document.getElementById('identity-btn').innerText = "Verificado ✓";
@@ -815,7 +836,9 @@
       const { data, error } = await sb.auth.signUp({ email, password, options: { emailRedirectTo: 'https://fullnessmindset.github.io/creo/redirect.html' } });
       if (error) return showToast(error.message, 'error');
       const language = document.getElementById('reg-language')?.value || 'es';
-      await sb.from('profiles').insert([{ id: data.user.id, username: 'user_' + Math.floor(Math.random() * 100000), verification_status: 'approved', accepted_terms: true, accepted_conduct: true, language }]);
+      const accountType = document.getElementById('reg-account-type')?.value || 'creator';
+      const isCocreator = accountType === 'co-creator';
+      await sb.from('profiles').insert([{ id: data.user.id, username: 'user_' + Math.floor(Math.random() * 100000), verification_status: isCocreator ? 'not_required' : 'approved', account_type: accountType, accepted_terms: true, accepted_conduct: true, language }]);
       showToast('Cuenta creada. Revisa tu email para confirmar.', 'success');
       checkUser();
     }

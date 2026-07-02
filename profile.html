@@ -35,6 +35,41 @@
     .story-media-grid { display: grid; gap: 0.5rem; }
     .story-media-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
     .story-media-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+
+    /* Cover image — social media ratio */
+    #cover-section { height: 200px; }
+    @media (min-width: 640px) { #cover-section { height: 280px; } }
+    @media (min-width: 1024px) { #cover-section { height: 320px; } }
+
+    /* Horizontal posts scroll */
+    #creator-posts-scroll {
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      padding: 0.5rem 0;
+    }
+    #creator-posts-scroll::-webkit-scrollbar { display: none; }
+    #creator-posts-scroll > .post-card {
+      scroll-snap-align: center;
+      min-width: 280px;
+      max-width: 340px;
+      flex-shrink: 0;
+    }
+    @media (min-width: 640px) {
+      #creator-posts-scroll > .post-card { min-width: 400px; max-width: 480px; }
+    }
+
+    /* Branding editor */
+    .brand-color-swatch {
+      width: 32px; height: 32px; border-radius: 8px; border: 2px solid rgba(0,0,0,0.1);
+      cursor: pointer; position: relative; overflow: hidden;
+    }
+    .brand-color-swatch input[type="color"] {
+      position: absolute; inset: -4px; width: 140%; height: 140%; cursor: pointer; border: none;
+    }
+    .brand-warn { background: #fef3c7; color: #92400e; padding: 6px 10px; border-radius: 8px; font-size: 11px; margin-top: 4px; }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900 min-h-screen transition-colors duration-300">
@@ -42,8 +77,8 @@
 
   <div class="max-w-lg mx-auto px-4 pt-6 pb-24 space-y-6">
 
-    <!-- Cover Image -->
-    <div id="cover-section" class="hidden rounded-2xl overflow-hidden h-36 bg-gradient-to-r from-creo-purple to-creo-light">
+    <!-- Cover Image — social media ratio -->
+    <div id="cover-section" class="hidden rounded-2xl overflow-hidden bg-gradient-to-r from-creo-purple to-creo-light">
       <img id="cover-img" class="w-full h-full object-cover" alt="Cover">
     </div>
 
@@ -55,9 +90,9 @@
           <svg id="avatar-placeholder" class="w-14 h-14 text-creo-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
           <img id="avatar-img" class="w-full h-full object-cover hidden" alt="Avatar">
         </div>
-        <!-- CREO Verified Badge — bottom right of avatar -->
-        <div id="verified-badge" class="hidden absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center ring-2 ring-creo-mint float-anim" title="Creador Verificado">
-          <img src="assets/logo-icon.png" alt="Verified" class="w-5 h-5 rounded-full object-contain">
+        <!-- CREO Verified Badge — small, no animation -->
+        <div id="verified-badge" class="hidden absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-white shadow flex items-center justify-center ring-1 ring-creo-mint" title="Creador Verificado">
+          <img src="assets/logo-icon.png" alt="Verified" class="w-3.5 h-3.5 rounded-full object-contain">
         </div>
       </div>
 
@@ -75,6 +110,19 @@
         <h1 id="profile-name" class="text-2xl font-bold text-gray-900">Cargando...</h1>
         <p id="profile-username" class="text-sm text-creo-purple font-medium"></p>
       </div>
+
+      <!-- Follower / Following counts -->
+      <div id="follow-stats" class="hidden flex justify-center gap-6">
+        <div class="text-center">
+          <p id="follower-count" class="text-lg font-bold text-gray-900">0</p>
+          <p class="text-[10px] text-gray-400 uppercase tracking-wider">Seguidores</p>
+        </div>
+        <div class="text-center">
+          <p id="following-count" class="text-lg font-bold text-gray-900">0</p>
+          <p class="text-[10px] text-gray-400 uppercase tracking-wider">Siguiendo</p>
+        </div>
+      </div>
+
       <p id="profile-bio" class="text-gray-500 text-sm leading-relaxed"></p>
 
       <!-- Contact Info -->
@@ -90,15 +138,21 @@
         </a>
       </div>
 
-      <!-- Action buttons (message + report) -->
+      <!-- Action buttons: Follow | Message | Share | Report -->
       <div id="profile-actions" class="hidden flex justify-center gap-2">
+        <button onclick="toggleFollow()" id="follow-btn" class="hidden flex items-center gap-1.5 px-4 py-2 rounded-full glass text-xs font-semibold text-creo-purple hover:bg-creo-mint/20 transition-all border border-creo-mint/40">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+          <span id="follow-btn-text">Seguir</span>
+        </button>
         <button onclick="openDM()" id="dm-btn" class="hidden flex items-center gap-1.5 px-4 py-2 rounded-full bg-creo-purple text-white text-xs font-semibold hover:bg-creo-light transition-all">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
           Mensaje
         </button>
+        <button onclick="shareProfile()" id="share-btn" class="hidden flex items-center gap-1.5 px-3 py-2 rounded-full glass text-xs text-gray-500 hover:text-creo-purple hover:shadow-md transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+        </button>
         <button onclick="openReport()" id="report-btn" class="hidden flex items-center gap-1.5 px-3 py-2 rounded-full glass text-xs text-gray-400 hover:text-red-500 transition-all" title="Reportar">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
-          Reportar
         </button>
       </div>
     </div>
@@ -111,14 +165,23 @@
 
     <!-- MI HISTORIA — Before metas -->
     <div id="story-section" class="hidden space-y-4">
-      <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+      <h2 class="section-title text-lg font-bold text-gray-900 flex items-center gap-2">
         <svg class="w-5 h-5 text-creo-mint" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
         Mi Historia
       </h2>
       <div id="stories-list" class="space-y-6"></div>
     </div>
 
-    <!-- MI META — Below story -->
+    <!-- CREATOR POSTS — Horizontal scroll -->
+    <div id="posts-section" class="hidden space-y-4">
+      <h2 class="section-title text-lg font-bold text-gray-900 flex items-center gap-2">
+        <svg class="w-5 h-5 text-creo-mint" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+        Publicaciones
+      </h2>
+      <div id="creator-posts-scroll"></div>
+    </div>
+
+    <!-- MI META — Below posts -->
     <div id="metas-section">
       <div id="metas-container" class="space-y-4"></div>
       <div id="no-metas" class="hidden"></div>
@@ -126,7 +189,7 @@
 
     <!-- BUSINESS LINKS -->
     <div id="business-section" class="hidden space-y-4">
-      <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+      <h2 class="section-title text-lg font-bold text-gray-900 flex items-center gap-2">
         <svg class="w-5 h-5 text-creo-mint" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
         Mi Negocio
       </h2>
@@ -366,6 +429,61 @@
     .animate-slide-up { animation: slide-up 0.3s ease-out; }
   </style>
 
+  <!-- Completed Metas History -->
+  <div id="completed-metas-section" class="hidden max-w-lg mx-auto px-4 mb-6 space-y-4">
+    <h2 class="section-title text-lg font-bold text-gray-900 flex items-center gap-2">
+      <svg class="w-5 h-5 text-creo-mint" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      Metas Alcanzadas
+    </h2>
+    <div id="completed-metas-list" class="space-y-3"></div>
+  </div>
+
+  <!-- Branding Editor (own profile only) -->
+  <div id="brand-editor" class="hidden max-w-lg mx-auto px-4 mb-6">
+    <div class="glass rounded-2xl p-5 shadow-xl space-y-4">
+      <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
+        <svg class="w-4 h-4 text-creo-mint" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+        Mi Branding
+      </h3>
+      <p class="text-[11px] text-gray-400">Personaliza los colores de tu perfil. Los visitantes verán tu marca.</p>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-[11px] font-medium text-gray-600 block mb-1">Color de texto</label>
+          <div class="brand-color-swatch" style="background:var(--brand-text-color, #1f2937)">
+            <input type="color" id="brand-text-color" value="#1f2937" oninput="updateBrandPreview()">
+          </div>
+          <div id="brand-warn-text" class="brand-warn hidden"></div>
+        </div>
+        <div>
+          <label class="text-[11px] font-medium text-gray-600 block mb-1">Fondo de secciones</label>
+          <div class="brand-color-swatch" style="background:var(--brand-section-bg, #ffffff)">
+            <input type="color" id="brand-section-bg" value="#ffffff" oninput="updateBrandPreview()">
+          </div>
+        </div>
+        <div>
+          <label class="text-[11px] font-medium text-gray-600 block mb-1">Fondo de página</label>
+          <div class="brand-color-swatch" style="background:var(--brand-bg-color, #f9fafb)">
+            <input type="color" id="brand-bg-color" value="#f9fafb" oninput="updateBrandPreview()">
+          </div>
+          <div id="brand-warn-bg" class="brand-warn hidden"></div>
+        </div>
+        <div>
+          <label class="text-[11px] font-medium text-gray-600 block mb-1">Color de botones</label>
+          <div class="brand-color-swatch" style="background:var(--brand-button-color, #1a0a3e)">
+            <input type="color" id="brand-button-color" value="#1a0a3e" oninput="updateBrandPreview()">
+          </div>
+          <div id="brand-warn-btn" class="brand-warn hidden"></div>
+        </div>
+      </div>
+
+      <button onclick="saveBranding()" class="w-full py-2.5 rounded-xl text-white text-sm font-semibold transition flex items-center justify-center gap-2" style="background:var(--brand-button-color, #1a0a3e)">
+        <img src="assets/logo-icon.png" class="w-4 h-4 rounded-full" alt="">
+        Guardar Branding
+      </button>
+    </div>
+  </div>
+
   <footer class="max-w-lg mx-auto px-4 pb-24 text-center text-xs text-gray-400 leading-relaxed space-y-2">
     <p><span class="font-semibold text-creo-purple tracking-wider">CREO</span> — Los pagos son voluntarios, no reembolsables y no deducibles de impuestos. Los creadores son responsables de sus propios impuestos.</p>
     <p class="space-x-3">
@@ -422,16 +540,7 @@
         document.getElementById('profile-header-card').classList.add('-mt-8');
       }
 
-      // Apply custom profile colors
-      const colors = data.profile_colors || {};
-      if (colors.primary || colors.accent) {
-        const root = document.documentElement;
-        if (colors.primary) root.style.setProperty('--creo-profile-primary', colors.primary);
-        if (colors.accent) root.style.setProperty('--creo-profile-accent', colors.accent);
-        document.querySelectorAll('.bg-creo-purple').forEach(el => { el.style.backgroundColor = colors.primary || ''; });
-        document.querySelectorAll('.text-creo-purple').forEach(el => { el.style.color = colors.primary || ''; });
-        document.querySelectorAll('.glass-mint').forEach(el => { if (colors.accent) el.style.borderColor = colors.accent + '4D'; });
-      }
+      // Branding colors are applied after all sections load via applyBranding()
 
       // Apply background media
       if (data.bg_media_url) {
@@ -985,12 +1094,14 @@
       if (hasContact) container.classList.remove('hidden');
     }
 
-    // ===== PROFILE ACTIONS (DM + Report) =====
+    // ===== PROFILE ACTIONS (Follow + DM + Share + Report) =====
     async function loadProfileActions() {
       const { data: { user } } = await sb.auth.getUser();
       if (!user || !creatorProfile || user.id === creatorProfile.id) return;
       document.getElementById('profile-actions').classList.remove('hidden');
+      document.getElementById('follow-btn').classList.remove('hidden');
       document.getElementById('dm-btn').classList.remove('hidden');
+      document.getElementById('share-btn').classList.remove('hidden');
       document.getElementById('report-btn').classList.remove('hidden');
     }
 
@@ -1426,13 +1537,318 @@
       if (e.key === 'Enter') sendDM();
     });
 
+    // ===== FOLLOW SYSTEM =====
+    let isFollowing = false;
+
+    async function loadFollowState() {
+      if (!creatorProfile) return;
+      document.getElementById('follow-stats').classList.remove('hidden');
+      document.getElementById('follower-count').textContent = creatorProfile.follower_count || 0;
+      document.getElementById('following-count').textContent = creatorProfile.following_count || 0;
+
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user || user.id === creatorProfile.id) return;
+
+      const { data } = await sb.from('follows').select('id').eq('follower_id', user.id).eq('following_id', creatorProfile.id).maybeSingle();
+      isFollowing = !!data;
+      updateFollowButton();
+    }
+
+    function updateFollowButton() {
+      const btn = document.getElementById('follow-btn');
+      const text = document.getElementById('follow-btn-text');
+      if (isFollowing) {
+        text.textContent = 'Siguiendo';
+        btn.classList.remove('text-creo-purple', 'border-creo-mint/40');
+        btn.classList.add('bg-creo-mint/20', 'text-creo-mintDark', 'border-creo-mint');
+      } else {
+        text.textContent = 'Seguir';
+        btn.classList.add('text-creo-purple', 'border-creo-mint/40');
+        btn.classList.remove('bg-creo-mint/20', 'text-creo-mintDark', 'border-creo-mint');
+      }
+    }
+
+    async function toggleFollow() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { showToast('Inicia sesión para seguir', 'error'); return; }
+      const { data, error } = await sb.rpc('toggle_follow', { p_following_id: creatorProfile.id });
+      if (error) { showToast(error.message || 'Error', 'error'); return; }
+      isFollowing = data.followed;
+      document.getElementById('follower-count').textContent = data.follower_count || 0;
+      updateFollowButton();
+      if (isFollowing) {
+        createNotification(creatorProfile.id, 'follow', 'Tienes un nuevo seguidor', null, 'profile.html?u=' + creatorProfile.username);
+      }
+    }
+
+    // ===== SHARE PROFILE =====
+    function shareProfile() {
+      if (!creatorProfile) return;
+      const url = 'https://fullnessmindset.github.io/creo/profile.html?u=' + creatorProfile.username;
+      const title = 'CREO — ' + (creatorProfile.display_name || creatorProfile.username);
+      if (navigator.share) {
+        navigator.share({ title, url });
+      } else {
+        navigator.clipboard.writeText(url);
+        showToast('Enlace copiado', 'success');
+      }
+    }
+
+    // ===== COMPLETED METAS HISTORY =====
+    async function loadCompletedMetas(creatorId) {
+      const today = new Date().toISOString().split('T')[0];
+      const { data, error } = await sb.from('metas')
+        .select('id, title, description, goal_amount_cents, raised_cents, start_date, end_date, images')
+        .eq('creator_id', creatorId)
+        .or(`end_date.lt.${today},raised_cents.gte.goal_amount_cents`)
+        .order('end_date', { ascending: false })
+        .limit(20);
+      if (error || !data || data.length === 0) return;
+
+      const section = document.getElementById('completed-metas-section');
+      section.classList.remove('hidden');
+      const list = document.getElementById('completed-metas-list');
+      list.innerHTML = data.map(m => {
+        const pct = m.goal_amount_cents > 0 ? Math.min(100, Math.round(m.raised_cents / m.goal_amount_cents * 100)) : 0;
+        const raised = (m.raised_cents / 100).toFixed(2);
+        const goal = (m.goal_amount_cents / 100).toFixed(2);
+        const completed = pct >= 100;
+        const thumb = (m.images && m.images[0]) ? `<img src="${esc(m.images[0])}" class="w-14 h-14 rounded-lg object-cover flex-shrink-0 bg-gray-100">` : `<div class="w-14 h-14 rounded-lg bg-creo-mint/10 flex items-center justify-center flex-shrink-0"><svg class="w-6 h-6 text-creo-mint" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>`;
+        return `<div class="glass rounded-xl p-3 flex gap-3 items-center">
+          ${thumb}
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <p class="font-semibold text-sm text-gray-900 truncate">${esc(m.title)}</p>
+              ${completed ? '<span class="text-[10px] bg-creo-mint/20 text-creo-mintDark px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0">Completada</span>' : '<span class="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0">Finalizada</span>'}
+            </div>
+            <div class="flex items-center gap-2 mt-1">
+              <div class="flex-1 bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                <div class="h-full rounded-full ${completed ? 'bg-creo-mint' : 'bg-gray-400'}" style="width:${pct}%"></div>
+              </div>
+              <span class="text-[10px] text-gray-400">$${raised}/$${goal}</span>
+            </div>
+            <p class="text-[10px] text-gray-400 mt-0.5">${m.start_date} — ${m.end_date}</p>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ===== CO-CREATOR HANDLING =====
+    function handleAccountType() {
+      if (!creatorProfile) return;
+      const type = creatorProfile.account_type || 'creator';
+      if (type === 'co-creator') {
+        // Hide payment sections — co-creators can't receive money
+        const payTabs = document.getElementById('payment-tabs');
+        if (payTabs) payTabs.classList.add('hidden');
+        document.querySelectorAll('.pay-panel').forEach(p => p.classList.add('hidden'));
+        // Hide verification banner — not needed
+        const banner = document.getElementById('not-verified-banner');
+        if (banner) banner.classList.add('hidden');
+      }
+    }
+
+    // ===== CREATOR POSTS (horizontal scroll) =====
+    async function loadCreatorPosts(creatorId) {
+      const { data: posts, error } = await sb.from('posts')
+        .select('*, profiles(username, display_name, avatar_url)')
+        .eq('creator_id', creatorId)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      if (error || !posts || posts.length === 0) return;
+
+      document.getElementById('posts-section').classList.remove('hidden');
+      const scroll = document.getElementById('creator-posts-scroll');
+
+      scroll.innerHTML = posts.map(post => {
+        const isDirectVideo = post.video_type === 'direct' && post.video_url && !post.video_url.includes('youtube');
+        let videoHTML;
+        if (isDirectVideo) {
+          videoHTML = `<video src="${esc(post.video_url)}" class="w-full aspect-video object-contain bg-black rounded-t-xl" loop playsinline preload="metadata" muted></video>`;
+        } else if (post.video_type === 'youtube') {
+          const id = extractVideoId(post.video_url, 'youtube');
+          videoHTML = id ? `<iframe src="https://www.youtube.com/embed/${id}?rel=0&playsinline=1" class="w-full aspect-video rounded-t-xl" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>` : '';
+        } else {
+          videoHTML = `<div class="w-full aspect-video bg-black rounded-t-xl flex items-center justify-center text-gray-400 text-sm">Video</div>`;
+        }
+        return `<div class="post-card rounded-xl overflow-hidden shadow-lg" style="background:var(--brand-section-bg, rgba(255,255,255,0.7))">
+          ${videoHTML}
+          <div class="p-3">
+            ${post.caption ? `<p class="text-sm leading-relaxed" style="color:var(--brand-text-color, #374151)">${esc(post.caption)}</p>` : ''}
+            <p class="text-[10px] mt-1" style="color:var(--brand-text-color, #9ca3af); opacity:0.6">${timeAgo(post.created_at)}</p>
+          </div>
+        </div>`;
+      }).join('');
+
+      // Wheel → horizontal scroll conversion for desktop
+      scroll.addEventListener('wheel', (e) => {
+        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+          e.preventDefault();
+          scroll.scrollBy({ left: e.deltaY, behavior: 'auto' });
+        }
+      }, { passive: false });
+
+      // Autoplay videos on scroll
+      const postVideos = scroll.querySelectorAll('video');
+      if (postVideos.length) {
+        const obs = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) { entry.target.play().catch(() => {}); }
+            else { entry.target.pause(); }
+          });
+        }, { threshold: 0.5, root: scroll });
+        postVideos.forEach(v => obs.observe(v));
+      }
+    }
+
+    // ===== BRANDING COLOR SYSTEM =====
+    function getLuminance(hex) {
+      const r = parseInt(hex.slice(1,3), 16) / 255;
+      const g = parseInt(hex.slice(3,5), 16) / 255;
+      const b = parseInt(hex.slice(5,7), 16) / 255;
+      const toLinear = c => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+    }
+
+    function getContrast(hex1, hex2) {
+      const l1 = getLuminance(hex1);
+      const l2 = getLuminance(hex2);
+      const lighter = Math.max(l1, l2);
+      const darker = Math.min(l1, l2);
+      return (lighter + 0.05) / (darker + 0.05);
+    }
+
+    function suggestTextColor(bgHex) {
+      const lum = getLuminance(bgHex);
+      return lum > 0.5 ? '#1a1a2e' : '#f5f5f5';
+    }
+
+    function applyBranding(colors) {
+      if (!colors) return;
+      const root = document.documentElement.style;
+      if (colors.textColor) root.setProperty('--brand-text-color', colors.textColor);
+      if (colors.sectionBg) root.setProperty('--brand-section-bg', colors.sectionBg);
+      if (colors.buttonColor) root.setProperty('--brand-button-color', colors.buttonColor);
+      if (colors.bgColor) {
+        document.body.style.backgroundColor = colors.bgColor;
+        root.setProperty('--brand-bg-color', colors.bgColor);
+      }
+
+      // Apply to section cards
+      if (colors.sectionBg) {
+        document.querySelectorAll('.glass, #profile-header-card').forEach(el => {
+          el.style.background = colors.sectionBg;
+        });
+      }
+      // Apply text colors
+      if (colors.textColor) {
+        document.querySelectorAll('.section-title, #profile-name, #profile-bio, .meta-media-card h3').forEach(el => {
+          el.style.color = colors.textColor;
+        });
+        document.getElementById('profile-username').style.color = colors.textColor;
+      }
+      // Apply button colors — keep CREO logo
+      if (colors.buttonColor) {
+        document.querySelectorAll('.bg-creo-purple, #tip-btn, #sub-btn, .creo-action-btn').forEach(el => {
+          if (el.tagName === 'BUTTON' || el.tagName === 'A') {
+            el.style.backgroundColor = colors.buttonColor;
+            const btnTextColor = suggestTextColor(colors.buttonColor);
+            el.style.color = btnTextColor;
+          }
+        });
+      }
+    }
+
+    function checkContrastAndWarn(textColor, bgColor, warnElId) {
+      const warnEl = document.getElementById(warnElId);
+      if (!warnEl) return true;
+      if (!textColor || !bgColor) { warnEl.classList.add('hidden'); return true; }
+      const contrast = getContrast(textColor, bgColor);
+      if (contrast < 3) {
+        const suggested = suggestTextColor(bgColor);
+        warnEl.innerHTML = `Texto poco visible (contraste: ${contrast.toFixed(1)}). Color sugerido: <span class="font-bold cursor-pointer underline" onclick="document.getElementById('brand-text-color').value='${suggested}'; updateBrandPreview()">${suggested}</span>`;
+        warnEl.classList.remove('hidden');
+        return false;
+      }
+      warnEl.classList.add('hidden');
+      return true;
+    }
+
+    async function showBrandEditor() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user || !creatorProfile || user.id !== creatorProfile.id) return;
+
+      const editor = document.getElementById('brand-editor');
+      editor.classList.remove('hidden');
+      const colors = creatorProfile.profile_colors || {};
+      document.getElementById('brand-text-color').value = colors.textColor || '#1f2937';
+      document.getElementById('brand-section-bg').value = colors.sectionBg || '#ffffff';
+      document.getElementById('brand-bg-color').value = colors.bgColor || '#f9fafb';
+      document.getElementById('brand-button-color').value = colors.buttonColor || '#1a0a3e';
+    }
+
+    function updateBrandPreview() {
+      const colors = {
+        textColor: document.getElementById('brand-text-color').value,
+        sectionBg: document.getElementById('brand-section-bg').value,
+        bgColor: document.getElementById('brand-bg-color').value,
+        buttonColor: document.getElementById('brand-button-color').value,
+      };
+      applyBranding(colors);
+
+      // Check text vs section bg contrast
+      checkContrastAndWarn(colors.textColor, colors.sectionBg, 'brand-warn-text');
+      // Check text vs page bg contrast
+      checkContrastAndWarn(colors.textColor, colors.bgColor, 'brand-warn-bg');
+      // Check button text readability
+      const btnText = suggestTextColor(colors.buttonColor);
+      const btnContrast = getContrast(btnText, colors.buttonColor);
+      const warnBtn = document.getElementById('brand-warn-btn');
+      if (btnContrast < 3) {
+        warnBtn.textContent = 'El color del botón puede dificultar la lectura del texto.';
+        warnBtn.classList.remove('hidden');
+      } else {
+        warnBtn.classList.add('hidden');
+      }
+    }
+
+    async function saveBranding() {
+      const colors = {
+        textColor: document.getElementById('brand-text-color').value,
+        sectionBg: document.getElementById('brand-section-bg').value,
+        bgColor: document.getElementById('brand-bg-color').value,
+        buttonColor: document.getElementById('brand-button-color').value,
+      };
+
+      // Block save if text is invisible
+      const sectionOk = checkContrastAndWarn(colors.textColor, colors.sectionBg, 'brand-warn-text');
+      if (!sectionOk) {
+        const suggested = suggestTextColor(colors.sectionBg);
+        colors.textColor = suggested;
+        document.getElementById('brand-text-color').value = suggested;
+        showToast('Color de texto ajustado para mejor visibilidad', 'info');
+      }
+
+      const { error } = await sb.from('profiles').update({ profile_colors: colors }).eq('id', creatorProfile.id);
+      if (error) { showToast('Error al guardar', 'error'); return; }
+      creatorProfile.profile_colors = colors;
+      applyBranding(colors);
+      showToast('Branding guardado', 'success');
+    }
+
     window.onload = async () => {
       await fetchProfile();
       if (creatorProfile) {
         loadContactInfo(creatorProfile);
+        loadFollowState();
         loadCreatorStories(creatorProfile.id);
+        loadCreatorPosts(creatorProfile.id);
         loadBusinessLinks(creatorProfile.id);
         loadProfileActions();
+        handleAccountType();
+        loadCompletedMetas(creatorProfile.id);
+        applyBranding(creatorProfile.profile_colors);
+        showBrandEditor();
       }
       renderBottomNav('profile');
       updateNavAuth();
