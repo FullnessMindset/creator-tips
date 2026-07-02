@@ -61,15 +61,11 @@
 
       const isAdminLogin = localStorage.getItem('creo-admin-login') === '1';
 
-      if (isAdminLogin && isAdmin(user.email)) {
+      if (isAdmin(user.email)) {
         localStorage.removeItem('creo-admin-login');
         sessionStorage.setItem('admin_mode', 'true');
-        setStatus('Acceso Admin Verificado', 'Redirigiendo al panel de administración...');
-        window.location.href = 'admin.html';
-      } else if (isAdmin(user.email) && urlParams.get('admin') === '1') {
-        sessionStorage.setItem('admin_mode', 'true');
-        setStatus('Acceso Admin Verificado', 'Redirigiendo al panel de administración...');
-        window.location.href = 'admin.html';
+        setStatus('Acceso Admin Verificado', 'Redirigiendo al panel...');
+        window.location.href = 'index.html';
       } else {
         localStorage.removeItem('creo-admin-login');
         setStatus('¡Cuenta verificada!', 'Redirigiendo a tu panel...');
@@ -163,14 +159,20 @@
           await handleAuthRedirect(session.user);
         }
 
-        // Timeout fallback — if nothing triggers in 8 seconds, redirect to index
+        // Timeout fallback — if nothing triggers in 5 seconds, try one more session check then redirect
         if (!handled) {
-          setTimeout(() => {
-            if (!handled) {
+          setTimeout(async () => {
+            if (handled) return;
+            const { data: { user } } = await sb.auth.getUser();
+            if (user) {
+              handled = true;
+              subscription.unsubscribe();
+              await handleAuthRedirect(user);
+            } else {
               setStatus('Sesión no detectada', 'Redirigiendo...');
               window.location.href = 'index.html';
             }
-          }, 8000);
+          }, 5000);
         }
       }
     }
