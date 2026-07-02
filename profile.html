@@ -234,8 +234,10 @@
         <div class="w-full sm:max-w-md bg-white sm:rounded-2xl shadow-2xl flex flex-col" style="max-height:85vh">
           <div class="p-4 border-b border-gray-200 flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <div id="dm-avatar" class="w-10 h-10 rounded-full bg-creo-purple/10 overflow-hidden"></div>
-              <span id="dm-name" class="font-bold text-sm text-gray-900"></span>
+              <a id="dm-profile-link" href="#" class="w-10 h-10 rounded-full bg-creo-purple/10 overflow-hidden hover:ring-2 hover:ring-creo-mint transition block">
+                <div id="dm-avatar"></div>
+              </a>
+              <a id="dm-profile-link-name" href="#" class="font-bold text-sm text-gray-900 hover:text-creo-purple transition"><span id="dm-name"></span></a>
             </div>
             <button onclick="closeDM()" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
           </div>
@@ -926,14 +928,15 @@
       list.innerHTML = data.map(c => {
         const p = c.profiles || {};
         const name = p.display_name || p.username || 'Usuario';
+        const profileLink = p.username ? `profile.html?u=${encodeURIComponent(p.username)}` : '#';
         const avatar = p.avatar_url
-          ? `<img src="${esc(p.avatar_url)}" class="w-7 h-7 rounded-full object-cover flex-shrink-0">`
-          : `<div class="w-7 h-7 rounded-full bg-creo-mint/20 flex items-center justify-center flex-shrink-0"><span class="text-creo-mint text-[10px] font-bold">${esc(name[0].toUpperCase())}</span></div>`;
+          ? `<a href="${profileLink}"><img src="${esc(p.avatar_url)}" class="w-7 h-7 rounded-full object-cover flex-shrink-0 hover:ring-2 hover:ring-creo-mint transition"></a>`
+          : `<a href="${profileLink}" class="w-7 h-7 rounded-full bg-creo-mint/20 flex items-center justify-center flex-shrink-0 hover:ring-2 hover:ring-creo-mint transition"><span class="text-creo-mint text-[10px] font-bold">${esc(name[0].toUpperCase())}</span></a>`;
         return `<div class="flex gap-2">
           ${avatar}
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
-              <span class="font-semibold text-xs text-creo-purple">${esc(name)}</span>
+              <a href="${profileLink}" class="font-semibold text-xs text-creo-purple hover:underline">${esc(name)}</a>
               <span class="text-gray-400 text-[10px]">${timeAgo(c.created_at)}</span>
             </div>
             <p class="text-sm text-gray-700">${esc(c.body)}</p>
@@ -1103,12 +1106,15 @@
     function openDM() {
       if (!creatorProfile) return;
       const modal = document.getElementById('dm-modal');
+      const profileUrl = creatorProfile.username ? `profile.html?u=${encodeURIComponent(creatorProfile.username)}` : '#';
       const avatar = document.getElementById('dm-avatar');
       if (creatorProfile.avatar_url) {
         avatar.innerHTML = `<img src="${creatorProfile.avatar_url}" class="w-full h-full object-cover" alt="">`;
       } else {
         avatar.innerHTML = `<span class="text-creo-purple font-bold text-lg">${esc((creatorProfile.display_name || creatorProfile.username)[0].toUpperCase())}</span>`;
       }
+      document.getElementById('dm-profile-link').href = profileUrl;
+      document.getElementById('dm-profile-link-name').href = profileUrl;
       document.getElementById('dm-name').textContent = creatorProfile.display_name || creatorProfile.username;
       modal.classList.remove('hidden');
       loadDMHistory();
@@ -1441,12 +1447,13 @@
       if (!comments || comments.length === 0) { list.innerHTML = '<p class="text-xs text-gray-400 text-center py-2">Sin comentarios aún</p>'; return; }
       list.innerHTML = comments.map(c => {
         const name = c.profiles?.display_name || c.profiles?.username || 'Anónimo';
+        const profileLink = c.profiles?.username ? `profile.html?u=${encodeURIComponent(c.profiles.username)}` : '#';
         return `<div class="flex gap-2">
-          <div class="w-6 h-6 rounded-full bg-creo-purple/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+          <a href="${profileLink}" class="w-6 h-6 rounded-full bg-creo-purple/10 flex items-center justify-center flex-shrink-0 overflow-hidden hover:ring-2 hover:ring-creo-mint transition">
             ${c.profiles?.avatar_url ? `<img src="${c.profiles.avatar_url}" class="w-full h-full object-cover">` : `<span class="text-[9px] text-creo-purple font-bold">${esc(name[0].toUpperCase())}</span>`}
-          </div>
+          </a>
           <div>
-            <span class="font-semibold text-[11px] text-creo-purple">${esc(name)}</span>
+            <a href="${profileLink}" class="font-semibold text-[11px] text-creo-purple hover:underline">${esc(name)}</a>
             <span class="text-gray-400 text-[10px] ml-1">${timeAgo(c.created_at)}</span>
             <p class="text-xs text-gray-700">${esc(c.body)}</p>
           </div>
@@ -1677,16 +1684,19 @@
     function applyBranding(colors) {
       if (!colors) return;
       const isDark = (colors.theme || 'light') === 'dark';
-      const textColor = colors.textColor || (isDark ? '#f5f5f5' : '#1f2937');
-      const sectionBg = colors.sectionBg || (isDark ? '#2d2d44' : '#ffffff');
+      const textColor = colors.textColor || (isDark ? '#e0e0e0' : '#1f2937');
+      const titleColor = isDark ? '#ffffff' : textColor;
+      const sectionBg = colors.sectionBg || (isDark ? '#1e1e1e' : '#ffffff');
       const buttonColor = colors.buttonColor || '#1a0a3e';
-      const bgColor = colors.bgColor || (isDark ? '#1a1a2e' : '#f9fafb');
+      const bgColor = colors.bgColor || (isDark ? '#121212' : '#f9fafb');
       const font = colors.font || 'Inter';
       const bgMedia = colors.bgMedia || '';
       const btnText = suggestTextColor(buttonColor);
 
       // Page background
       document.body.style.backgroundColor = bgColor;
+      if (isDark) document.body.style.color = textColor;
+      else document.body.style.color = '';
 
       // Background media (image/video behind content)
       let bgContainer = document.getElementById('brand-bg-media-container');
@@ -1723,23 +1733,40 @@
       }
       document.body.style.fontFamily = font + ', sans-serif';
 
-      // Section cards
-      document.querySelectorAll('.glass, #profile-header-card').forEach(el => {
+      // Section cards — all glass sections, payment panels, metas, stories
+      document.querySelectorAll('.glass, .glass-dark, #profile-header-card, .pay-panel > div, #payment-tabs').forEach(el => {
         el.style.background = sectionBg;
         el.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : '';
       });
 
-      // Text colors
-      document.querySelectorAll('.section-title, #profile-name, #profile-bio, .meta-media-card h3').forEach(el => {
-        el.style.color = textColor;
+      // Titles — white in dark mode
+      document.querySelectorAll('.section-title, #profile-name, .meta-media-card h3, h3.text-lg, h2.section-title').forEach(el => {
+        el.style.color = titleColor;
       });
-      const usernameEl = document.getElementById('profile-username');
-      if (usernameEl) usernameEl.style.color = textColor;
+
+      // Regular text — light gray in dark mode
+      document.querySelectorAll('#profile-bio, #profile-username, .text-gray-900, .text-gray-700').forEach(el => {
+        if (isDark) el.style.color = textColor;
+        else el.style.color = '';
+      });
 
       // Payment buttons ONLY — Follow/Message/Share stay default
       document.querySelectorAll('#tip-btn, #sub-btn, #meta-support-btn').forEach(el => {
+        if (!el.disabled) {
+          el.style.backgroundColor = buttonColor;
+          el.style.color = btnText;
+        }
+      });
+
+      // Meta contribute buttons
+      document.querySelectorAll('[id^="meta-btn-"]').forEach(el => {
         el.style.backgroundColor = buttonColor;
         el.style.color = btnText;
+      });
+
+      // Payment tab buttons
+      document.querySelectorAll('[id^="pay-tab-"]').forEach(el => {
+        if (isDark) el.style.color = el.classList.contains('pay-tab-active') ? titleColor : '#a0a0b8';
       });
 
       // Secondary text
@@ -1747,6 +1774,25 @@
         if (isDark) el.style.color = '#a0a0b8';
         else el.style.color = '';
       });
+
+      // Input fields in dark mode
+      if (isDark) {
+        document.querySelectorAll('input[type="number"], select').forEach(el => {
+          el.style.backgroundColor = '#2a2a2a';
+          el.style.color = textColor;
+          el.style.borderColor = 'rgba(255,255,255,0.15)';
+        });
+      }
+
+      // Labels in dark mode
+      document.querySelectorAll('.text-sm.font-medium').forEach(el => {
+        if (isDark) el.style.color = textColor;
+        else el.style.color = '';
+      });
+
+      // Footer text
+      const footer = document.querySelector('footer');
+      if (footer && isDark) footer.style.color = '#a0a0b8';
     }
 
     // ===== YO CREO EN ELLOS =====

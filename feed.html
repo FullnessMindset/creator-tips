@@ -283,9 +283,10 @@
     function renderComment(c, replyMap, postId) {
       const p = c.profiles || {};
       const name = p.display_name || p.username || 'Usuario';
+      const profileLink = p.username ? `profile.html?u=${encodeURIComponent(p.username)}` : '#';
       const avatar = p.avatar_url
-        ? `<img src="${esc(p.avatar_url)}" class="w-8 h-8 rounded-full object-cover flex-shrink-0">`
-        : `<div class="w-8 h-8 rounded-full bg-creo-mint/20 flex items-center justify-center flex-shrink-0"><span class="text-creo-mint text-xs font-bold">${esc(name[0].toUpperCase())}</span></div>`;
+        ? `<a href="${profileLink}"><img src="${esc(p.avatar_url)}" class="w-8 h-8 rounded-full object-cover flex-shrink-0 hover:ring-2 hover:ring-creo-mint transition"></a>`
+        : `<a href="${profileLink}" class="w-8 h-8 rounded-full bg-creo-mint/20 flex items-center justify-center flex-shrink-0 hover:ring-2 hover:ring-creo-mint transition"><span class="text-creo-mint text-xs font-bold">${esc(name[0].toUpperCase())}</span></a>`;
       const canDelete = currentUser && currentUser.id === c.user_id;
       const isLiked = userCommentLikes.has(c.id);
       const childReplies = replyMap[c.id] || [];
@@ -295,7 +296,7 @@
           ${avatar}
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
-              <span class="font-semibold text-xs text-creo-purple">${esc(name)}</span>
+              <a href="${profileLink}" class="font-semibold text-xs text-creo-purple hover:underline">${esc(name)}</a>
               <span class="text-gray-400 text-xs">${timeAgo(c.created_at)}</span>
               ${canDelete ? `<button onclick="deleteComment('${c.id}','${postId}')" class="ml-auto text-gray-300 hover:text-red-400 text-xs opacity-0 group-hover:opacity-100 transition">✕</button>` : ''}
             </div>
@@ -316,9 +317,10 @@
     function renderReply(c, postId) {
       const p = c.profiles || {};
       const name = p.display_name || p.username || 'Usuario';
+      const profileLink = p.username ? `profile.html?u=${encodeURIComponent(p.username)}` : '#';
       const avatar = p.avatar_url
-        ? `<img src="${esc(p.avatar_url)}" class="w-6 h-6 rounded-full object-cover flex-shrink-0">`
-        : `<div class="w-6 h-6 rounded-full bg-creo-mint/20 flex items-center justify-center flex-shrink-0"><span class="text-creo-mint text-[10px] font-bold">${esc(name[0].toUpperCase())}</span></div>`;
+        ? `<a href="${profileLink}"><img src="${esc(p.avatar_url)}" class="w-6 h-6 rounded-full object-cover flex-shrink-0 hover:ring-2 hover:ring-creo-mint transition"></a>`
+        : `<a href="${profileLink}" class="w-6 h-6 rounded-full bg-creo-mint/20 flex items-center justify-center flex-shrink-0 hover:ring-2 hover:ring-creo-mint transition"><span class="text-creo-mint text-[10px] font-bold">${esc(name[0].toUpperCase())}</span></a>`;
       const canDelete = currentUser && currentUser.id === c.user_id;
       const isLiked = userCommentLikes.has(c.id);
 
@@ -326,7 +328,7 @@
         ${avatar}
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2">
-            <span class="font-semibold text-[11px] text-creo-purple">${esc(name)}</span>
+            <a href="${profileLink}" class="font-semibold text-[11px] text-creo-purple hover:underline">${esc(name)}</a>
             <span class="text-gray-400 text-[10px]">${timeAgo(c.created_at)}</span>
             ${canDelete ? `<button onclick="deleteComment('${c.id}','${postId}')" class="ml-auto text-gray-300 hover:text-red-400 text-[10px] opacity-0 group-hover:opacity-100 transition">✕</button>` : ''}
           </div>

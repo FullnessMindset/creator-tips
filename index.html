@@ -401,18 +401,18 @@
 
           <!-- Post Mode Selector -->
           <div class="flex bg-gray-100 rounded-lg p-1 gap-1">
-            <button onclick="setPostMode('url')" id="pm-url" class="flex-1 py-2 text-xs font-semibold rounded-md text-center transition bg-white text-gray-900 shadow-sm">URL (YouTube, TikTok)</button>
-            <button onclick="setPostMode('upload')" id="pm-upload" class="flex-1 py-2 text-xs font-semibold rounded-md text-center transition text-gray-500">Subir Video</button>
+            <button onclick="setPostMode('upload')" id="pm-upload" class="flex-1 py-2 text-xs font-semibold rounded-md text-center transition bg-white text-gray-900 shadow-sm">Subir Video</button>
             <button onclick="setPostMode('record')" id="pm-record" class="flex-1 py-2 text-xs font-semibold rounded-md text-center transition text-gray-500">Grabar</button>
+            <button onclick="setPostMode('url')" id="pm-url" class="flex-1 py-2 text-xs font-semibold rounded-md text-center transition text-gray-500">URL (YouTube, TikTok)</button>
           </div>
 
           <!-- Mode: URL -->
-          <div id="post-mode-url">
+          <div id="post-mode-url" class="hidden">
             <input id="post-url" type="url" placeholder="URL del video (YouTube, TikTok, Instagram)" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-lg text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple text-sm">
           </div>
 
           <!-- Mode: Upload -->
-          <div id="post-mode-upload" class="hidden space-y-3">
+          <div id="post-mode-upload" class="space-y-3">
             <div id="upload-drop-zone" class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-creo-mint transition" onclick="document.getElementById('post-video-file').click()">
               <svg class="w-10 h-10 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
               <p class="text-sm text-gray-500">Toca para seleccionar un video</p>
@@ -636,9 +636,10 @@
 
           <!-- Background image/video -->
           <div>
-            <label class="text-xs font-semibold text-gray-700 block mb-2">Imagen o video de fondo (URL)</label>
-            <input type="url" id="brand-bg-media" placeholder="https://ejemplo.com/mi-fondo.jpg" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl text-sm text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple" oninput="updateBrandingPreview()">
-            <p class="text-[10px] text-gray-400 mt-1">Pega un enlace a una imagen o video. Formatos: .jpg, .png, .webp, .mp4, .webm</p>
+            <label class="text-xs font-semibold text-gray-700 block mb-2">Imagen o video de fondo</label>
+            <input type="file" id="brand-bg-media-file" accept="image/*,video/mp4,video/webm" onchange="uploadBrandBgMedia()" class="block w-full text-xs text-gray-500 file:mr-2 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-creo-purple/10 file:text-creo-purple cursor-pointer">
+            <p class="text-[10px] text-gray-400 mt-1">O pega un enlace directo:</p>
+            <input type="url" id="brand-bg-media" placeholder="https://ejemplo.com/mi-fondo.jpg" class="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl text-sm text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple mt-1" oninput="updateBrandingPreview()">
           </div>
 
           <!-- Preview -->
@@ -721,10 +722,10 @@
       const c = currentProfile.profile_colors || {};
       const isDark = (c.theme || 'light') === 'dark';
       brandState.theme = c.theme || 'light';
-      brandState.textColor = c.textColor || (isDark ? '#f5f5f5' : '#1f2937');
-      brandState.sectionBg = c.sectionBg || (isDark ? '#2d2d44' : '#ffffff');
+      brandState.textColor = c.textColor || (isDark ? '#e0e0e0' : '#1f2937');
+      brandState.sectionBg = c.sectionBg || (isDark ? '#1e1e1e' : '#ffffff');
       brandState.buttonColor = c.buttonColor || '#1a0a3e';
-      brandState.bgColor = c.bgColor || (isDark ? '#1a1a2e' : '#f9fafb');
+      brandState.bgColor = c.bgColor || (isDark ? '#121212' : '#f9fafb');
       brandState.font = c.font || 'Inter';
       brandState.bgMedia = c.bgMedia || '';
 
@@ -741,9 +742,9 @@
     function setBrandTheme(theme) {
       brandState.theme = theme;
       const isDark = theme === 'dark';
-      brandState.textColor = isDark ? '#f5f5f5' : '#1f2937';
-      brandState.sectionBg = isDark ? '#2d2d44' : '#ffffff';
-      brandState.bgColor = isDark ? '#1a1a2e' : '#f9fafb';
+      brandState.textColor = isDark ? '#e0e0e0' : '#1f2937';
+      brandState.sectionBg = isDark ? '#1e1e1e' : '#ffffff';
+      brandState.bgColor = isDark ? '#121212' : '#f9fafb';
       document.getElementById('brand-text-color').value = brandState.textColor;
       document.getElementById('brand-section-bg').value = brandState.sectionBg;
       document.getElementById('brand-bg-color').value = brandState.bgColor;
@@ -1222,6 +1223,17 @@
       showToast('Fondo actualizado', 'success');
     }
 
+    async function uploadBrandBgMedia() {
+      const input = document.getElementById('brand-bg-media-file');
+      const file = input.files[0];
+      if (!file) return;
+      const url = await uploadToStorage(file, 'backgrounds', 10);
+      if (!url) return;
+      document.getElementById('brand-bg-media').value = url;
+      updateBrandingPreview();
+      showToast('Imagen de fondo cargada', 'success');
+    }
+
     // METAS
     async function loadMetas() {
       const { data } = await sb.from('metas').select('*').eq('creator_id', currentUser.id).order('created_at', { ascending: false });
@@ -1355,7 +1367,7 @@
     }
 
     // POSTS
-    let postMode = 'url';
+    let postMode = 'upload';
     let uploadedVideoUrl = null;
     let mediaStream = null;
     let mediaRecorder = null;
