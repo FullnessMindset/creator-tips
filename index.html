@@ -139,6 +139,7 @@
         <button onclick="showTab('branding')" id="tab-branding" class="flex-shrink-0 px-3 py-3 font-semibold text-center transition text-gray-400">Mi Branding</button>
         <button onclick="showTab('events')" id="tab-events" class="flex-shrink-0 px-3 py-3 font-semibold text-center transition text-gray-400">Eventos</button>
         <button onclick="showTab('livestream')" id="tab-livestream" class="flex-shrink-0 px-3 py-3 font-semibold text-center transition text-gray-400">En Vivo</button>
+        <button onclick="showTab('creoellos')" id="tab-creoellos" class="flex-shrink-0 px-3 py-3 font-semibold text-center transition text-gray-400">Yo Creo en Ellos</button>
         <button onclick="showTab('deals')" id="tab-deals" class="flex-shrink-0 px-3 py-3 font-semibold text-center transition text-gray-400 hidden">Brand Deals</button>
       </div>
 
@@ -888,6 +889,31 @@
       </div>
 
       <!-- TAB: Brand Deals (Creators: manage incoming deals / Business: create campaigns) -->
+      <div id="panel-creoellos" class="tab-panel hidden space-y-4">
+        <div class="bg-white p-6 rounded-xl shadow border border-gray-200 space-y-4">
+          <h3 class="font-bold text-gray-900 flex items-center gap-2">
+            <svg class="w-5 h-5 text-creo-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            Yo Creo en Ellos
+          </h3>
+          <p class="text-xs text-gray-500">Selecciona los creadores que quieres destacar en tu perfil. Aparecerán en la sección "Yo Creo en Ellos" de tu página pública.</p>
+
+          <div class="relative">
+            <input id="creoellos-search" type="text" placeholder="Buscar creador por nombre o @usuario..." class="w-full border border-gray-300 bg-gray-50 p-3 pl-10 rounded-lg text-sm text-gray-900 outline-none focus:ring-2 focus:ring-creo-purple">
+            <svg class="w-4 h-4 text-gray-400 absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+          <div id="creoellos-search-results" class="space-y-2 max-h-60 overflow-y-auto"></div>
+
+          <div class="border-t border-gray-100 pt-4">
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">Creadores destacados (<span id="creoellos-count">0</span>/10)</h4>
+            <div id="creoellos-selected" class="space-y-2"></div>
+            <div id="creoellos-empty" class="text-center py-6">
+              <p class="text-xs text-gray-400">No has seleccionado ningún creador aún.</p>
+              <p class="text-xs text-gray-400 mt-1">Busca arriba para agregar creadores a tu sección.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="panel-deals" class="tab-panel hidden space-y-4">
         <!-- Creator view: incoming deal requests -->
         <div id="deals-creator-view">
@@ -997,6 +1023,7 @@
       if (tab === 'deals') loadMyDeals();
       if (tab === 'events') loadMyEvents();
       if (tab === 'livestream') initLivestreamPanel();
+      if (tab === 'creoellos') loadCreoEllosPanel();
     }
 
     // ===== BRANDING PANEL =====
@@ -2737,6 +2764,152 @@
       document.getElementById('end-live-btn').classList.add('hidden');
       document.getElementById('live-title').value = '';
       showToast('Transmisión finalizada');
+    }
+
+    // ===== YO CREO EN ELLOS =====
+    let creoEllosList = [];
+    let creoEllosSearchTimeout = null;
+
+    function getCreoEllosKey() {
+      return 'creo-ellos-' + (currentUser ? currentUser.id : 'anon');
+    }
+
+    function loadCreoEllosList() {
+      try { creoEllosList = JSON.parse(localStorage.getItem(getCreoEllosKey()) || '[]'); } catch { creoEllosList = []; }
+      return creoEllosList;
+    }
+
+    function saveCreoEllosList() {
+      localStorage.setItem(getCreoEllosKey(), JSON.stringify(creoEllosList));
+      if (currentUser) {
+        sb.from('profiles').update({ creo_en_ellos: creoEllosList }).eq('id', currentUser.id).then(() => {});
+      }
+    }
+
+    async function loadCreoEllosPanel() {
+      loadCreoEllosList();
+      if (currentUser) {
+        const { data } = await sb.from('profiles').select('creo_en_ellos').eq('id', currentUser.id).single();
+        if (data && data.creo_en_ellos && Array.isArray(data.creo_en_ellos) && data.creo_en_ellos.length > 0) {
+          creoEllosList = data.creo_en_ellos;
+          localStorage.setItem(getCreoEllosKey(), JSON.stringify(creoEllosList));
+        }
+      }
+      renderCreoEllosSelected();
+
+      const input = document.getElementById('creoellos-search');
+      input.oninput = () => {
+        clearTimeout(creoEllosSearchTimeout);
+        creoEllosSearchTimeout = setTimeout(() => searchCreoEllos(input.value.trim()), 400);
+      };
+    }
+
+    async function searchCreoEllos(query) {
+      const container = document.getElementById('creoellos-search-results');
+      if (!query || query.length < 2) { container.innerHTML = ''; return; }
+
+      container.innerHTML = '<p class="text-xs text-gray-400 text-center py-2">Buscando...</p>';
+
+      const { data, error } = await sb.from('profiles')
+        .select('id, username, display_name, avatar_url, bio')
+        .or(`username.ilike.%${query}%,display_name.ilike.%${query}%`)
+        .neq('id', currentUser ? currentUser.id : '')
+        .limit(8);
+
+      if (error || !data || data.length === 0) {
+        container.innerHTML = '<p class="text-xs text-gray-400 text-center py-2">No se encontraron creadores.</p>';
+        return;
+      }
+
+      const selectedIds = creoEllosList.map(c => c.id);
+      container.innerHTML = data.map(p => {
+        const isSelected = selectedIds.includes(p.id);
+        const name = p.display_name || p.username;
+        const initials = name[0].toUpperCase();
+        const bio = (p.bio || '').slice(0, 80) + ((p.bio || '').length > 80 ? '...' : '');
+        return `<div class="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition">
+          ${p.avatar_url ? `<img src="${esc(p.avatar_url)}" class="w-10 h-10 rounded-full object-cover flex-shrink-0">` : `<div class="w-10 h-10 rounded-full bg-creo-purple/10 text-creo-purple flex items-center justify-center text-sm font-bold flex-shrink-0">${esc(initials)}</div>`}
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-gray-900 truncate">${esc(name)}</p>
+            <p class="text-[11px] text-gray-400 truncate">@${esc(p.username)}</p>
+            ${bio ? `<p class="text-[11px] text-gray-500 truncate mt-0.5">${esc(bio)}</p>` : ''}
+          </div>
+          <button onclick="toggleCreoEllos('${p.id}', '${esc(p.username)}', '${esc(name)}', '${esc(p.avatar_url || '')}', this)" class="px-3 py-1.5 rounded-full text-xs font-bold transition ${isSelected ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-creo-purple text-white hover:bg-creo-light'}">
+            ${isSelected ? 'Quitar' : 'Agregar'}
+          </button>
+        </div>`;
+      }).join('');
+    }
+
+    function toggleCreoEllos(id, username, displayName, avatarUrl, btnEl) {
+      const idx = creoEllosList.findIndex(c => c.id === id);
+      if (idx >= 0) {
+        creoEllosList.splice(idx, 1);
+      } else {
+        if (creoEllosList.length >= 10) {
+          showToast('Máximo 10 creadores destacados', 'error');
+          return;
+        }
+        creoEllosList.push({ id, username, display_name: displayName, avatar_url: avatarUrl });
+      }
+      saveCreoEllosList();
+      renderCreoEllosSelected();
+      const query = document.getElementById('creoellos-search').value.trim();
+      if (query.length >= 2) searchCreoEllos(query);
+    }
+
+    function removeCreoEllos(id) {
+      creoEllosList = creoEllosList.filter(c => c.id !== id);
+      saveCreoEllosList();
+      renderCreoEllosSelected();
+      const query = document.getElementById('creoellos-search').value.trim();
+      if (query.length >= 2) searchCreoEllos(query);
+    }
+
+    function moveCreoEllos(id, dir) {
+      const idx = creoEllosList.findIndex(c => c.id === id);
+      const newIdx = idx + dir;
+      if (newIdx < 0 || newIdx >= creoEllosList.length) return;
+      [creoEllosList[idx], creoEllosList[newIdx]] = [creoEllosList[newIdx], creoEllosList[idx]];
+      saveCreoEllosList();
+      renderCreoEllosSelected();
+    }
+
+    function renderCreoEllosSelected() {
+      const container = document.getElementById('creoellos-selected');
+      const empty = document.getElementById('creoellos-empty');
+      document.getElementById('creoellos-count').textContent = creoEllosList.length;
+
+      if (creoEllosList.length === 0) {
+        container.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      container.innerHTML = creoEllosList.map((p, i) => {
+        const name = p.display_name || p.username;
+        const initials = name[0].toUpperCase();
+        return `<div class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 bg-gray-50">
+          <span class="text-xs text-gray-400 font-bold w-5 text-center">${i + 1}</span>
+          ${p.avatar_url ? `<img src="${esc(p.avatar_url)}" class="w-8 h-8 rounded-full object-cover flex-shrink-0">` : `<div class="w-8 h-8 rounded-full bg-creo-purple/10 text-creo-purple flex items-center justify-center text-xs font-bold flex-shrink-0">${esc(initials)}</div>`}
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-gray-900 truncate">${esc(name)}</p>
+            <p class="text-[11px] text-gray-400">@${esc(p.username)}</p>
+          </div>
+          <div class="flex items-center gap-1">
+            <button onclick="moveCreoEllos('${p.id}', -1)" class="p-1 rounded hover:bg-gray-200 transition ${i === 0 ? 'opacity-30 pointer-events-none' : ''}" title="Subir">
+              <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+            </button>
+            <button onclick="moveCreoEllos('${p.id}', 1)" class="p-1 rounded hover:bg-gray-200 transition ${i === creoEllosList.length - 1 ? 'opacity-30 pointer-events-none' : ''}" title="Bajar">
+              <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <button onclick="removeCreoEllos('${p.id}')" class="p-1 rounded hover:bg-red-100 transition" title="Quitar">
+              <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </div>`;
+      }).join('');
     }
 
     // ===== BRAND DEALS =====

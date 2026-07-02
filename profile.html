@@ -1831,27 +1831,31 @@
     }
 
     async function loadCreoEnEllos(creatorId) {
-      let creatorsWithStories = [];
+      let curatedCreators = [];
 
-      // Try real data first
-      const { data: follows } = await sb.from('follows').select('following_id').eq('follower_id', creatorId);
-      if (follows && follows.length > 0) {
-        const followedIds = follows.map(f => f.following_id);
-        const { data: profiles } = await sb.from('profiles').select('id, username, display_name, avatar_url').in('id', followedIds);
-        if (profiles && profiles.length > 0) {
-          const { data: stories } = await sb.from('creator_stories').select('id, creator_id, content, main_video_url, media_urls, created_at').in('creator_id', followedIds).order('created_at', { ascending: false });
-          const storyMap = {};
-          (stories || []).forEach(s => { if (!storyMap[s.creator_id]) storyMap[s.creator_id] = s; });
-          creatorsWithStories = (profiles.filter(p => storyMap[p.id])).map(p => ({ ...p, content: storyMap[p.id].content, isDummy: false }));
+      // 1. Try curated list from creo_en_ellos column
+      const { data: prof } = await sb.from('profiles').select('creo_en_ellos').eq('id', creatorId).single();
+      if (prof && prof.creo_en_ellos && Array.isArray(prof.creo_en_ellos) && prof.creo_en_ellos.length > 0) {
+        curatedCreators = prof.creo_en_ellos.map(c => ({ ...c, content: c.bio || '', isDummy: false }));
+      }
+
+      // 2. If no curated list, fall back to follows
+      if (curatedCreators.length === 0) {
+        const { data: follows } = await sb.from('follows').select('following_id').eq('follower_id', creatorId);
+        if (follows && follows.length > 0) {
+          const followedIds = follows.map(f => f.following_id);
+          const { data: profiles } = await sb.from('profiles').select('id, username, display_name, avatar_url, bio').in('id', followedIds).limit(10);
+          if (profiles && profiles.length > 0) {
+            curatedCreators = profiles.map(p => ({ ...p, content: p.bio || '', isDummy: false }));
+          }
         }
       }
 
-      // Always show section — fill with dummy data if not enough real creators
       document.getElementById('creo-en-ellos-section').classList.remove('hidden');
       const scroll = document.getElementById('creo-en-ellos-scroll');
 
-      const realCards = creatorsWithStories.map(p => renderCreoEllosCard(p, false));
-      const needed = Math.max(0, 3 - creatorsWithStories.length);
+      const realCards = curatedCreators.map(p => renderCreoEllosCard(p, false));
+      const needed = Math.max(0, 3 - curatedCreators.length);
       const dummyCards = DUMMY_CREATORS.slice(0, needed).map(p => renderCreoEllosCard(p, true));
 
       scroll.innerHTML = [...realCards, ...dummyCards].join('');
