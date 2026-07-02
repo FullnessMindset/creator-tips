@@ -223,7 +223,7 @@ async function updateNavAuth() {
       if (perfil) perfil.href = 'profile.html?u=' + data.username;
     }
     if (isAdmin(user.email)) {
-      const nav = document.querySelector('#bottom-nav .max-w-lg');
+      const nav = document.querySelector('#bottom-nav .max-w-2xl');
       if (nav) {
         const isAdminMode = sessionStorage.getItem('admin_mode') === 'true';
         const btn = document.createElement('a');
@@ -411,7 +411,7 @@ function emojiButton(btnId) {
 
 // Messages nav item
 function addMessagesNavItem() {
-  const nav = document.querySelector('#bottom-nav .max-w-lg');
+  const nav = document.querySelector('#bottom-nav .max-w-2xl');
   if (!nav) return;
   const postLink = nav.querySelector('[href="index.html#post"]');
   if (!postLink) return;
@@ -435,7 +435,7 @@ function initCookieConsent() {
   const ckText = ckDk ? 'text-gray-400' : 'text-gray-500';
   const ckBtn2 = ckDk ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-600 hover:bg-gray-50';
   banner.innerHTML = `
-    <div class="max-w-lg mx-auto ${ckBg} border rounded-2xl shadow-2xl p-4 space-y-3">
+    <div class="max-w-2xl mx-auto ${ckBg} border rounded-2xl shadow-2xl p-4 space-y-3">
       <div class="flex items-start gap-3">
         <span class="text-2xl flex-shrink-0">🍪</span>
         <div>
