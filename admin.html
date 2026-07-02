@@ -179,6 +179,7 @@
         <button onclick="showTab('transactions')" id="tab-transactions" class="tab-btn px-5 py-2 rounded-lg text-sm font-medium text-gray-500 hover:text-gray-800 transition">Transactions</button>
         <button onclick="showTab('accounts')" id="tab-accounts" class="tab-btn px-5 py-2 rounded-lg text-sm font-medium text-gray-500 hover:text-gray-800 transition">Stripe Accounts</button>
         <button onclick="showTab('links')" id="tab-links" class="tab-btn px-5 py-2 rounded-lg text-sm font-medium text-gray-500 hover:text-gray-800 transition">Quick Links</button>
+        <button onclick="showTab('metareviews')" id="tab-metareviews" class="tab-btn px-5 py-2 rounded-lg text-sm font-medium text-gray-500 hover:text-gray-800 transition">Meta Reviews</button>
       </div>
 
       <!-- Verification Review Panel -->
@@ -307,6 +308,48 @@
         </div>
       </div>
 
+      <!-- Meta Reviews Panel -->
+      <div id="panel-metareviews" class="hidden fade-in">
+        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h2 class="font-semibold text-gray-900">Meta Fund Release Reviews</h2>
+            <div class="flex space-x-2">
+              <button onclick="filterMetaReviews('pending')" id="mr-filter-pending" class="text-xs px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 font-medium">Pendientes</button>
+              <button onclick="filterMetaReviews('approved')" id="mr-filter-approved" class="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-500 font-medium">Aprobadas</button>
+              <button onclick="filterMetaReviews('rejected')" id="mr-filter-rejected" class="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-500 font-medium">Rechazadas</button>
+              <button onclick="filterMetaReviews('all')" id="mr-filter-all" class="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-500 font-medium">Todas</button>
+            </div>
+          </div>
+          <div id="meta-reviews-list" class="divide-y divide-gray-200"></div>
+          <div id="meta-reviews-empty" class="p-8 text-center text-gray-400 text-sm">Cargando metas...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Meta Review Modal -->
+  <div id="meta-review-modal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onclick="if(event.target===this)closeMetaReviewModal()">
+    <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
+        <h3 class="text-lg font-bold text-gray-900">Revisar Meta</h3>
+        <button onclick="closeMetaReviewModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+      </div>
+      <div id="meta-review-content" class="p-6 space-y-5"></div>
+      <div id="meta-review-actions" class="p-6 border-t border-gray-200 space-y-3 sticky bottom-0 bg-white">
+        <input type="hidden" id="mr-meta-id">
+        <input type="hidden" id="mr-stage">
+        <div>
+          <label class="text-xs text-gray-500 uppercase">Notas del admin (opcional)</label>
+          <input id="mr-admin-notes" type="text" placeholder="Notas internas..." class="w-full bg-gray-50 border border-gray-300 p-2.5 rounded-lg text-sm mt-1 text-gray-900">
+        </div>
+        <div class="flex space-x-3">
+          <button onclick="approveMetaStage()" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold text-sm transition">✅ Aprobar</button>
+          <button onclick="rejectMetaStage()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-semibold text-sm transition">❌ Rechazar</button>
+          <button id="mr-fraud-btn" class="hidden flex-1 bg-red-900 hover:bg-red-950 text-white py-3 rounded-lg font-semibold text-sm transition" onclick="markMetaFraud()">⛔ Fraude — Banear</button>
+          <button onclick="closeMetaReviewModal()" class="px-6 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold text-sm transition">Cancelar</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -475,6 +518,7 @@
       renderTransactions(data.recentCharges || []);
       renderVerificationQueue();
       loadAccounts();
+      loadMetaReviews();
     }
 
     // VERIFICATION QUEUE
@@ -769,7 +813,7 @@
       const active = document.getElementById('tab-' + tab);
       active.classList.add('bg-creo-purple', 'text-white');
       active.classList.remove('text-gray-500');
-      ['verification', 'creators', 'transactions', 'accounts', 'links'].forEach(p => {
+      ['verification', 'creators', 'transactions', 'accounts', 'links', 'metareviews'].forEach(p => {
         document.getElementById('panel-' + p).classList.toggle('hidden', p !== tab);
       });
     }
@@ -817,6 +861,239 @@
     function closeModal() { document.getElementById('edit-modal').classList.add('hidden'); }
     function refresh() { loadDashboard(); }
     async function logout() { sessionStorage.removeItem('browse_as_user'); sessionStorage.removeItem('admin_mode'); authToken = null; await sb.auth.signOut(); location.reload(); }
+
+    // ===== META FUND RELEASE REVIEWS =====
+    let allMetaReviews = [];
+    let metaReviewFilter = 'pending';
+
+    async function loadMetaReviews() {
+      const { data, error } = await sb.from('metas')
+        .select('*, creator:creator_id(username, display_name, avatar_url, email)')
+        .not('fund_status', 'is', null)
+        .order('created_at', { ascending: false });
+
+      if (error || !data) {
+        document.getElementById('meta-reviews-empty').textContent = 'Error cargando metas';
+        return;
+      }
+      allMetaReviews = data;
+      renderMetaReviews();
+    }
+
+    function filterMetaReviews(filter) {
+      metaReviewFilter = filter;
+      ['pending', 'approved', 'rejected', 'all'].forEach(f => {
+        const btn = document.getElementById('mr-filter-' + f);
+        if (f === filter) { btn.classList.add('bg-yellow-100', 'text-yellow-700'); btn.classList.remove('bg-gray-100', 'text-gray-500'); }
+        else { btn.classList.remove('bg-yellow-100', 'text-yellow-700'); btn.classList.add('bg-gray-100', 'text-gray-500'); }
+      });
+      renderMetaReviews();
+    }
+
+    function renderMetaReviews() {
+      const list = document.getElementById('meta-reviews-list');
+      const empty = document.getElementById('meta-reviews-empty');
+      let filtered = allMetaReviews;
+      if (metaReviewFilter === 'pending') filtered = filtered.filter(m => m.fund_status?.includes('review'));
+      else if (metaReviewFilter === 'approved') filtered = filtered.filter(m => m.fund_status === 'completed');
+      else if (metaReviewFilter === 'rejected') filtered = filtered.filter(m => m.fund_status === 'rejected' || m.fund_status === 'fraud_banned');
+
+      if (filtered.length === 0) {
+        list.innerHTML = '';
+        empty.textContent = 'No hay metas en esta categoría';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      list.innerHTML = filtered.map(m => {
+        const creator = m.creator || {};
+        const name = creator.display_name || creator.username || 'Desconocido';
+        const avatar = creator.avatar_url
+          ? `<img src="${creator.avatar_url}" class="w-10 h-10 rounded-full object-cover border-2 border-creo-mint">`
+          : `<div class="w-10 h-10 rounded-full bg-creo-mint/20 flex items-center justify-center border-2 border-creo-mint"><span class="text-creo-mint font-bold">${name[0].toUpperCase()}</span></div>`;
+        const raised = (m.raised_cents / 100).toFixed(2);
+        const goal = (m.goal_amount_cents / 100).toFixed(2);
+        const stage = m.fund_stage || 1;
+        const statusColor = m.fund_status?.includes('review') ? 'yellow' : m.fund_status === 'completed' ? 'green' : m.fund_status === 'fraud_banned' ? 'red' : 'gray';
+        const statusLabel = {
+          'stage2_review': 'Etapa 2 — Pendiente',
+          'stage3_review': 'Etapa 3 — Pendiente',
+          'cancelled_review': 'Cancelación — Pendiente',
+          'stage2_approved': 'Etapa 2 ✓',
+          'stage3_approved': 'Etapa 3 ✓',
+          'completed': 'Completada ✓',
+          'rejected': 'Rechazada',
+          'fraud_banned': 'Fraude — Baneado',
+          'early_complete': 'Completada Anticipada'
+        }[m.fund_status] || m.fund_status;
+
+        return `<div class="p-4 flex items-center gap-4 hover:bg-gray-50 transition cursor-pointer" onclick="openMetaReview('${m.id}')">
+          ${avatar}
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold text-sm truncate">${m.title}</p>
+            <p class="text-xs text-gray-500">por @${creator.username || '?'} · $${raised}/$${goal} · Etapa ${stage}</p>
+          </div>
+          <span class="text-[10px] bg-${statusColor}-100 text-${statusColor}-700 px-3 py-1 rounded-full font-semibold whitespace-nowrap">${statusLabel}</span>
+        </div>`;
+      }).join('');
+    }
+
+    function openMetaReview(metaId) {
+      const meta = allMetaReviews.find(m => m.id === metaId);
+      if (!meta) return;
+      const creator = meta.creator || {};
+      const content = document.getElementById('meta-review-content');
+      document.getElementById('mr-meta-id').value = metaId;
+      document.getElementById('mr-stage').value = meta.fund_status;
+      document.getElementById('mr-admin-notes').value = '';
+
+      const isCancellation = meta.fund_status === 'cancelled_review';
+      document.getElementById('mr-fraud-btn').classList.toggle('hidden', !isCancellation);
+
+      let html = `<div class="space-y-4">
+        <div class="flex items-center gap-3">
+          ${creator.avatar_url ? `<img src="${creator.avatar_url}" class="w-14 h-14 rounded-full object-cover border-2 border-creo-mint">` : `<div class="w-14 h-14 rounded-full bg-creo-mint/20 flex items-center justify-center border-2 border-creo-mint"><span class="text-creo-mint font-bold text-xl">${(creator.display_name || creator.username || '?')[0].toUpperCase()}</span></div>`}
+          <div>
+            <p class="font-bold text-lg">${creator.display_name || creator.username}</p>
+            <p class="text-sm text-gray-500">@${creator.username} · ${creator.email || ''}</p>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 rounded-xl p-4 space-y-2">
+          <p class="font-semibold">${meta.title}</p>
+          <p class="text-sm text-gray-600">${meta.description || ''}</p>
+          <div class="flex gap-4 text-xs text-gray-500">
+            <span>Meta: $${(meta.goal_amount_cents/100).toFixed(2)}</span>
+            <span>Recaudado: $${(meta.raised_cents/100).toFixed(2)}</span>
+            <span>${meta.start_date} — ${meta.end_date}</span>
+          </div>
+        </div>`;
+
+      if (meta.fund_status === 'stage2_review') {
+        html += `<div class="bg-blue-50 rounded-xl p-4 space-y-3 border border-blue-200">
+          <h4 class="font-semibold text-blue-800 text-sm">📋 Etapa 2 — Primera Liberación (50%)</h4>
+          <p class="text-xs font-medium text-gray-700">Monto a liberar: $${(meta.raised_cents/200).toFixed(2)}</p>
+          <div>
+            <p class="text-xs font-semibold text-gray-600 mb-1">Recibos de compra:</p>
+            <div class="flex flex-wrap gap-2">${(meta.stage2_receipt_urls||[]).map(u => `<a href="${u}" target="_blank"><img src="${u}" class="w-24 h-24 rounded-lg object-cover border hover:border-blue-400 transition"></a>`).join('') || '<p class="text-xs text-gray-400">Sin recibos</p>'}</div>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-gray-600 mb-1">Actualización para la comunidad:</p>
+            <p class="text-sm bg-white p-3 rounded-lg border">${meta.stage2_update_text || 'Sin actualización'}</p>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-gray-600 mb-1">Evidencia (fotos/videos):</p>
+            <div class="flex flex-wrap gap-2">${(meta.stage2_update_media||[]).map(u => `<a href="${u}" target="_blank"><img src="${u}" class="w-24 h-24 rounded-lg object-cover border hover:border-blue-400 transition"></a>`).join('') || '<p class="text-xs text-gray-400">Sin evidencia</p>'}</div>
+          </div>
+        </div>`;
+      }
+
+      if (meta.fund_status === 'stage3_review') {
+        html += `<div class="bg-emerald-50 rounded-xl p-4 space-y-3 border border-emerald-200">
+          <h4 class="font-semibold text-emerald-800 text-sm">📋 Etapa 3 — Liberación Final (50% restante)</h4>
+          <p class="text-xs font-medium text-gray-700">Monto a liberar: $${(meta.raised_cents/200).toFixed(2)}</p>
+          <div>
+            <p class="text-xs font-semibold text-gray-600 mb-1">Recibos y comprobantes finales:</p>
+            <div class="flex flex-wrap gap-2">${(meta.stage3_proof_urls||[]).map(u => `<a href="${u}" target="_blank"><img src="${u}" class="w-24 h-24 rounded-lg object-cover border hover:border-emerald-400 transition"></a>`).join('') || '<p class="text-xs text-gray-400">Sin pruebas</p>'}</div>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-gray-600 mb-1">Descripción de la adquisición:</p>
+            <p class="text-sm bg-white p-3 rounded-lg border">${meta.stage3_proof_text || 'Sin descripción'}</p>
+          </div>
+        </div>`;
+      }
+
+      if (meta.fund_status === 'cancelled_review') {
+        html += `<div class="bg-red-50 rounded-xl p-4 space-y-3 border border-red-200">
+          <h4 class="font-semibold text-red-800 text-sm">⚠️ Cancelación de Meta</h4>
+          <div>
+            <p class="text-xs font-semibold text-gray-600 mb-1">Razón del creador:</p>
+            <p class="text-sm bg-white p-3 rounded-lg border">${meta.cancellation_reason || 'Sin razón proporcionada'}</p>
+          </div>
+          <p class="text-[10px] text-red-600">Si es fraude verificado, haz clic en "Fraude — Banear" para bloquear al creador permanentemente.</p>
+        </div>`;
+      }
+
+      html += `</div>`;
+      content.innerHTML = html;
+      document.getElementById('meta-review-modal').classList.remove('hidden');
+    }
+
+    function closeMetaReviewModal() {
+      document.getElementById('meta-review-modal').classList.add('hidden');
+    }
+
+    async function approveMetaStage() {
+      const metaId = document.getElementById('mr-meta-id').value;
+      const stage = document.getElementById('mr-stage').value;
+      const notes = document.getElementById('mr-admin-notes').value.trim();
+      const meta = allMetaReviews.find(m => m.id === metaId);
+      if (!meta) return;
+
+      let updateData = { admin_review_notes: notes, admin_reviewed_at: new Date().toISOString() };
+
+      if (stage === 'stage2_review') {
+        updateData.fund_status = 'stage2_approved';
+        updateData.stage2_approved_at = new Date().toISOString();
+      } else if (stage === 'stage3_review') {
+        updateData.fund_status = 'completed';
+        updateData.fund_stage = 3;
+        updateData.stage3_approved_at = new Date().toISOString();
+        updateData.completion_badge = 'legitimate';
+      } else if (stage === 'cancelled_review') {
+        updateData.fund_status = 'early_complete';
+        updateData.completion_badge = 'early_complete';
+      }
+
+      const { error } = await sb.from('metas').update(updateData).eq('id', metaId);
+      if (error) { alert('Error: ' + error.message); return; }
+
+      closeMetaReviewModal();
+      await loadMetaReviews();
+    }
+
+    async function rejectMetaStage() {
+      const metaId = document.getElementById('mr-meta-id').value;
+      const notes = document.getElementById('mr-admin-notes').value.trim();
+      if (!notes) { alert('Escribe una razón para el rechazo'); return; }
+
+      const { error } = await sb.from('metas').update({
+        fund_status: 'rejected',
+        admin_review_notes: notes,
+        admin_reviewed_at: new Date().toISOString()
+      }).eq('id', metaId);
+      if (error) { alert('Error: ' + error.message); return; }
+
+      closeMetaReviewModal();
+      await loadMetaReviews();
+    }
+
+    async function markMetaFraud() {
+      const metaId = document.getElementById('mr-meta-id').value;
+      const meta = allMetaReviews.find(m => m.id === metaId);
+      if (!meta) return;
+      if (!confirm('⛔ ¿Estás seguro? Esto BANEARÁ permanentemente al creador y marcará la meta como FRAUDE.')) return;
+
+      const { error: metaError } = await sb.from('metas').update({
+        fund_status: 'fraud_banned',
+        admin_review_notes: 'FRAUDE VERIFICADO — Creador baneado',
+        admin_reviewed_at: new Date().toISOString(),
+        is_active: false
+      }).eq('id', metaId);
+
+      if (meta.creator_id) {
+        await sb.from('profiles').update({
+          verification_status: 'banned',
+          banned_at: new Date().toISOString(),
+          ban_reason: 'Fraude verificado en meta: ' + meta.title
+        }).eq('id', meta.creator_id);
+      }
+
+      if (metaError) { alert('Error: ' + metaError.message); return; }
+      closeMetaReviewModal();
+      await loadMetaReviews();
+    }
 
     // Auto-login if already authenticated as admin
     (async () => {

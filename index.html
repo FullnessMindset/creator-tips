@@ -376,6 +376,41 @@
         </div>
 
         <div id="metas-list" class="space-y-3"></div>
+
+        <!-- 3-STAGE FUND RELEASE INFO -->
+        <div class="bg-gradient-to-br from-creo-purple/5 to-creo-mint/5 p-5 rounded-xl border border-creo-purple/20 space-y-3">
+          <h4 class="font-bold text-sm text-gray-900 flex items-center gap-2">
+            <svg class="w-5 h-5 text-creo-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            Sistema de Liberación de Fondos en 3 Etapas
+          </h4>
+          <p class="text-[10px] text-gray-500 leading-relaxed">Para proteger a los supporters y garantizar transparencia, los fondos de cada meta se liberan en 3 etapas verificadas.</p>
+          <div class="space-y-2">
+            <div class="flex items-start gap-3 p-3 bg-white/80 rounded-lg">
+              <div class="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0"><span class="text-sm font-bold text-amber-600">1</span></div>
+              <div>
+                <p class="text-xs font-semibold text-gray-900">Retención en Stripe (7-14 días)</p>
+                <p class="text-[10px] text-gray-500">Los fondos se retienen para verificar que no sean pagos fraudulentos o tarjetas robadas.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 p-3 bg-white/80 rounded-lg">
+              <div class="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0"><span class="text-sm font-bold text-blue-600">2</span></div>
+              <div>
+                <p class="text-xs font-semibold text-gray-900">Primera liberación (50%)</p>
+                <p class="text-[10px] text-gray-500">Recibes la mitad. Debes subir recibo de compra + actualización a la comunidad (foto/video con descripción).</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 p-3 bg-white/80 rounded-lg">
+              <div class="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0"><span class="text-sm font-bold text-green-600">3</span></div>
+              <div>
+                <p class="text-xs font-semibold text-gray-900">Liberación final (50% restante)</p>
+                <p class="text-[10px] text-gray-500">Sube recibos finales, fotos y videos de la adquisición. El admin revisa y aprueba.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Meta Fund Stages -->
+        <div id="meta-stages-section" class="space-y-4"></div>
       </div>
 
       <!-- TAB: Posts -->
@@ -1517,6 +1552,7 @@
     const DUMMY_METAS = [
       { id:'dm1', title:'Nuevo micrófono profesional', description:'Para mejorar la calidad de audio en mis streams y podcasts', goal_amount_cents:15000, raised_cents:8500, start_date:'2026-07-01', end_date:'2026-08-15', is_active:true, images:[], isDummy:true },
       { id:'dm2', title:'Curso de edición de video', description:'Quiero aprender After Effects para crear mejores contenidos', goal_amount_cents:20000, raised_cents:3200, start_date:'2026-07-05', end_date:'2026-09-01', is_active:true, images:[], isDummy:true },
+      { id:'dm3', title:'Tablet para ilustración digital', description:'Wacom Cintiq para hacer arte digital profesional', goal_amount_cents:35000, raised_cents:35000, start_date:'2026-06-01', end_date:'2026-07-15', is_active:true, images:[], isDummy:true },
     ];
 
     function renderMetaCard(m, isDummy) {
@@ -1529,14 +1565,22 @@
         <button onclick="toggleMeta('${m.id}', ${!m.is_active})" class="text-xs px-2 py-1 rounded ${m.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}">${m.is_active ? 'Activa' : 'Inactiva'}</button>
         <button onclick="deleteMeta('${m.id}')" class="text-xs px-2 py-1 rounded bg-red-100 text-red-600">Eliminar</button>
       </div>`;
-      return `<div class="bg-white p-4 rounded-xl border border-gray-200 space-y-2">
+
+      const stage = isDummy ? null : getMetaStage(m.id);
+      const statusBadge = stage ? getMetaStatusBadge(stage) : '';
+      const stageProgress = (!isDummy && pct >= 100) ? renderMetaStageProgress(m.id, m) : '';
+      if (!isDummy && pct >= 100 && !stage) initMetaStage(m.id, m.raised_cents);
+
+      return `<div class="bg-white p-4 rounded-xl border border-gray-200 space-y-2 relative">
+        ${statusBadge}
         <div class="flex justify-between items-start">
           <div><h4 class="font-bold text-gray-900">${esc(m.title)}${badge}</h4><p class="text-xs text-gray-500">${esc(m.description || '')}</p></div>
           ${actions}
         </div>
         ${imgs.length ? `<div class="flex gap-1 overflow-x-auto">${imgs.map(i => `<img src="${i}" class="w-14 h-14 rounded object-cover flex-shrink-0">`).join('')}</div>` : ''}
-        <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden"><div class="bg-creo-mint h-full rounded-full transition-all duration-500" style="width:${pct}%"></div></div>
-        <div class="flex justify-between text-xs text-gray-500"><span>$${raised} / $${goal} (${pct}%)</span><span>${m.start_date} — ${m.end_date}</span></div>
+        <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden"><div class="${pct >= 100 ? 'bg-green-500' : 'bg-creo-mint'} h-full rounded-full transition-all duration-500" style="width:${pct}%"></div></div>
+        <div class="flex justify-between text-xs text-gray-500"><span>$${raised} / $${goal} (${pct}%)${pct >= 100 ? ' ✅ Meta Alcanzada' : ''}</span><span>${m.start_date} — ${m.end_date}</span></div>
+        ${stageProgress}
       </div>`;
     }
 
@@ -1547,6 +1591,35 @@
         list.innerHTML = DUMMY_METAS.map(m => renderMetaCard(m, true)).join('');
         return;
       }
+      // Sync DB fund_status back to localStorage stages
+      const stages = getMetaStages();
+      data.forEach(m => {
+        if (m.fund_status && stages[m.id]) {
+          if (m.fund_status === 'stage2_approved' && !stages[m.id].stage2_approved) {
+            stages[m.id].stage2_approved = true;
+            stages[m.id].admin_review_status = null;
+            stages[m.id].current_stage = 3;
+            stages[m.id].status = 'stage3_pending';
+          }
+          if (m.fund_status === 'completed' && !stages[m.id].stage3_approved) {
+            stages[m.id].stage3_approved = true;
+            stages[m.id].admin_review_status = null;
+            stages[m.id].status = 'completed';
+          }
+          if (m.fund_status === 'rejected') {
+            stages[m.id].admin_review_status = 'rejected';
+          }
+          if (m.fund_status === 'fraud_banned') {
+            stages[m.id].banned = true;
+            stages[m.id].cancellation_type = 'fraud';
+          }
+          if (m.fund_status === 'early_complete') {
+            stages[m.id].cancellation_type = 'early_complete';
+            stages[m.id].admin_review_status = null;
+          }
+        }
+      });
+      saveMetaStages(stages);
       list.innerHTML = data.map(m => renderMetaCard(m, false)).join('');
     }
 
@@ -1604,6 +1677,312 @@
 
     async function toggleMeta(id, active) { await sb.from('metas').update({ is_active: active }).eq('id', id); loadMetas(); }
     async function deleteMeta(id) { if (!confirm('¿Eliminar?')) return; await sb.from('metas').delete().eq('id', id); loadMetas(); }
+
+    // ===== 3-STAGE FUND RELEASE =====
+    const META_STAGE_KEY = 'creo-meta-stages';
+    const STRIPE_HOLD_DAYS = 14;
+
+    function getMetaStages() {
+      try { return JSON.parse(localStorage.getItem(META_STAGE_KEY) || '{}'); } catch { return {}; }
+    }
+    function saveMetaStages(stages) { localStorage.setItem(META_STAGE_KEY, JSON.stringify(stages)); }
+
+    function getMetaStage(metaId) {
+      const stages = getMetaStages();
+      return stages[metaId] || null;
+    }
+
+    function initMetaStage(metaId, raisedCents) {
+      const stages = getMetaStages();
+      if (!stages[metaId]) {
+        stages[metaId] = {
+          current_stage: 1,
+          status: 'holding',
+          hold_start: new Date().toISOString(),
+          total_cents: raisedCents,
+          first_release_cents: Math.floor(raisedCents / 2),
+          second_release_cents: raisedCents - Math.floor(raisedCents / 2),
+          stage1_complete: false,
+          stage2_complete: false,
+          stage2_receipt_urls: [],
+          stage2_update_text: '',
+          stage2_update_media: [],
+          stage2_submitted: false,
+          stage2_approved: false,
+          stage3_complete: false,
+          stage3_proof_urls: [],
+          stage3_proof_text: '',
+          stage3_submitted: false,
+          stage3_approved: false,
+          admin_review_status: null,
+          cancellation_reason: '',
+          cancellation_type: null,
+          banned: false
+        };
+        saveMetaStages(stages);
+      }
+      return stages[metaId];
+    }
+
+    function getHoldDaysRemaining(stage) {
+      if (!stage || !stage.hold_start) return STRIPE_HOLD_DAYS;
+      const start = new Date(stage.hold_start);
+      const now = new Date();
+      const elapsed = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+      return Math.max(0, STRIPE_HOLD_DAYS - elapsed);
+    }
+
+    function getMetaStatusBadge(stage) {
+      if (!stage) return '';
+      if (stage.banned) return `<span class="absolute -top-2 -right-2 text-[9px] bg-red-600 text-white px-2.5 py-1 rounded-full font-bold shadow-lg z-10">⛔ Creador Baneado</span>`;
+      if (stage.cancellation_type === 'fraud') return `<span class="absolute -top-2 -right-2 text-[9px] bg-red-600 text-white px-2.5 py-1 rounded-full font-bold shadow-lg z-10">🚫 Meta Cancelada — Fraude</span>`;
+      if (stage.cancellation_type === 'early_complete') return `<span class="absolute -top-2 -right-2 text-[9px] bg-blue-500 text-white px-2.5 py-1 rounded-full font-bold shadow-lg z-10">✅ Meta Completada Antes de lo Esperado — Gracias al apoyo de todos</span>`;
+      if (stage.cancellation_type === 'cancelled') return `<span class="absolute -top-2 -right-2 text-[9px] bg-gray-500 text-white px-2.5 py-1 rounded-full font-bold shadow-lg z-10">❌ Meta Cancelada</span>`;
+      if (stage.stage3_approved) return `<span class="absolute -top-2 -right-2 text-[9px] bg-green-600 text-white px-2.5 py-1 rounded-full font-bold shadow-lg z-10">✅ Meta Completada Legítimamente</span>`;
+      if (stage.admin_review_status === 'pending') return `<span class="absolute -top-2 -right-2 text-[9px] bg-yellow-500 text-white px-2.5 py-1 rounded-full font-bold shadow-lg z-10 animate-pulse">⏳ Meta en Review por Admin</span>`;
+      if (stage.admin_review_status === 'rejected') return `<span class="absolute -top-2 -right-2 text-[9px] bg-red-500 text-white px-2.5 py-1 rounded-full font-bold shadow-lg z-10">❌ Rechazada por Admin</span>`;
+      return '';
+    }
+
+    function renderMetaStageProgress(metaId, meta) {
+      const stage = getMetaStage(metaId);
+      if (!stage) return '';
+      const pct = meta.goal_amount_cents > 0 ? Math.round(meta.raised_cents / meta.goal_amount_cents * 100) : 0;
+      if (pct < 100 && stage.status === 'holding') return '';
+
+      const daysLeft = getHoldDaysRemaining(stage);
+      const holdComplete = daysLeft <= 0;
+      const half1 = (stage.first_release_cents / 100).toFixed(2);
+      const half2 = (stage.second_release_cents / 100).toFixed(2);
+
+      if (stage.stage3_approved || stage.cancellation_type) return '';
+
+      let html = `<div class="mt-3 pt-3 border-t border-gray-100 space-y-3">
+        <p class="text-[10px] font-bold text-creo-purple uppercase tracking-wider">Liberación de Fondos</p>`;
+
+      // STAGE 1: Stripe Hold
+      const s1Done = holdComplete && stage.stage1_complete;
+      html += `<div class="p-3 rounded-lg border ${s1Done ? 'border-green-200 bg-green-50' : 'border-amber-200 bg-amber-50'}">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="w-5 h-5 rounded-full ${s1Done ? 'bg-green-500' : 'bg-amber-400'} text-white text-[10px] font-bold flex items-center justify-center">1</span>
+          <span class="text-xs font-semibold ${s1Done ? 'text-green-700' : 'text-amber-700'}">Retención Stripe${s1Done ? ' ✓' : ''}</span>
+        </div>`;
+      if (!holdComplete) {
+        html += `<p class="text-[10px] text-amber-600 ml-7">Faltan <strong>${daysLeft} días</strong> de retención para verificar los pagos.</p>
+          <div class="ml-7 mt-1 w-full bg-amber-200 rounded-full h-1.5"><div class="bg-amber-500 h-full rounded-full" style="width:${Math.round(((STRIPE_HOLD_DAYS - daysLeft) / STRIPE_HOLD_DAYS) * 100)}%"></div></div>`;
+      } else if (!stage.stage1_complete) {
+        html += `<p class="text-[10px] text-green-600 ml-7">Periodo de retención completado. Fondos verificados.</p>
+          <button onclick="completeStage1('${metaId}')" class="ml-7 mt-1 text-[10px] bg-green-600 text-white px-3 py-1 rounded-full font-semibold hover:bg-green-700 transition">Confirmar y Proceder a Etapa 2</button>`;
+      }
+      html += `</div>`;
+
+      // STAGE 2: First Release 50%
+      if (stage.stage1_complete) {
+        const s2Done = stage.stage2_approved;
+        html += `<div class="p-3 rounded-lg border ${s2Done ? 'border-green-200 bg-green-50' : stage.stage2_submitted ? 'border-yellow-200 bg-yellow-50' : 'border-blue-200 bg-blue-50'}">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="w-5 h-5 rounded-full ${s2Done ? 'bg-green-500' : 'bg-blue-500'} text-white text-[10px] font-bold flex items-center justify-center">2</span>
+            <span class="text-xs font-semibold ${s2Done ? 'text-green-700' : 'text-blue-700'}">Primera Liberación: $${half1} (50%)${s2Done ? ' ✓' : ''}</span>
+          </div>`;
+        if (stage.stage2_submitted && !stage.stage2_approved) {
+          html += `<p class="text-[10px] text-yellow-600 ml-7">📤 Enviado para revisión del admin. Esperando aprobación...</p>`;
+        } else if (!stage.stage2_submitted) {
+          html += `<div class="ml-7 space-y-2 mt-2">
+            <p class="text-[10px] text-blue-600 font-medium">Sube tu recibo de compra y actualiza a tu comunidad:</p>
+            <div>
+              <label class="text-[10px] text-gray-600 font-medium">Recibo / Screenshot de compra *</label>
+              <input type="file" id="stage2-receipt-${metaId}" accept="image/*" multiple class="block w-full text-[10px] text-gray-500 file:mr-1 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-blue-100 file:text-blue-600 cursor-pointer mt-1">
+            </div>
+            <div>
+              <label class="text-[10px] text-gray-600 font-medium">Actualización para la comunidad * (qué hiciste con los fondos)</label>
+              <textarea id="stage2-text-${metaId}" rows="2" placeholder="Ej: Compré el micrófono Blue Yeti en Amazon. ¡Llega en 3 días!" class="w-full border border-gray-300 bg-white p-2 rounded-lg text-[11px] text-gray-900 outline-none focus:ring-1 focus:ring-blue-400 mt-1"></textarea>
+            </div>
+            <div>
+              <label class="text-[10px] text-gray-600 font-medium">Foto o video de evidencia *</label>
+              <input type="file" id="stage2-media-${metaId}" accept="image/*,video/*" multiple class="block w-full text-[10px] text-gray-500 file:mr-1 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-blue-100 file:text-blue-600 cursor-pointer mt-1">
+            </div>
+            <button onclick="submitStage2('${metaId}')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-xs font-semibold transition">Enviar Etapa 2 para Revisión</button>
+          </div>`;
+        }
+        html += `</div>`;
+      }
+
+      // STAGE 3: Final Release 50%
+      if (stage.stage2_approved) {
+        const s3Done = stage.stage3_approved;
+        html += `<div class="p-3 rounded-lg border ${s3Done ? 'border-green-200 bg-green-50' : stage.stage3_submitted ? 'border-yellow-200 bg-yellow-50' : 'border-emerald-200 bg-emerald-50'}">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="w-5 h-5 rounded-full ${s3Done ? 'bg-green-500' : 'bg-emerald-500'} text-white text-[10px] font-bold flex items-center justify-center">3</span>
+            <span class="text-xs font-semibold ${s3Done ? 'text-green-700' : 'text-emerald-700'}">Liberación Final: $${half2} (50% restante)${s3Done ? ' ✓' : ''}</span>
+          </div>`;
+        if (stage.stage3_submitted && !stage.stage3_approved) {
+          html += `<p class="text-[10px] text-yellow-600 ml-7">📤 Documentos finales enviados. Esperando aprobación del admin...</p>`;
+        } else if (!stage.stage3_submitted) {
+          html += `<div class="ml-7 space-y-2 mt-2">
+            <p class="text-[10px] text-emerald-600 font-medium">Sube prueba final de la adquisición (recibos, fotos, videos):</p>
+            <div>
+              <label class="text-[10px] text-gray-600 font-medium">Recibos finales y comprobantes *</label>
+              <input type="file" id="stage3-proof-${metaId}" accept="image/*,video/*" multiple class="block w-full text-[10px] text-gray-500 file:mr-1 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-emerald-100 file:text-emerald-600 cursor-pointer mt-1">
+            </div>
+            <div>
+              <label class="text-[10px] text-gray-600 font-medium">Descripción de la adquisición *</label>
+              <textarea id="stage3-text-${metaId}" rows="2" placeholder="Ej: Ya tengo el micrófono instalado. Aquí fotos del unboxing y setup completo." class="w-full border border-gray-300 bg-white p-2 rounded-lg text-[11px] text-gray-900 outline-none focus:ring-1 focus:ring-emerald-400 mt-1"></textarea>
+            </div>
+            <button onclick="submitStage3('${metaId}')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg text-xs font-semibold transition">Enviar Prueba Final para Revisión</button>
+          </div>`;
+        }
+        html += `</div>`;
+      }
+
+      // Cancellation option
+      if (!stage.stage3_approved && !stage.cancellation_type) {
+        html += `<div class="pt-2 border-t border-gray-100">
+          <button onclick="showCancelMeta('${metaId}')" class="text-[10px] text-red-500 hover:text-red-700 underline">Cancelar esta meta</button>
+          <div id="cancel-meta-${metaId}" class="hidden mt-2 space-y-2 p-3 bg-red-50 rounded-lg border border-red-200">
+            <p class="text-[10px] text-red-600 font-semibold">⚠️ Cancelar una meta requiere una explicación pública:</p>
+            <textarea id="cancel-reason-${metaId}" rows="2" placeholder="Explica por qué cancelas esta meta..." class="w-full border border-red-300 bg-white p-2 rounded-lg text-[11px] text-gray-900 outline-none focus:ring-1 focus:ring-red-400"></textarea>
+            <div class="flex gap-2">
+              <button onclick="cancelMeta('${metaId}')" class="flex-1 bg-red-600 text-white py-1.5 rounded-lg text-[10px] font-semibold hover:bg-red-700 transition">Confirmar Cancelación</button>
+              <button onclick="document.getElementById('cancel-meta-${metaId}').classList.add('hidden')" class="flex-1 bg-gray-200 text-gray-600 py-1.5 rounded-lg text-[10px] font-semibold hover:bg-gray-300 transition">No, Mantener</button>
+            </div>
+          </div>
+        </div>`;
+      }
+
+      html += `</div>`;
+      return html;
+    }
+
+    function completeStage1(metaId) {
+      const stages = getMetaStages();
+      if (!stages[metaId]) return;
+      stages[metaId].stage1_complete = true;
+      stages[metaId].current_stage = 2;
+      stages[metaId].status = 'stage2_pending';
+      saveMetaStages(stages);
+      showToast('Etapa 1 completada. Sube tus recibos para la Etapa 2.');
+      loadMetas();
+      loadMetaStageCards();
+    }
+
+    async function submitStage2(metaId) {
+      const receiptFiles = document.getElementById('stage2-receipt-' + metaId)?.files;
+      const text = document.getElementById('stage2-text-' + metaId)?.value.trim();
+      const mediaFiles = document.getElementById('stage2-media-' + metaId)?.files;
+      if (!receiptFiles?.length) { showToast('Sube al menos un recibo', 'error'); return; }
+      if (!text) { showToast('Escribe una actualización para tu comunidad', 'error'); return; }
+      if (!mediaFiles?.length) { showToast('Sube al menos una foto o video de evidencia', 'error'); return; }
+
+      showToast('Subiendo documentos...', 'info');
+      const receiptUrls = [];
+      for (const f of receiptFiles) {
+        const url = await uploadToStorage(f, 'meta-receipts', currentUser.id);
+        if (url) receiptUrls.push(url);
+      }
+      const mediaUrls = [];
+      for (const f of mediaFiles) {
+        const url = await uploadToStorage(f, 'meta-evidence', currentUser.id);
+        if (url) mediaUrls.push(url);
+      }
+
+      const stages = getMetaStages();
+      stages[metaId].stage2_receipt_urls = receiptUrls;
+      stages[metaId].stage2_update_text = text;
+      stages[metaId].stage2_update_media = mediaUrls;
+      stages[metaId].stage2_submitted = true;
+      stages[metaId].admin_review_status = 'pending';
+      stages[metaId].status = 'stage2_review';
+      saveMetaStages(stages);
+
+      await sb.from('metas').update({
+        fund_stage: 2,
+        fund_status: 'stage2_review',
+        stage2_receipt_urls: receiptUrls,
+        stage2_update_text: text,
+        stage2_update_media: mediaUrls,
+        stage2_submitted_at: new Date().toISOString()
+      }).eq('id', metaId);
+
+      showToast('Etapa 2 enviada para revisión del admin');
+      loadMetas();
+      loadMetaStageCards();
+    }
+
+    async function submitStage3(metaId) {
+      const proofFiles = document.getElementById('stage3-proof-' + metaId)?.files;
+      const text = document.getElementById('stage3-text-' + metaId)?.value.trim();
+      if (!proofFiles?.length) { showToast('Sube recibos y pruebas de la adquisición', 'error'); return; }
+      if (!text) { showToast('Escribe una descripción de la adquisición', 'error'); return; }
+
+      showToast('Subiendo pruebas finales...', 'info');
+      const proofUrls = [];
+      for (const f of proofFiles) {
+        const url = await uploadToStorage(f, 'meta-final-proof', currentUser.id);
+        if (url) proofUrls.push(url);
+      }
+
+      const stages = getMetaStages();
+      stages[metaId].stage3_proof_urls = proofUrls;
+      stages[metaId].stage3_proof_text = text;
+      stages[metaId].stage3_submitted = true;
+      stages[metaId].admin_review_status = 'pending';
+      stages[metaId].status = 'stage3_review';
+      saveMetaStages(stages);
+
+      await sb.from('metas').update({
+        fund_stage: 3,
+        fund_status: 'stage3_review',
+        stage3_proof_urls: proofUrls,
+        stage3_proof_text: text,
+        stage3_submitted_at: new Date().toISOString()
+      }).eq('id', metaId);
+
+      showToast('Prueba final enviada para revisión del admin');
+      loadMetas();
+      loadMetaStageCards();
+    }
+
+    function showCancelMeta(metaId) {
+      document.getElementById('cancel-meta-' + metaId).classList.remove('hidden');
+    }
+
+    async function cancelMeta(metaId) {
+      const reason = document.getElementById('cancel-reason-' + metaId)?.value.trim();
+      if (!reason) { showToast('Debes escribir una razón para cancelar', 'error'); return; }
+
+      const stages = getMetaStages();
+      stages[metaId].cancellation_reason = reason;
+      stages[metaId].cancellation_type = 'cancelled';
+      stages[metaId].admin_review_status = 'pending';
+      stages[metaId].status = 'cancelled_review';
+      saveMetaStages(stages);
+
+      await sb.from('metas').update({
+        fund_status: 'cancelled_review',
+        cancellation_reason: reason,
+        cancellation_submitted_at: new Date().toISOString(),
+        is_active: false
+      }).eq('id', metaId);
+
+      showToast('Meta cancelada. El admin revisará tu explicación.');
+      loadMetas();
+      loadMetaStageCards();
+    }
+
+    function loadMetaStageCards() {
+      const container = document.getElementById('meta-stages-section');
+      if (!container) return;
+      const stages = getMetaStages();
+      const metaIds = Object.keys(stages);
+      if (metaIds.length === 0) { container.innerHTML = ''; return; }
+
+      container.innerHTML = metaIds.map(metaId => {
+        const stage = stages[metaId];
+        if (stage.stage3_approved && !stage.cancellation_type) return '';
+        if (stage.cancellation_type && stage.admin_review_status !== 'pending') return '';
+        return '';
+      }).join('');
+    }
 
     // META INVITES
     async function loadMetaInvites() {
